@@ -3,8 +3,9 @@
 #define  _DumpVers_H
 
 // HISTORY upwards:
-#define	BLDDATE	"21 April, 2015"	// FIX20150421 - Fix for BITMAPV5HEADER
+#define	BLDDATE	"10 Sep, 2015"	// FIX20150910 - Put in github repo, bgn unix port
 
+// BLDDATE	"21 April, 2015"	// FIX20150421 - Fix for BITMAPV5HEADER
 // BLDDATE	"21 August, 2014"	// FIX20140821 - Tidy up the source ready to push to a repo
 
 // #define	BLDDATE	"14 June, 2014"	// FIX20140614 - Try to tidy up the .lib display
