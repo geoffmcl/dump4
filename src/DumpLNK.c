@@ -1,0 +1,1369 @@
+
+// DumpLNK.c
+// Dump a Microsoft LNK (shortcut) file
+#include    "Dump4.h"
+
+// these source downloaded from : http://www.wotsit.org/search.asp?page=24&s=ALLFILES
+//#define CHKMEM(a)   if( a == NULL ) { sprtf("ERROR: MEMORY FAILED!"MEOR); pgm_exit(-1); }
+
+#include <windows.h>
+#include <windowsx.h>
+#include <objbase.h>
+#include <shlobj.h>
+#include <stdio.h>
+#include <initguid.h>
+#include <string.h>
+
+#define ISSIGCHAR2(a)   ( ( a == ' ' ) || ISSIGCHAR(a) )
+
+VOID ShowASCIISeq( LPDFSTR lpdf )
+{
+    PBYTE   pb = (PBYTE)lpdf->df_pVoid;
+    DWORD   max = lpdf->dwmax;
+    DWORD   dwi, cnt;
+    BYTE    a;
+    PBYTE   pab = LocalAlloc(LPTR, max+16);
+    CHKMEM(pab);
+    sprtf( "Output of what looks like ASCII sequences GT 5 chars ..."MEOR );
+    for( dwi = 0; dwi < max; dwi++ ) {
+        a = pb[dwi];
+        if( ISSIGCHAR2(a) ) {
+            cnt = 0;
+            pab[cnt++] = a;
+            dwi++;
+            for( ; dwi < max; dwi++ ) {
+                a = pb[dwi];
+                if( ISSIGCHAR2(a) ) {
+                    pab[cnt++] = a;
+                } else {
+                    break;
+                }
+            }
+            if( cnt > 5 ) {
+                pab[cnt] = 0;
+                sprtf("%s"MEOR, pab );
+            }
+        }
+    }
+    LocalFree(pab);
+
+}
+
+VOID ShowASCIIUNICODE( LPDFSTR lpdf )
+{
+    PBYTE   pb = (PBYTE)lpdf->df_pVoid;
+    DWORD   max = lpdf->dwmax;
+    DWORD   dwi, cnt;
+    BYTE    a, b;
+    PBYTE   pab = LocalAlloc(LPTR, max+16);
+    PBYTE   pb2 = 0;
+
+    CHKMEM(pab);
+    cnt = 0;
+    sprtf( "Output of what looks like ASCII UNICODE sequences GT 5 chars ..."MEOR );
+    b = '*';
+    for(dwi = 0; dwi < max; dwi++) {
+        a = pb[dwi];
+        if( ( a == 0 ) && ISSIGCHAR2(b) ) {
+            cnt = 1; // got a possible first - (ASCII, 0x00) (WORD) pair
+            dwi++; // get past ZERO
+            for( ; dwi < max; dwi++) {
+                b = pb[dwi];    // next should be ASCII
+                if( (dwi + 1) < max ) {
+                    a = pb[dwi+1]; // and another ZERO
+                    if( ( a == 0 ) && ISSIGCHAR2(b) ) {
+                        dwi++;  // eat second
+                        cnt++;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            if(cnt > 5) {
+                int suc = WideCharToMultiByte(
+                    CP_ACP, // UINT CodePage,
+                    0,      // DWORD dwFlags,
+                    (LPCWSTR)pb2,   //  LPCWSTR lpWideCharStr,
+                    cnt,     // int cchWideChar, 
+                    pab,    // LPSTR lpMultiByteStr,
+                    max,  // int cbMultiByte,
+                    NULL,   // LPCSTR lpDefaultChar,    
+                    FALSE ); //  LPBOOL lpUsedDefaultChar
+                if(suc) {
+                    sprtf("%s"MEOR, pab);
+                }
+            }
+            a = 0;
+        }
+        b = a;
+        pb2 = &pb[dwi]; // keep potential start ...
+    }
+    LocalFree(pab);
+}
+
+
+int lnk_main(char * pfile)
+{
+    static char szGotPath[MAX_PATH];
+    IShellLink *psl;
+    HRESULT hres;
+    WIN32_FIND_DATA wfd;
+    IPersistFile *ppf;
+    sprtf("Attempting COM interface ..."MEOR );
+    hres = CoInitialize(NULL);
+    if (!SUCCEEDED(hres))
+        sprtf("Could not open the COM library."MEOR);
+
+    hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+                                &IID_IShellLink, (LPVOID *)&psl);
+    if (SUCCEEDED(hres)) {
+        hres = psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf);
+
+        if (SUCCEEDED(hres)) {
+            static WORD wsz[MAX_PATH];
+
+            MultiByteToWideChar(CP_ACP, 0, pfile, -1, wsz, MAX_PATH);
+
+            hres = ppf->lpVtbl->Load(ppf, wsz, STGM_READ);
+            if (SUCCEEDED(hres)) {
+                hres = psl->lpVtbl->Resolve(psl, 0, SLR_ANY_MATCH);
+
+                if (SUCCEEDED(hres)) {
+                   strcpy(szGotPath, pfile);
+                   hres = psl->lpVtbl->GetPath(psl, szGotPath, MAX_PATH,
+                               (WIN32_FIND_DATA *)&wfd, SLGP_SHORTPATH );
+                   if (!SUCCEEDED(hres)) sprtf("GetPath failed!"MEOR);
+                   sprtf("This points to %s"MEOR, wfd.cFileName);
+                   if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                       sprtf("This is a directory"MEOR);
+                 }
+           }
+           else
+               sprtf("IPersistFile Load Error"MEOR);
+
+           ppf->lpVtbl->Release(ppf);
+       }
+       else
+           sprtf("QueryInterface Error"MEOR);
+
+       psl->lpVtbl->Release(psl);
+   }
+   else
+       sprtf("CoCreateInstance Error - hres = %08x"MEOR, hres);
+
+   return 0;
+}
+
+// and another persons work
+/* link95.c
+
+Following DOS 16 bit code more or less parses a *.lnk
+file as generated by Win9x.  I post it cause someone
+asked about the format of *.lnk files, and I haven't
+seen anything about this anywhere before.  Likely someone
+has done a more complete job and I just don't know about
+it!  Please let me know if this is useful, or you know
+the complete solution.
+    w_kranz@conknet.com
+
+2/24/99 revisite, rename previous version link95a.c
+   Note see win95\resource.lzh:shortcut.exe, got somewhere
+   (probably Microsoft) dumps shortcuts
+
+16 bit code for parsing win95 *.lnk files
+    Used MSC 6.0  (ie WORD => unsigned short => 2 bytes)
+
+Much of data in file still unknown, of initial 0x4C bytes in
+*.lnk file, much is constant but there is variability from
+one file to the next.  Can parse to the descriptive strings 
+at the end of the file with following:
+
+On my machine, a dump at the beginning of the file always looks 
+the same up through offset 0x13:
+   00000: 4C 00 00 00  01 14 02 00  00 00 00 00  C0 00 00 00 
+   00010: 00 00 00 46  
+Next byte in file varies, probably a bitmap per below.
+
+Following the header at offset 0x4C in file is a two byte word 
+which is the length of 1st variable length block.
+This length is # bytes to skip to reach next block or 0.
+If zero block is empty?  Skip bytes read to next length.
+The block length includes the two bytes in the length word!
+
+CAUTION, following seems to be true but always?
+There are 3 such blocks (including zeros for empty blocks).
+
+Then a string space starts (its organized slightly differently).
+Each two byte (word) length is the number of bytes in string
+which follows the word.  There are no NUL terminators, if
+desired you must add them.  It appears this region is always
+terminated by two words, both equal to zero.  I think one
+could read till found first string block of zero length.
+This is the end of the useable data in the file.
+
+The byte at offset 0x14 in file seems to identify
+the individual blocks and strings included in file.
+I define the following bitmaps, each bit indicates
+a different function and associated block or string.
+
+Look at low nibble for blocks of data as follows (probably):
+1 => ?  occurs but meaning escapes me, see com114~1.lnk
+2 => target program, see compus~1.lnk with above
+4 => ?  have never even seen this
+8 => path componets, see notepad.lnk & cdplay~1.lnk
+     note also forces an extra string!
+
+In addition to bit 4 (mask value 8) of low nibble
+Look at the high nibble for strings.  It is a bitmap
+of which strings are expected in the order shown below.
+looking at magic # byte at 0x14
+
+0x10 => working directory
+0x20 => arguments for program
+0x40 => icon file name
+per above if low nibble & 8, 1st string is
+    The path to *.exe relative to current location of *.lnk
+
+One expects any combination of bits above with 1 to 4
+strings possible.
+Interesting in that strings do not appear to be in unicode!
+
+Now it gets pretty vague.  I don't fully understand
+the various blocks, and almost nothing in the header.
+Not clear why strings should be arranged differently than
+data blocks.  In particular why do block length differently
+and why have empty block if bit map tells us which ones
+are there?  The bit map concept is just a guess for the
+data blocks, but seems to work for the strings so logical.
+Maybe one is supposed to use bitmap info also, only thing
+I've done for verification is:
+
+If ( (low nibble of byte at 0x14) & 0x2)
+    shortcut.exe says there is a target, otherwise none
+
+In general each block is made up from a number of sub
+blocks.  Each two byte word at the begining of a block defines
+the sub block length.  The blocks do NOT seem to occur in order 
+of their bit map value, target type 2 always last:
+Type     description
+8       1st sub block is 0xE unknown bytes 
+        Each additional sub block is one level in path spec.
+        ie 2nd is drive, remainder are nodes in path 
+        or file name at end of block.  Per above if this
+        exists, 1st string below seems to be relative path to
+        program from location of *.lnk file.
+
+2       This contains the full path to the target program.
+        Starts with 0x2D unknown bytes, followed by a
+        null terminated path to the program at offset 0x2d.
+        WARNING in general above is true, but a couple of my
+        shortcuts just had "C:\" at this offset,
+        then another sub block, then the rest of the path
+        in a third sub block.
+        This occurs if the fifth word in block is 0x3
+        rather than 0x1.  Seems to give local path and
+        network path.  See code below.
+
+I'd like this to be a little cleaner, I don't love Microsoft,
+but to have two different methods of storing data in the same
+little file seems odd.  Likely I overcomplicated things somewhere,
+but don't see it.  If you do let me know!
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <io.h>
+#include <fcntl.h>
+
+#define BUFSZ 512    // global working buffer in case needs to be big
+char buf[BUFSZ];
+#define HEADSZ 0x4c  // don't know what is in here! only identified two bytes
+
+int read_block(LPDFSTR fp,unsigned char *buf,unsigned msz);
+int read_string(LPDFSTR fp,unsigned char *buf,unsigned msz);
+
+int buf_filelength( LPDFSTR fp )
+{
+    return (int)fp->dwmax;
+}
+
+int buf_read( LPDFSTR fp, unsigned char * buf, int max )
+{
+    PBYTE pb = (PBYTE)fp->df_pVoid;
+    DWORD off = fp->df_dwOff;
+    if( pb && ( (DWORD)(max + off) <= fp->dwmax ) ) {
+        int i;
+        for( i = 0; i < max; i++ ) {
+            buf[i] = pb[i];
+        }
+        fp->df_dwOff += i;
+        return i;
+    }
+    return 0;
+}
+
+
+
+int lnk2_main( LPDFSTR fp ) // char * pfile
+{
+    unsigned char tndx,tmask,head[HEADSZ];
+    long flen,len=0L;
+    char *type,*str;
+    int rd,cnt=0,scnt=0;
+    unsigned int *uptr;
+    unsigned int sz = 0x4c; /* fixed size of initial region */
+    //if((fp = open(pfile,O_RDONLY|O_BINARY)) == EOF)
+    //{
+    //     printf("\nfailed to open: %s",pfile);
+    //     pgm_exit(1);
+    //}
+    //else 
+    if (buf_read(fp,head,HEADSZ) != HEADSZ)
+    {
+         sprtf("Failed to read a header of length %x (hex) bytes)"MEOR,
+              HEADSZ);
+         return 1;
+    }
+    len = HEADSZ;
+    flen = buf_filelength(fp);
+    while(cnt < 3 && (rd = read_block(fp,buf,BUFSZ)) >= 0)
+    {
+         if(rd == 0)
+              len+= sizeof(unsigned); // empty block
+         else 
+              len += rd; // size of block, includes unsigned
+         str = "None";
+         type = NULL;
+         switch(++cnt)
+         {
+              /* hopefully I'll know what other blocks are some day...
+                 my experience has been that if there is a 3rd data block
+                 which isn't empty, its the Target block associated
+                 with bit 0x2.  Maybe there is an id embedded in the
+                 blocks, but I don't see it...
+              */
+              case 3:
+                 uptr = (unsigned *) &buf[0];
+                 // should I be checking for an 0x2 in bitmap?
+                 type = "Target";
+                 if(rd > 0x2d)  // 0x2d == *(uptr+6)
+                    str = buf+0x2d; // display absolute path string 
+                    // above works for me but could be variable offset ie *(uptr+6)
+                 sprtf("%s: %s",type,str);
+                 // CAUTION not always as simple as above
+                 if(*(uptr+4) >= 3 && *(uptr+12) < (unsigned int)rd)
+                 {  // skip over computer name to create local target
+                    sprtf("%s",buf + *(uptr+12));
+                 }
+                 sprtf(MEOR);
+                 break;
+         }
+    }
+
+    if((head[0x14] & 8))
+    { /* if bit set then had a data block above and
+         first string should be extra relative path.
+         Note that shortcut.exe does NOT display this string
+      */
+        if((rd = read_string(fp,buf,BUFSZ)) <= 0)
+            sprtf("No strings found"MEOR);
+        else
+        {
+            sprtf("relative path string: %s"MEOR,buf);
+            len += sizeof(unsigned) + rd; // word + strlen was read
+         }
+    }
+
+    tmask = head[0x14] >> 4; // high nibble of byte
+    // check all three possible states
+    for(tndx = 1;len < flen && tndx <= 4;)
+    {
+         switch(tndx)
+         {  // the following match shortcut.exe output
+              case 1:
+                   type ="Working directory";
+                   break;
+              case 2:
+                   type ="Arguments";
+                   break;
+              case 4:
+                   type = "Icon file";
+                   break;
+         }
+         if(tndx & tmask)
+         {
+             // there should be another string
+             if((rd = read_string(fp,buf,BUFSZ)) <= 0)
+             {
+                  sprtf("error reading string"MEOR);
+                  break;
+             }
+             else
+                  len += sizeof(unsigned) + rd; // word + strlen was read
+         }
+         else
+              strcpy(buf,"None");
+
+         tndx = tndx << 1;
+         sprtf("%s: %s"MEOR,type,buf);
+    }
+    sprtf("read %ld bytes out of %ld in file"MEOR,len,flen);
+
+    return 0;
+}
+
+/* each block starts with an unsigned word
+   may contain nested block
+   or word may be zero, in this case block empty, just
+   advance 2 bytes for this word
+   word read at start of block is returns, ie 0 for empty block
+*/
+int read_block(LPDFSTR fp,unsigned char *buf,unsigned msz)
+{
+    int sz;
+    unsigned *uptr = (unsigned *)buf;
+    if(msz < sizeof(unsigned) || 
+       buf_read(fp,buf,sizeof(unsigned)) != sizeof(unsigned))
+         return(-1);
+    else if(*uptr > msz)
+         return(-2);
+    sz = *uptr - sizeof(unsigned); // additional to read in
+    if(sz > 0 && buf_read(fp,buf+sizeof(unsigned),sz) != sz)
+         return(-1);
+    else
+         return(*uptr);  // bytes read
+}
+
+/* file ends with a series of strings, logic is similar to
+   above, but length is # chars in string, and they aren't nul
+   terminated, I append a NUL to make printing easier if it fits
+   Note I'm NOT putting len in buffer this time, want a string
+*/
+int read_string(LPDFSTR fp,unsigned char *buf,unsigned msz)
+{
+    unsigned int sz;
+    if(buf_read(fp,(unsigned char *)&sz,sizeof(unsigned)) != sizeof(unsigned))
+         return(-1);
+    else if(sz > msz)
+         return(-2);
+    if(sz > 0 && buf_read(fp,buf,sz) != sz)
+         return(-1);
+    else
+    {
+         if(sz >= 0 && sz < msz)
+              buf[sz] = 0;
+         return(sz);  // bytes read into string buffer, ie its length
+    }
+}
+
+/* ============= PDF description file =============
+The Windows Shortcut File Format
+as reverse-engineered by
+Jesse Hager
+jessehager@iname.com
+Document Version 1.0
+Disclaimer
+This document is provided “AS-IS” basis, without any warranties or representations express, implied or statutory; including, without
+limitation, warranties of quality, performance, non-infringement, merchantability or fitness for a particular purpose. Jesse Hager does
+not warrant that this document will meet your needs or be free from errors.
+This document assumes that you are familiar with shortcuts and the IShellLink interface.
+If not, this in probably not the best place to start.
+This document is also unofficial, so I don’t claim that it is 100% accurate. This
+information is based solely on the examination of hundreds of shortcut files and
+comparing them to the documented IShellLink interface. There’s still a few things I’m
+unsure of, namely which time value is which, the contents of the network volume
+structure and the extra stuff at the end of the file.
+If you’re writing software under Windows I highly recommend you use the IShellLink
+interface. For the DOS, Linux, JAVA and other crowds, this is the document you need,
+‘cause MS isn’t gonna give you squat.
+Basic File Structure
+The file is structured like this:
+File header
+Shell item ID list
+Item 1
+Item 2
+etc..
+File locator info
+Local path
+Network path
+Description string
+Relative path string
+Working directory string
+Command line string
+Icon filename string
+Extra stuff
+The File Header
+This is of course at the start of the file.
+.LNK File Header
+Offset Size/Type Contents
+0h 1 dword Always 0000004Ch ‘L’
+4h 16 bytes GUID of shortcut files
+14h 1 dword Flags
+18h 1 dword File attributes
+1Ch 1 qword Time 1
+24h 1 qword Time 2
+2Ch 1 qword Time 3
+34h 1 dword File length
+38h 1 dword Icon number
+3Ch 1 dword ShowWnd value
+40h 1 dword Hot key
+44h 2 dwords Unknown, always zero
+The first 4 bytes of the file form a long integer that is always set to 4Ch this it the
+ASCII value for the uppercase letter L. This is used to identify a valid shell link file.
+The next 16 bytes is the globally unique identifier GUID of the shell links which is:
+{00021401-0000-0000-00C0-000000000046} in standard GUID notation or {01h,
+14h, 02h, 00h, 00h, 00h, 00h, 00h, C0h, 00h, 00h, 00h, 00h, 00h, 46h} as it is
+composed of bytes in the file. It appears that in the future, Microsoft may redefine
+the file format and this will be used to indicate which version to use.
+The next item is a long integer which consists of a number of flags. This is
+important, because it indicates which of the optional parts of the file are present.
+The flags
+Bit Meaning when 1 when 0
+0 The shell item id list is present. The shell item id list is absent.
+1 Points to a file or directory. Points to something else.
+2 Has a description string. No description string.
+3 Has a relative path string. No relative path.
+4 Has a working directory. No working directory.
+5 Has command line arguments. No command line arguments.
+6 Has a custom icon. Has the default icon.
+The next item is a long integer that contains file attributes of the target file. If the
+target is not a file (see flags bit 1), then this is set to zero. The resolver uses these
+when the link is broken to match the link with the correct target.
+File Attributes
+Bit Meaning when set
+0 Target is read only.
+1 Target is hidden.
+2 Target is a system file.
+3 Target is a volume label. (Not possible)
+4 Target is a directory.
+5 Target has been modified since last backup. (archive)
+6 Target is encrypted (NTFS EFS)
+7 Target is Normal??
+8 Target is temporary.
+9 Target is a sparse file.
+10 Target has reparse point data.
+11 Target is compressed.
+12 Target is offline.
+The next three items are 64 bit integers that specifiy the various time information for
+the file.
+Creation time
+Modification time
+Last access time
+The next item is a long integer which contains the length of the target file.
+If the file has a custom icon (see flags bit 6), then this long integer indicates the
+index of the icon to use. Otherwise it is zero.
+The next long integer specifies the ShowWnd value to pass to the target application
+when starting it. For your convenience, the values are reproduced below. It is
+unlikely, that most of these values are valid. Only values 1, 2 and 3 are permitted in
+the shortcut property page.
+SW_HIDE 0 Cool...
+SW_NORMAL 1
+SW_SHOWMINIMIZED 2
+SW_SHOWMAXIMIZED 3
+SW_SHOWNOACTIVATE 4
+SW_SHOW 5
+SW_MINIMIZE 6
+SW_SHOWMINNOACTIVE 7
+SW_SHOWNA 8
+SW_RESTORE 9
+SW_SHOWDEFAULT 10
+The next long integer specifies the hotkey assigned to the shortcut.
+The last two long integers are always zero. They are probably reserved for future
+use.
+The Shell Item Id List.
+This item is only present if bit 0 is set in the flags word of the header.
+An entire book could be written on the contents of this item. Essentially it indicates
+how to get from the desktop to the specified item. The actual contents are highly
+variable. The following are the only constant items about the list.
+The first unsigned short integer indicates the total length of the list so it can be
+skipped easily.
+Inside the list, each item begins with an unsigned short integer that indicates the
+length of the item. The length includes the size of the length value.
+The last item is length 0.
+Lookup ITEMIDLIST in most any Win32 documentation for more info on this item.
+File Location Info
+This item is always present, but if bit 1 is not set in the flags value, then the length of
+this structure will be zero. The following table shows the structure of the header of
+this item.
+File Location Info
+Offset Size Contents
+0h 1 dword This is the total length of this structure and all following data
+4h 1 dword This is a pointer to first offset after this structure. 1Ch
+8h 1 dword Flags
+Ch 1 dword Offset of local volume info
+10h 1 dword Offset of base pathname on local system
+14h 1 dword Offset of network volume info
+18h 1 dword Offset of remaining pathname
+Notes: The first length value includes all the assorted pathnames and other data
+structures. All offsets are relative to the start of this structure.
+The first long integer indicates the size of the file location info.
+The next long integer is the offset at which the basic file info structure ends. Should
+be 1Ch under normal conditions.
+The next long integer is the flags that indicate which types of volumes the file is
+available on.
+Volume flags
+Bit Meaning
+0 Available on a local volume
+1 Available on a network share
+The next long integer is the offset to the local volume table. (See below)
+( Random garbage when bit 0 is clear in volume flags)
+The next long integer is the offset to the base path on the local volume.
+( Random garbage when bit 0 is clear in volume flags)
+The next long integer is the offset to the network volume table. (See below)
+( Random garbage when bit 1 is clear in volume flags)
+The next long integer is the offset to the final part of the pathname.
+To find the filename of the file on the local volume, combine the base path string and
+the final path string.
+To find the filename of the file on the network, combine the share name in the
+network volume table with the final path string.
+The local volume table
+Offset Size Contents
+0h 1 dword Length of this structure.
+4h 1 dword Type of volume
+8h 1 dword Volume serial number
+Ch 1 dword Offset of the volume name (Always 10h)
+10h ASCIZ Volume label
+The first long integer in the local volume table is the length of the structure including
+the volume label string.
+The next long integer is the type of volume.
+0 Unknown
+1 No root directory
+2 Removable (Floppy, Zip, etc..)
+3 Fixed (Hard disk)
+4 Remote (Network drive)
+5 CD-ROM
+6 Ram drive (Shortcuts to stuff on a ram drive, now that’s smart...)
+The next long integer is the volume serial number.
+The next long integer is the offset of the volume label within the structure. Always
+10h under normal conditions.
+The network volume table
+Offset Size Contents
+0h 1 dword Length of this structure
+4h 1 dword Unknown, always 2h?
+8h 1 dword Offset of network share name (Always 14h)
+Ch 1 dword Unknown, always zero?
+10h 1 dword Unknown, always 20000h?
+14h ASCIZ Network share name
+Note 1: The above unknown values are the same for a printer or file share.
+Note 2: The above values are for Microsoft Networks, I don’t have a NetWare
+server to test.
+The first long integer is the length of the structure including the length of the network
+share name.
+The next long integer is unknown, it seems to always be 2h on Microsoft Networks.
+The next long integer is the offset to the share name within the structure.
+The next two long integers are unknown.
+The share name specifies the share name that the item is available under.
+Description string
+If bit 2 is set in the flags value in the header, then this string is present.
+The first unsigned short int value indicates the length of the string. Following the
+length value is a string of ASCII characters. It is a description of the item.
+Relative path string
+If bit 3 is set in the flags value in the header, then this string is present.
+The first unsigned short int value indicates the length of the string. Following the
+length value is a string of ASCII characters. It is a relative path to the target.
+Working directory
+If bit 4 is set in the flags value in the header, then this string is present.
+The first unsigned short int value indicates the length of the string. Following the
+length value is a string of ASCII characters. It is the working directory as specified in
+the shortcut properties.
+Command line string
+If bit 5 is set in the flags value in the header, then this string is present.
+The first unsigned short int value indicates the length of the string. Following the
+length value is a string of ASCII characters. The command line string includes
+everything except the program name.
+Icon filename string
+If bit 6 is set in the flags value in the header, then this string is present.
+The first unsigned short int value indicates the length of the string. Following the
+length value is a string of ASCII characters. This the name of the file containing the
+icon.
+Extra stuff
+The last item in the file is usually a long integer with the value zero. In rare cases,
+this long integer seems to be the length of some unknown structure that follows.
+The only values I’ve ever seen in here are:
+1 dword 10h Length of following data
+1 dword A0000005h ?
+1 dword 1Ah ?
+1 dword 6Ch ?
+1 dword 0 ?
+Another possible arrangement is:
+1 dword 10h Length of first structure
+3 dwords x Remainder of first structure
+1 dword 0 Length of next structure
+Disassembly of a hypothetical shortcut file
+Offset Bytes Contents
+Header
+0000 4C 00 00 00 ‘L’ Magic value
+0004 01 04 02 00 GUID of shortcut files
+00 00 00 00
+C0 00 00 00
+00 00 00 46
+0014 3F 00 00 00 Flags
+Has item id list
+Target is a file
+Has description string
+Has relative pathname
+Has a working directory
+Has a custom icon
+0018 20 00 00 00 File attibutes
+Archive
+001C C0 0E 82 D5 Time 1
+C1 20 BE 01
+0024 00 08 BF 46 Time 2
+D5 20 BE 01
+002C 00 47 AA EC Time 3
+EC 15 BE 01
+0034 A0 86 00 00 File length is 34464 bytes. 86A0h
+0038 05 00 00 00 Icon number 5
+003C 01 00 00 00 Normal window
+0040 46 06 00 00 Ctrl-Alt-F hotkey
+0044 00 00 00 00 Always zero, unknown/reserved
+0048 00 00 00 00 Always zero, unknown/reserved
+Item Id List
+004C 2A 00 Size of item id list
+First item
+004E 28 00 Length of first item
+0050 32 00 ???
+0052 A0 86 00 00 File length
+0056 76 25 71 3E ???
+005A 20 00 File attributes?
+005C 62 65 73 74 5F 37 “best_773.mid” Long name
+37 33 2E 6D 69 64
+00 Null terminator
+0069 42 45 53 54 5F 37 “BEST_773.MID” Short name
+37 33 2E 4D 49 44
+00 Null terminator
+Last item
+0076 00 00 Zero length value
+Offset Bytes Contents
+File location info
+0078 74 00 00 00 Structure length
+007C 1C 00 00 00 Offset past last item in structure
+0080 03 00 00 00 Flags
+Local volume
+Network volume
+0084 1C 00 00 00 Offset of local volume table
+0088 34 00 00 00 Offset of local path string
+008C 40 00 00 00 Offset of network volume table
+0090 5F 00 00 00 Offset of final path string
+Local volume table
+0094 18 00 00 00 Length of local volume table
+0098 03 00 00 00 Fixed disk
+009C D0 07 33 3A Volume serial number 3A33-07D0
+00A0 10 00 00 00 Offset to volume label
+00A4 44 52 49 56 45 20 “DRIVE C”,0
+43 00
+00AC 43 3A 5C 57 49 4E “C:\WINDOWS\” local path string
+44 4F 57 53 5C 00
+Network volume table
+00B8 1F 00 00 00 Length of network volume table
+00BC 02 00 00 00 ???
+00C0 14 00 00 00 Offset of share name
+00C4 00 00 00 00 ???
+00C8 00 00 02 00 ???
+00CC 5C 5C 4A 45 53 53 “\\JESSE\WD”,0 Share name
+45 5C 57 44 00
+00D7 44 65 73 6B 74 6F “Desktop\best_773.mid”,0
+70 5C 62 65 73 74 Final path name
+5F 37 37 33 2E 6D
+69 64 00
+Description string
+00EC 12 00 Length of string
+00EE 42 65 73 74 20 37 “Best 773 midi file”
+37 33 20 6D 69 64
+69 20 66 69 6C 65
+Relative path
+0100 0E 00 Length of string
+0102 2E 5C 62 65 73 74 “.\best_773.mid”
+5F 37 37 33 2E 6D
+69 64
+Working directory
+0114 12 00 Length of string
+0116 43 3A 5C 57 49 4E “C:\WINDOWS\Desktop”
+44 4F 57 53 5C 44
+65 73 6B 74 6F 70
+Offset Bytes Contents
+Command line arguments
+0128 06 00
+012A 2F 63 6C 6F 73 65 “/close”
+Icon file
+0130 16 00 Length of string
+0132 43 3A 5C 57 49 4E “C:\WINDOWS\Mplayer.exe”
+44 4F 57 53 5C 4D
+70 6C 61 79 65 72
+2E 65 78 65
+Ending stuff
+0148 00 00 00 00 Length 0 - no more stuff
+The target is located at:
+C:\WINDOWS\Desktop\best_773.mid
+The windows directory is shared as:
+\\JESSE\WD
+
+   ================================================ */
+
+// FINALLY my code
+//#define	EndBuf(a)	( a + strlen(a) )
+
+// flags - Bit Meaning when 1 when 0
+#define flg_sid     1   // 0 The shell item id list is present. The shell item id list is absent.
+#define flg_df      2   // 1 Points to a file or directory. Points to something else.
+#define flg_desc    4   // 2 Has a description string. No description string.
+#define flg_relp    8   // 3 Has a relative path string. No relative path.
+#define flg_wd      16  // 4 Has a working directory. No working directory.
+#define flg_cmd     32  // 5 Has command line arguments. No command line arguments.
+#define flg_icon    64  // 6 Has a custom icon. Has the default icon.
+
+// volume flag
+#define vf_bit0     1   // 0 Available on a local volume
+#define vf_bit1     2   // 1 Available on a network share
+
+typedef struct tagFLG2STG {
+    DWORD   flg;
+    PTSTR   pstg1;
+    PTSTR   pstg2;
+}FLG2STG, *PFLG2STG;
+
+FLG2STG f2s[] = {
+    { flg_sid, "The shell item id list is present.", "The shell item id list is absent." },
+    { flg_df,  "Points to a file or directory.", "Points to something else." },
+    { flg_desc, "Has a description string.", "No description string." },
+    { flg_relp, "Has a relative path string.", "No relative path." },
+    { flg_wd,   "Has a working directory.", "No working directory." },
+    { flg_cmd,  "Has command line arguments.", "No command line arguments." },
+    { flg_icon, "Has a custom icon.", "Uses the default icon." },
+    { 0, 0, 0 }
+};
+
+VOID    Dword2Bits( PTSTR pb, DWORD dwo )
+{
+    int i, j;
+    if(dwo) {
+        j = 0;
+        for( i = 0; i < 32; i++ ) {
+            if( dwo & 0x80000000 ) {
+                if( i && ( j == 0 ) )
+                    strcat(pb,"0");
+                strcat(pb, "1");
+                j++;
+            } else {
+                if(j) strcat(pb, "0");
+            }
+            dwo = dwo << 1;
+        }
+        strcat(pb,"B");
+    } else {
+        strcat(pb, "<no bits>");
+    }
+}
+
+VOID    ShowLNKFlags( DWORD flag )
+{
+    PFLG2STG pf2s = &f2s[0];
+    DWORD   flg = flag;
+    PTSTR   ps;
+    while( pf2s->pstg1 != 0 ) {
+        if( flg & pf2s->flg ) {
+            ps = pf2s->pstg1;
+            flg &= ~(pf2s->flg);
+        } else {
+            ps = pf2s->pstg2;
+        }
+        sprtf( "%s"MEOR, ps );
+        pf2s++;
+    }
+    if(flg) {
+        PTSTR lpd = g_cBuf;
+        *lpd = 0;
+        Dword2Bits(lpd, flg);
+        sprtf( "Residual (unknown) flag(s) = %s ..."MEOR, lpd );
+    }
+}
+
+typedef struct tagITEM {
+    WORD    length;
+    WORD    unk1;
+    DWORD   flen;
+    DWORD   unk2;
+    WORD    fattr;
+    BYTE    name[1];
+}ITEM, * PITEM;
+
+typedef struct tagLNK {
+    DWORD   sig;    // = 'L'
+    BYTE    GUID[16];   // GUID of shortcut files
+    DWORD   flags;  // Has items
+    DWORD   attr;   // attribute
+    FILETIME    ft1, ft2, ft3;  // times
+    DWORD   len;    // length of file
+    DWORD   icon;   // icon number
+    DWORD   window; // 1 is normal
+    DWORD   hotkey; // 46 06 00 00 - Ctrl-Alt-F
+    DWORD   res[2]; // reserved
+    WORD    idsz;   // size of ID list
+    ITEM    items[1]; //
+} LNK, * PLNK;
+
+typedef struct tagFILINF { // File location info
+    DWORD   slen; // 0078 74 00 00 00 Structure length
+    DWORD   foff; // 007C 1C 00 00 00 Offset past last item in structure
+    DWORD   fflgs; // 0080 03 00 00 00 Flags Local volume Network volume
+    DWORD   lv_off; // 0084 1C 00 00 00 Offset of local volume table
+    DWORD   lp_off; // 0088 34 00 00 00 Offset of local path string
+    DWORD   nv_off; // 008C 40 00 00 00 Offset of network volume table
+    DWORD   fp_off; // 0090 5F 00 00 00 Offset of final path string
+} FILINF, * PFILINF;
+
+typedef struct tagLOCVOL { // Local volume table
+    DWORD   lv_len; // 0094 18 00 00 00 Length of local volume table
+    DWORD   dtype;  // 0098 03 00 00 00 Fixed disk
+    DWORD   snum;   // 009C D0 07 33 3A Volume serial number 3A33-07D0
+    DWORD   vl_off; // 00A0 10 00 00 00 Offset to volume label
+} LOCVOL, * PLOCVOL;
+//00A4 44 52 49 56 45 20 “DRIVE C”,0
+//     43 00
+// 00AC 43 3A 5C 57 49 4E “C:\WINDOWS\” local path string
+//      44 4F 57 53 5C 00
+
+typedef struct tagNETVOL { // Network volume table
+    DWORD   nv_len;  // 00B8 1F 00 00 00 Length of network volume table
+    DWORD   nv_unk1; // 00BC 02 00 00 00 ???
+    DWORD   sn_off;  // 00C0 14 00 00 00 Offset of share name
+    DWORD   nv_unk2[2]; // 00C4 00 00 00 00 ???
+//                      // 00C8 00 00 02 00 ???
+// 00CC 5C 5C 4A 45 53 53 “\\JESSE\WD”,0 Share name
+//      45 5C 57 44 00
+// 00D7 44 65 73 6B 74 6F “Desktop\best_773.mid”,0
+//      70 5C 62 65 73 74 Final path name
+//      5F 37 37 33 2E 6D
+//      69 64 00
+}NETVOL, * PNETVOL;
+
+typedef struct tagSTG { // Description string
+    WORD s_len; // 00EC 12 00 Length of string
+    BYTE  stg[1]; // 00EE 42 65 73 74 20 37 “Best 773 midi file”
+                    //    37 33 20 6D 69 64
+                    //    69 20 66 69 6C 65
+} STG, * PSTG;
+// Relative path
+// 0100 0E 00 Length of string
+// 0102 2E 5C 62 65 73 74 “.\best_773.mid”
+//      5F 37 37 33 2E 6D
+//      69 64
+// Working directory
+// 0114 12 00 Length of string
+// 0116 43 3A 5C 57 49 4E “C:\WINDOWS\Desktop”
+//      44 4F 57 53 5C 44
+//      65 73 6B 74 6F 70
+// Command line arguments
+// 0128 06 00
+// 012A 2F 63 6C 6F 73 65 “/close”
+// Icon file
+// 0130 16 00 Length of string
+// 0132 43 3A 5C 57 49 4E “C:\WINDOWS\Mplayer.exe”
+//      44 4F 57 53 5C 4D
+//      70 6C 61 79 65 72
+//      2E 65 78 65
+// Ending stuff
+// 0148 00 00 00 00 Length 0 - no more stuff
+BYTE guid[] = { 0x01, 0x14, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 };
+
+DWORD MatchGUID( PBYTE pb )
+{
+    DWORD i, cnt = 0;
+    for( i = 0; i < 16; i++ ) {
+        if( guid[i] == pb[i] )
+            cnt++;
+    }
+    return cnt;
+}
+
+BOOL IsLNKFile( PTSTR pf, BYTE * pb, DWORD max )
+{
+    PTSTR lpd = g_cBuf;
+    if( max > sizeof(LNK) ) {
+        // we have a chance
+        PLNK    pl = (PLNK)pb;
+        if( pl->sig == 'L' ) {
+            DWORD dwi = MatchGUID( (PBYTE)&pl->GUID[0] );
+            if( dwi >= 14 ) {
+                GetHEXString( lpd, pb, sizeof(pl->sig), pb, FALSE );
+                sprtf( "%s"MEOR, lpd );
+                sprtf( "File starts with correct marker, 'L' ... GUID match = %d"MEOR, dwi );
+                return TRUE;
+            } else {
+                sprtf( "File starts with 'L' marker, but only matches %d of 16 GUID ..."MEOR, dwi ); 
+            }
+        }
+    }
+    sprtf( "File DOES NOT starts with correct marker, 'L' ..."MEOR );
+    return FALSE;
+}
+
+// convert UTC FILETIME to local FILETIME and then
+//     local   FILETIME to local SYSTEMTIME
+BOOL     FT2LST( FILETIME * pft, SYSTEMTIME * pst )
+{
+   BOOL  bRet = FALSE;
+   FILETIME    ft;
+   if( ( FileTimeToLocalFileTime( pft, &ft ) ) && // UTC file time converted to local
+       ( FileTimeToSystemTime( &ft, pst)     ) )
+   {
+      bRet = TRUE;
+   }
+   return bRet;
+}
+
+BOOL GetFDTSStg( PTSTR lps, FILETIME * pft )
+{
+   //LPTSTR   lps = _sGetSStg();
+   SYSTEMTIME  st;
+   //FILETIME    ft;
+   //if( ( FileTimeToLocalFileTime( pft, &ft ) ) && // UTC file time converted to local
+   //    ( FileTimeToSystemTime( &ft, &st)     ) )
+   if( FT2LST( pft, &st ) ) {
+      sprintf(lps,
+         "%02d/%02d/%04d %02d:%02d:%02d",
+         (st.wDay & 0xffff),
+         (st.wMonth & 0xffff),
+         (st.wYear & 0xffff),
+         (st.wHour & 0xffff),
+         (st.wMinute & 0xffff),
+         (st.wSecond & 0xffff) );
+      return TRUE;
+   } else {
+		strcpy( lps, "??/??/?? ??:??:??" );
+   }
+   return FALSE;
+}
+
+BOOL GetMaxPossible( LPDFSTR lpdf, PBYTE pbuf, DWORD req, DWORD * poutmx )
+{
+    DWORD mx = req;
+    PBYTE pv = (PBYTE)lpdf->df_pVoid;
+    DWORD off = (pbuf - pv);
+    if( off > lpdf->dwmax ) {
+        return FALSE;
+    }
+    if( (off + mx) > lpdf->dwmax ) {
+        mx = lpdf->dwmax - off;
+    }
+    *poutmx = mx;
+    return TRUE;
+}
+
+
+/* typedef struct tagLNK {
+    DWORD   sig;    // = 'L'
+    BYTE    GUID[16];   // GUID of shortcut files
+    DWORD   flags;  // Has items
+    DWORD   attr;   // attribute
+    FILETIME    ft1, ft2, ft3;  // times
+    DWORD   len;    // length of file
+    DWORD   icon;   // icon number
+    DWORD   window; // 1 is normal
+    DWORD   hotkey; // 46 06 00 00 - Ctrl-Alt-F
+    DWORD   res[2]; // reserved
+    WORD    idsz;   // size of ID list
+    ITEM    items[1]; //
+} LNK, * PLNK; */
+
+BOOL  ProcessLNK( LPDFSTR lpdf )
+{
+    PTSTR lpd = g_cBuf;
+    DWORD   max = lpdf->dwmax;
+    //lnk_main( lpdf->fn ); // COM failed, but due I think to the file being OPEN
+    //lnk2_main( lpdf );    // not sure what this did ...
+    if( IsLNKFile( lpdf->fn, lpdf->lpb, lpdf->dwmax ) )
+    {
+        PBYTE pb2 = lpdf->lpb;
+        PBYTE  pb = lpdf->lpb;
+        PLNK   pl = (PLNK)pb;
+        PITEM  pi = (PITEM) &pl->items[0];
+        PFILINF pfi = 0;
+        DWORD off = pb2 - pb;
+        DWORD   mx = 16;
+        PLOCVOL plv = 0;
+        PNETVOL pnv = 0;
+        PSTG    pstg = 0;
+        DWORD   outmx = 0;
+        ShowASCIISeq( lpdf );
+        ShowASCIIUNICODE( lpdf );
+        *lpd  = 0;
+        GetHEXString( lpd, &pl->GUID[0], sizeof(pl->GUID), pb, FALSE );
+        sprtf( "%s = GUID"MEOR, lpd );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->flags, sizeof(pl->flags), pb, FALSE );
+        strcat(lpd, " ");
+        Dword2Bits(lpd, pl->flags);
+        sprtf( "%s = FLAGS"MEOR, lpd );
+        ShowLNKFlags( pl->flags );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->attr, sizeof(pl->attr), pb, FALSE );
+        sprtf( "%s = Attribute"MEOR, lpd );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->ft1, sizeof(pl->ft1), pb, FALSE );
+        strcat(lpd," ");
+        GetFDTSStg( EndBuf(lpd), &pl->ft1 );
+        sprtf( "%s = Time 1"MEOR, lpd );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->ft2, sizeof(pl->ft2), pb, FALSE );
+        strcat(lpd," ");
+        GetFDTSStg( EndBuf(lpd), &pl->ft2 );
+        sprtf( "%s = Time 2"MEOR, lpd );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->ft3, sizeof(pl->ft3), pb, FALSE );
+        strcat(lpd," ");
+        GetFDTSStg( EndBuf(lpd), &pl->ft3 );
+        sprtf( "%s = Time 3"MEOR, lpd );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->len, sizeof(pl->len), pb, FALSE );
+        sprtf( "%s - Length of file %d ?"MEOR, lpd, pl->len );    // length of file
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->icon, sizeof(pl->icon), pb, FALSE );
+        sprtf( "%s - ICON number %d ?"MEOR, lpd, pl->icon );    // icon number
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->window, sizeof(pl->window), pb, FALSE );
+        sprtf( "%s - Window type %d ?"MEOR, lpd, pl->window );    // 1 is normal
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->hotkey, sizeof(pl->hotkey), pb, FALSE );
+        sprtf( "%s = Hotkey (if any)"MEOR, lpd ); // 46 06 00 00 - Ctrl-Alt-F
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->res[0], sizeof(pl->res), pb, FALSE );
+        sprtf( "%s = Unknown (reserved?)"MEOR, lpd );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pl->idsz, sizeof(pl->idsz), pb, FALSE );
+        sprtf( "%s - Size of ID list %d ?"MEOR, lpd, (pl->idsz & 0x0ffff));   // size of ID list
+/* ========
+typedef struct tagITEM {
+    WORD    length;
+    WORD    unk1;
+    DWORD   flen;
+    DWORD   unk2;
+    WORD    fattr;
+    BYTE    name[1];
+}ITEM, * PITEM;
+   ========= */
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)pi, sizeof(pi->length), pb, FALSE );
+        sprtf( "%s = Item length (%d)?"MEOR, lpd, (pi->length & 0xffff) );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pi->unk1, sizeof(pi->unk1), pb, FALSE );
+        sprtf( "%s = Unknown (%d)?"MEOR, lpd, (pi->unk1 & 0xffff) );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pi->flen, sizeof(pi->flen), pb, FALSE );
+        sprtf( "%s = Length (%d)?"MEOR, lpd, pi->flen );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pi->unk2, sizeof(pi->unk2), pb, FALSE );
+        sprtf( "%s = Unknown (%d)?"MEOR, lpd, pi->unk2 );
+        *lpd = 0;
+        GetHEXString( lpd, (PBYTE)&pi->fattr, sizeof(pi->fattr), pb, FALSE );
+        sprtf( "%s = Attribute (%d)?"MEOR, lpd, (pi->fattr & 0xffff) );
+        pb2 = (PBYTE)&pi->name[0];
+        off = (pb2 - pb);
+        mx = 16;
+        if(( max - off ) < mx ) mx = max - off;
+        while( off < max ) {
+            *lpd = 0;
+            GetHEXString( lpd, pb+off, mx, pb, FALSE );
+            sprtf( "%s = ???"MEOR, lpd );
+            off += mx; // bump to next
+            if(( max - off ) < mx )
+                mx = max - off;
+        }
+
+        // now try to output as item blocks
+        pb2 = (PBYTE)pi; // appear to have this first right
+        off = (pb2 - pb);
+        mx = pi->length;
+        if(( max - off ) < mx ) mx = max - off;
+        sprtf( "Output Item Sets ..."MEOR );
+        while( mx && ( off < max ) ) {
+            *lpd = 0;
+            GetHEXString( lpd, (PBYTE)pi, mx, pb, FALSE );
+            sprtf( "%s = %d???"MEOR, lpd, mx );
+            off += mx; // bump to next
+            pi = (PITEM) (pb + off);
+            mx = pi->length;
+            if(( max - off ) < mx ) {
+                mx = max - off;
+            }
+            if( mx && ( off < max ) ) {
+                sprtf( "Next lenght %d ..."MEOR, mx );
+            }
+        }
+        if( (mx == 0) && ( (off+2+sizeof(FILINF)) < max ) ) {
+            pb2 = (PBYTE)pi; // appear to have this first right
+            pb2 += 2;   // bump past the NULL WORD
+            off += 2;   // keep offset in stride
+            pfi = (PFILINF)pb2; // cast as File Info Structure
+/* ============
+// volume flag
+#define vf_bit0     1   // 0 Available on a local volume
+#define vf_bit1     2   // 1 Available on a network share
+typedef struct tagFILINF { // File location info
+DWORD   slen; // 0078 74 00 00 00 Structure length
+DWORD   foff; // 007C 1C 00 00 00 Offset past last item in structure
+DWORD   fflgs; // 0080 03 00 00 00 Flags Local volume Network volume
+DWORD   lv_off; // 0084 1C 00 00 00 Offset of local volume table
+DWORD   lp_off; // 0088 34 00 00 00 Offset of local path string
+DWORD   nv_off; // 008C 40 00 00 00 Offset of network volume table
+DWORD   fp_off; // 0090 5F 00 00 00 Offset of final path string
+} FILINF, * PFILINF;
+============ */
+            sprtf( "File location info ..."MEOR );
+            *lpd = 0;
+            GetHEXString( lpd, (PBYTE)pfi, sizeof(FILINF), pb, TRUE );
+            sprtf( "%s"MEOR, lpd );
+            sprtf( "Structure length %d ..."MEOR, pfi->slen );
+            sprtf( "Offset to end of Structure %u ..."MEOR, pfi->foff );
+            *lpd = 0;
+            Dword2Bits( lpd, pfi->fflgs );
+            sprtf( "Flags %u (%s)..."MEOR, pfi->fflgs, lpd );
+            sprtf( "Offset to volume %u ..."MEOR, pfi->lv_off );
+            sprtf( "Offset to path %u ..."MEOR, pfi->lp_off );
+            sprtf( "Offset to nw volume %u ..."MEOR, pfi->nv_off );
+            sprtf( "Offset to final path %u ..."MEOR, pfi->fp_off );
+            mx = pfi->slen;
+            if( mx == sizeof(FILINF) ) {
+                sprtf( "Size of File Location Structure is as expected.(%d)"MEOR, mx );
+            }
+            *lpd = 0;
+            // test offsets, from start of this structure ... pb2 at present
+/* =================
+The next long integer is the offset to the local volume table. (See below)
+( Random garbage when bit 0 is clear in volume flags)
+typedef struct tagLOCVOL { // Local volume table
+    DWORD   lv_len; // 0094 18 00 00 00 Length of local volume table
+    DWORD   dtype;  // 0098 03 00 00 00 Fixed disk
+    DWORD   snum;   // 009C D0 07 33 3A Volume serial number 3A33-07D0
+    DWORD   vl_off; // 00A0 10 00 00 00 Offset to volume label
+} LOCVOL, * PLOCVOL;
+   ================= */
+            plv = (PLOCVOL) (pb2 + pfi->lv_off);
+            if( !(pfi->fflgs & vf_bit0) )
+                sprtf( "Local Volume Table - Random garbage since bit 0 is clear!"MEOR );
+            else
+                sprtf( "Local Volume Table - Should be valid since bit 0 is set ..."MEOR );
+            *lpd = 0;
+            GetHEXString( lpd, (PBYTE) plv, sizeof(LOCVOL), pb, TRUE );
+            sprtf( "%s"MEOR, lpd );
+            sprtf( "Local Volume length %d ..."MEOR, plv->lv_len );
+            sprtf( "Fixed Disk Type %d ..."MEOR, plv->dtype );
+            *lpd = 0;
+            GetHEXString( lpd, (PBYTE) &plv->snum, sizeof(plv->snum), pb, FALSE );
+            sprtf( "Volume Serial [%s] ..."MEOR, lpd );
+            *lpd = 0;
+            sprtf( "Offset to Label %d ..."MEOR, plv->vl_off );
+            mx = pfi->slen;
+/* ==================
+The next long integer is the offset to the network volume table. (See below)
+( Random garbage when bit 1 is clear in volume flags)
+typedef struct tagNETVOL { // Network volume table
+    DWORD   nv_len;  // 00B8 1F 00 00 00 Length of network volume table
+    DWORD   nv_unk1; // 00BC 02 00 00 00 ???
+    DWORD   sn_off;  // 00C0 14 00 00 00 Offset of share name
+    DWORD   nv_unk2[2]; // 00C4 00 00 00 00 ???
+//                      // 00C8 00 00 02 00 ???
+// 00CC 5C 5C 4A 45 53 53 “\\JESSE\WD”,0 Share name
+//      45 5C 57 44 00
+// 00D7 44 65 73 6B 74 6F “Desktop\best_773.mid”,0
+//      70 5C 62 65 73 74 Final path name
+//      5F 37 37 33 2E 6D
+//      69 64 00
+}NETVOL, * PNETVOL;
+   ================== */
+            pnv = (PNETVOL) (pb2 + pfi->nv_off);
+            if( !(pfi->fflgs & vf_bit1) )
+                sprtf( "Network Volume Table - Random garbage, since bit 1 is clear!"MEOR );
+            else
+                sprtf( "Network Volume Table - Should be valid since bit 1 is set ..."MEOR );
+            *lpd = 0;
+            GetHEXString( lpd, (PBYTE) pnv, sizeof(NETVOL), pb, FALSE );
+            sprtf( "%s - NET"MEOR, lpd );
+            *lpd = 0;
+            // what next ... offset to path, and offset to final path
+            sprtf( "Offset to path %u ..."MEOR, pfi->lp_off );
+            pstg = (PSTG) (pb2 + pfi->lp_off);
+            mx = (pstg->s_len & 0xffff);
+            sprtf( "String length %d ..."MEOR, mx );
+            if( GetMaxPossible( lpdf, (PBYTE)pstg, mx, &outmx ) ) {
+                DWORD   req, blk;
+                PBYTE   pb3 = (PBYTE)pstg;
+                req = outmx;
+                blk = 16;
+                while(req) {
+                    *lpd = 0;
+                    if(req < 16)
+                        blk = req;
+                    GetHEXString( lpd, pb3, blk, pb, TRUE );
+                    sprtf( "%s"MEOR, lpd );
+                    req -= blk;
+                    pb3 += blk;
+                }
+            } else {
+                sprtf( "POINTER BEYOND FILE MAXIMUM!"MEOR );
+            }
+            *lpd = 0;
+            sprtf( "Offset to final path %u ... COMMENT?"MEOR, pfi->fp_off );
+            pstg = (PSTG) (pb2 + pfi->fp_off);
+            mx = (pstg->s_len & 0xffff);
+            sprtf( "String length %d ..."MEOR, mx );
+            if( GetMaxPossible( lpdf, (PBYTE)pstg, mx, &outmx ) ) {
+                DWORD   req, blk;
+                PBYTE   pb3 = (PBYTE)pstg;
+                req = outmx;
+                blk = 16;
+                while(req) {
+                    *lpd = 0;
+                    if(req < 16)
+                        blk = req;
+                    GetHEXString( lpd, pb3, blk, pb, TRUE );
+                    sprtf( "%s"MEOR, lpd );
+                    req -= blk;
+                    pb3 += blk;
+                }
+                pb3 = (PBYTE)pstg;
+                if( outmx > 4 ) {
+                    DWORD half = outmx / 2;
+                    PBYTE pab = LocalAlloc(LPTR, (outmx+2));
+                    CHKMEM(pab);
+                    if(*pb3 == 0) pb3++;
+                    for(mx = 0; mx < half; mx++) {
+                        DWORD   mx2 = mx * 2;
+                        if( ( pb3[mx2+1] == 0 ) &&
+                            ( ISSIGCHAR(pb3[mx2]) || (pb3[mx2] == ' ') ) ) {
+                                // an ok char
+                        } else {
+                            break;
+                        }
+                    }
+                    if(mx) {
+                        int suc = WideCharToMultiByte(
+                            CP_ACP, // UINT CodePage,
+                            0,      // DWORD dwFlags,
+                            (LPCWSTR)pb3,   //  LPCWSTR lpWideCharStr,
+                            mx,     // int cchWideChar, 
+                            pab,    // LPSTR lpMultiByteStr,
+                            outmx,  // int cbMultiByte,
+                            NULL,   // LPCSTR lpDefaultChar,    
+                            FALSE ); //  LPBOOL lpUsedDefaultChar
+                        if(suc) {
+                            sprtf("%s"MEOR, pab);
+                        }
+                        LocalFree(pab);
+                    }
+                }
+            } else {
+                sprtf( "POINTER BEYOND FILE MAXIMUM!"MEOR );
+            }
+        }        
+        return TRUE;
+    }
+
+
+    return FALSE;
+}
+
+// eof - DumpLNK.c

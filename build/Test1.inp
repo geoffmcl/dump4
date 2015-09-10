@@ -1,0 +1,113 @@
+; test input file
+
+-exe
+C:\GTools\ConApps\tests\build-test-sock\Release\test-sock.exe
+
+;# new features
+;# see : http://msdn.microsoft.com/en-us/windows/hardware/gg463119.aspx
+;-lib
+;# C:\Projects\lpng1237\libpng.lib
+;C:\Projects\3rdparty\lib\gio-2.0.lib
+;C:\FG\10\3rdparty\lib\zlibd.lib
+;-v9
+
+;# try an ELF file
+;-lib
+;C:\DTEMP\libGeographic.so.9.0.0
+
+;# new feature -lib:exports proj.lib
+;-lib:X
+;C:\Projects\simgear\msvc\lib\libsgmaterial_a.lib
+;C:\Projects\lpng1237\libpng.lib
+;-v2
+;-lib:exports 
+;C:\Projects\zlib-1.2.3\projects\msvc8\lib\zlibmt.lib
+
+;--exe:F
+;Release\Dump4.exe
+
+;C:\Documents and Settings\Geoff McLane\My Documents\DVD\HOMMAGE-02.sonic
+;C:\Documents and Settings\Geoff McLane\My Documents\DVD\DTEMP_03_OCT_2009.sonic
+;C:\Documents and Settings\Geoff McLane\My Documents\DVD\temp3.htm
+;-sonic
+
+;C:\DTEMP\test.avi
+;C:\DTEMP\fgc3.avi
+;C:\DTEMP\CAP6of8.AVI
+;C:\DTEMP\ruby.avi
+;C:\DTEMP\connect.avi
+;C:\DTEMP\internet.avi
+;C:\DTEMP\sample.avi
+;-avi
+
+;C:\DTEMP\20370718113047.m2ts
+;-m2ts
+
+;C:\GTools\ConApps\openal_test\win\5sec.wav
+;C:\GTools\ConApps\openal_test\jet.wav
+;C:\GTools\ConApps\openal_test\win\B_C_4_DN_2.wav
+;C:\GTools\ConApps\openal_test\win\Celeste_F_C4.wav
+;-wav
+;-v9
+
+;C:\Projects\tartemp\temp2\archive.p1.copy
+;C:\Projects\tar\Win32\tests\temp\archive
+;C:\DTEMP\Data-Section-0.004.tar
+;C:\DTEMP\temp1.tar
+;C:\Projects\tar\tests\temp\archive
+;C:\Projects\tar\Win32\tests\test2-v7.tar
+;C:\Projects\tar\Win32\tests\test2-pax.tar
+;-tar
+;-v9
+
+;C:\MDOS\libtidy.dll
+;C:\Projects\tidy\twperl\blib\arch\auto\HTML\Tidy\Tidy.DLL
+;-o-tempout.txt
+;-obj:BHILPRS
+;-obj:d-o-t-c-m-g-
+;-obj:imports
+;-v5
+
+;c:\FG\NGA\NGA_GlobalShoreline_cd23.shp
+;-shp
+
+;c:\Gtools\tools\BglView2\DFS\Europe2.dfs
+;-dfs
+;-v9
+
+;C:\Projects\gshhs\data_1.3\gshhs_i.b
+;-blocks:40:16x41476
+;C:\Projects\gshhs\gshhs_isl\gshhs_isle.shx
+;C:\Projects\gshhs\GMT\share\coast\binned_border_c.cdf
+;-v2
+;-o:p
+;-dws	; show as DWORD (and SWAP endians)
+
+;C:\GTools\tools\dv32\Inst\tempb001.bmp
+;C:\GTools\Tools\testap3\tempbmp.bmp
+;-bmp
+
+;-v9
+;-obj
+;c:\MDOS\DC4w.exe
+;c:\windows\twain.dll
+;Debug\dump4.obj
+
+;C:\FG\FGCOM\fgcom\build\fgcom\Release\testlib.lib
+;-lib
+;C:\FG\FGCOM\fgcom\build\testlib\Release\testlib.obj
+;-obj
+;-v9
+
+;C:\HOMEPAGE\HOM\test4\tmptation1.swf
+;-a	; 2
+
+;-bmp2:br=21:er=62:bc=4:ec=274
+;C:\Documents and Settings\Geoff McLane\My Documents\My Pictures\Color\rgb.bmp
+;-bmp2:br=4:er=30:bc=4:ec=274
+;C:\GTools\Tools\DV32\Inst\TEMPB049.BMP
+
+;-lnk
+;C:\Documents and Settings\All Users\Start Menu\WinZip.lnk
+
+; eof

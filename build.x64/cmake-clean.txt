@@ -1,0 +1,3 @@
+bldlog-1.txt
+config.h
+install_manifest.txt

@@ -1,0 +1,42 @@
+/*
+    config_cmake.h.in -> config.h
+    Do NOT modify config.h
+    Only modify config_cmake.h.in and run cmake again
+    to generate config.h
+ */
+
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
+
+#cmakedefine HAVE_STDINT_H 1
+
+#ifdef HAVE_STDINT_H
+ #include <stdint.h> // should be available in windows
+#else // no stdint.h
+ // stdint.h replacements
+ typedef signed char      int8_t;
+ typedef signed short     int16_t;
+ typedef signed int       int32_t;
+ typedef unsigned char    uint8_t;
+ typedef unsigned short   uint16_t;
+ typedef unsigned int     uint32_t;
+ #ifdef _MSC_VER // add ssize_t for windows
+  typedef signed __int64   int64_t;
+  typedef unsigned __int64 uint64_t;
+  #ifdef WIN64
+   typedef signed __int64   ssize_t;
+  #else
+   typedef int ssize_t;
+  #endif
+ #else // !_MSC_VER
+  typedef signed long long int64_t;
+  typedef unsigned long long uint64_t;
+ #endif // _MSC_VER y/n
+#endif // HAVE_STDINT_H y/n
+
+#ifdef DUMP4_BEYE_ELF
+#include "beye_defs.h"
+#endif
+
+#endif // _CONFIG_H_
+// eof 
