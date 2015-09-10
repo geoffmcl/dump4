@@ -1,7 +1,7 @@
 
 // Dump4.c
 
-// A 32-Bit CONSOLE Application - main action is ProcessFile( LPTSTR pFileName )
+// A CONSOLE Application - main action is ProcessFile( LPTSTR pFileName )
 // If the name is successfully openned for READING, then
 // void	DoFile( char * fn, HANDLE hf ) will be CALLED to action it.
 // Here it will be mapped by CreateFileMapping() and then

@@ -7,19 +7,14 @@
 // or group of files.
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef WIN32
 #include <windows.h>
+#include <direct.h>
+#endif
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <direct.h>
 #include <errno.h>
-//#include <sys/types.h>
-//#include <sys/stat.h>           //      Win 95, Win NT, Win32s,
-//#include <string.h>
-//#include <conio.h>
-//#include <io.h>
-//#include <fcntl.h>
-//#include <errno.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -87,12 +82,12 @@ extern	HANDLE	grmOpenFile( LPTSTR fn, HANDLE * ph, UINT uFlag );
 extern	DWORD	   grmReadFile( HANDLE hf, BYTE * lpb, DWORD dwMax );
 extern   HANDLE	grmCreateFile( LPTSTR fn );
 
-extern  int   _cdecl sprtf( LPTSTR lpf, ... );
+extern  int   MCDECL sprtf( LPTSTR lpf, ... );
 extern int vsprtf( PTSTR ps, va_list arglist );
 
 extern   void	prt( LPTSTR lps );
 
-extern   void  _cdecl chkme(LPTSTR lpf, ...);
+extern   void  MCDECL chkme(LPTSTR lpf, ...);
 
 extern   void	MyExit0( void );
 extern   void	MyExit1( void );

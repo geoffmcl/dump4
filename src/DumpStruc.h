@@ -1,8 +1,201 @@
 // DumpStruc.h
 #ifndef _DumpStruc_H_
 #define _DumpStruc_H_
-#include <sys\types.h>
-#include <sys\stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#ifdef WIN32
+// ======================================
+#define MCDECL _cdecl
+// ======================================
+#else
+// ======================================
+// some unix glue
+#include <string.h> // for strcat, ...
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
+#define MCDECL
+#define TRUE 1
+#define FALSE 0
+
+typedef unsigned char BYTE;
+typedef BYTE *PBYTE;
+
+typedef void *HANDLE;
+typedef void *HPALETTE;
+typedef void *HBITMAP;
+typedef void *HFONT;
+
+typedef void *PVOID;
+typedef void *LPVOID;
+typedef unsigned int DWORD;
+typedef short SHORT;
+typedef unsigned short WORD;
+typedef char *LPTSTR;
+typedef char *PTSTR;
+typedef char *LPSTR;
+typedef char *PSTR;
+typedef char CHAR;
+typedef char TCHAR;
+typedef int BOOL;
+typedef int INT;
+typedef unsigned int UINT;
+typedef void VOID;
+typedef long LONG;
+#define FAR
+#define INVALID_HANDLE_VALUE (PVOID)-1
+
+typedef struct _ULARGE_INTEGER {
+    DWORD LowPart;
+    DWORD HighPart;
+} ULARGE_INTEGER;
+
+typedef struct _LIST_ENTRY {
+    struct _LIST_ENTRY *Flink;
+    struct _LIST_ENTRY *Blink;
+} LIST_ENTRY, *PLIST_ENTRY;
+
+typedef struct _IMAGE_SYMBOL {
+    union {
+        BYTE ShortName[8];
+        struct {
+            DWORD Short;
+            DWORD Long;
+        } Name;
+        DWORD LongName[2];
+    } N;
+    DWORD Value;
+    SHORT SectionNumber;
+    WORD  Type;
+    BYTE  StorageClass;
+    BYTE  NumberOfAuxSymbols;
+ } IMAGE_SYMBOL, *PIMAGE_SYMBOL;
+ 
+ #define IMAGE_SIZEOF_SYMBOL 18
+ 
+ #define IMAGE_SIZEOF_SHORT_NAME              8
+
+typedef struct _IMAGE_SECTION_HEADER {
+    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME];
+    union {
+            DWORD   PhysicalAddress;
+            DWORD   VirtualSize;
+    } Misc;
+    DWORD   VirtualAddress;
+    DWORD   SizeOfRawData;
+    DWORD   PointerToRawData;
+    DWORD   PointerToRelocations;
+    DWORD   PointerToLinenumbers;
+    WORD    NumberOfRelocations;
+    WORD    NumberOfLinenumbers;
+    DWORD   Characteristics;
+} IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;
+
+typedef struct tagRGBQUAD {
+    BYTE rgbBlue;
+    BYTE rgbGreen;
+    BYTE rgbRed;
+    BYTE rgbReserved;
+} RGBQUAD;
+
+typedef struct tagBITMAPFILEHEADER {
+    WORD bfType;
+    DWORD bfSize;
+    WORD bfReserved1;
+    WORD bfReserved2;
+    DWORD bfOffBits;
+} BITMAPFILEHEADER, *PBITMAPFILEHEADER;
+
+typedef long            FXPT2DOT30, FAR *LPFXPT2DOT30;
+
+/* ICM Color Definitions */
+// The following two structures are used for defining RGB's in terms of CIEXYZ.
+
+typedef struct tagCIEXYZ
+{
+        FXPT2DOT30 ciexyzX;
+        FXPT2DOT30 ciexyzY;
+        FXPT2DOT30 ciexyzZ;
+} CIEXYZ;
+typedef CIEXYZ  FAR *LPCIEXYZ;
+
+typedef struct tagICEXYZTRIPLE
+{
+        CIEXYZ  ciexyzRed;
+        CIEXYZ  ciexyzGreen;
+        CIEXYZ  ciexyzBlue;
+} CIEXYZTRIPLE;
+typedef CIEXYZTRIPLE    FAR *LPCIEXYZTRIPLE;
+
+typedef struct {
+        DWORD        bV5Size;
+        LONG         bV5Width;
+        LONG         bV5Height;
+        WORD         bV5Planes;
+        WORD         bV5BitCount;
+        DWORD        bV5Compression;
+        DWORD        bV5SizeImage;
+        LONG         bV5XPelsPerMeter;
+        LONG         bV5YPelsPerMeter;
+        DWORD        bV5ClrUsed;
+        DWORD        bV5ClrImportant;
+        DWORD        bV5RedMask;
+        DWORD        bV5GreenMask;
+        DWORD        bV5BlueMask;
+        DWORD        bV5AlphaMask;
+        DWORD        bV5CSType;
+        CIEXYZTRIPLE bV5Endpoints;
+        DWORD        bV5GammaRed;
+        DWORD        bV5GammaGreen;
+        DWORD        bV5GammaBlue;
+        DWORD        bV5Intent;
+        DWORD        bV5ProfileData;
+        DWORD        bV5ProfileSize;
+        DWORD        bV5Reserved;
+} BITMAPV5HEADER, *LPBITMAPV5HEADER, *PBITMAPV5HEADER;
+
+typedef struct tagBITMAPINFOHEADER{
+        DWORD      biSize;
+        LONG       biWidth;
+        LONG       biHeight;
+        WORD       biPlanes;
+        WORD       biBitCount;
+        DWORD      biCompression;
+        DWORD      biSizeImage;
+        LONG       biXPelsPerMeter;
+        LONG       biYPelsPerMeter;
+        DWORD      biClrUsed;
+        DWORD      biClrImportant;
+} BITMAPINFOHEADER, FAR *LPBITMAPINFOHEADER, *PBITMAPINFOHEADER;
+
+
+typedef struct _FILETIME {
+    DWORD dwLowDateTime;
+    DWORD dwHighDateTime;
+} FILETIME, *PFILETIME, *LPFILETIME;
+
+
+typedef struct _WIN32_FIND_DATA {
+    DWORD dwFileAttributes;
+    FILETIME ftCreationTime;
+    FILETIME ftLastAccessTime;
+    FILETIME ftLastWriteTime;
+    DWORD nFileSizeHigh;
+    DWORD nFileSizeLow;
+    DWORD dwReserved0;
+    DWORD dwReserved1;
+    CHAR   cFileName[ MAX_PATH ];
+    CHAR   cAlternateFileName[ 14 ];
+#ifdef _MAC
+    DWORD dwFileType;
+    DWORD dwCreatorType;
+    WORD  wFinderFlags;
+#endif
+} WIN32_FIND_DATA, *PWIN32_FIND_DATA, *LPWIN32_FIND_DATA;
+
+// ======================================
+#endif
 
 typedef BYTE (*GETBYTE)(void *);
 
