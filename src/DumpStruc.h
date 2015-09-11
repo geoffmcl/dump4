@@ -53,6 +53,8 @@ typedef CHAR *PINT8;
 typedef char TCHAR;
 typedef unsigned char UCHAR;
 typedef UCHAR *PUINT8;
+typedef unsigned long ULONG_PTR;
+typedef ULONG_PTR *PULONG_PTR;
 
 typedef int BOOL;
 typedef BOOL *PBOOL;
