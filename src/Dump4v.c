@@ -235,7 +235,7 @@ int	ChkVosTab( LPDFSTR lpdf )
          prt(lptmp);
       }
 
-      dFREE(lpv);
+      dMFREE(lpv);
    }
 
    return iRet;

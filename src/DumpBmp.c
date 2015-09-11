@@ -1907,7 +1907,7 @@ BOOL  DumpPPM( LPDFSTR lpdf )
 #else
     fclose((FILE *)fh);
 #endif
-   dFREE(pln);
+   dMFREE(pln);
 
 
    if( VERB )
@@ -1921,7 +1921,7 @@ Got_Err:
 
    dww = GetLastError();
    if(pln)
-      dFREE(pln);
+      dMFREE(pln);
    if(VFH(fh))
       CloseHandle(fh);
 
