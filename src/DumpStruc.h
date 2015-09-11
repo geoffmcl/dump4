@@ -404,6 +404,34 @@ typedef struct _IMAGE_DEBUG_MISC {
     BYTE        Data[ 1 ];              // Actual data
 } IMAGE_DEBUG_MISC, *PIMAGE_DEBUG_MISC;
 
+//
+// Debug Format
+//
+
+typedef struct _IMAGE_DEBUG_DIRECTORY {
+    DWORD   Characteristics;
+    DWORD   TimeDateStamp;
+    WORD    MajorVersion;
+    WORD    MinorVersion;
+    DWORD   Type;
+    DWORD   SizeOfData;
+    DWORD   AddressOfRawData;
+    DWORD   PointerToRawData;
+} IMAGE_DEBUG_DIRECTORY, *PIMAGE_DEBUG_DIRECTORY;
+
+#define IMAGE_DEBUG_TYPE_UNKNOWN          0
+#define IMAGE_DEBUG_TYPE_COFF             1
+#define IMAGE_DEBUG_TYPE_CODEVIEW         2
+#define IMAGE_DEBUG_TYPE_FPO              3
+#define IMAGE_DEBUG_TYPE_MISC             4
+#define IMAGE_DEBUG_TYPE_EXCEPTION        5
+#define IMAGE_DEBUG_TYPE_FIXUP            6
+#define IMAGE_DEBUG_TYPE_OMAP_TO_SRC      7
+#define IMAGE_DEBUG_TYPE_OMAP_FROM_SRC    8
+#define IMAGE_DEBUG_TYPE_BORLAND          9
+#define IMAGE_DEBUG_TYPE_RESERVED10       10
+#define IMAGE_DEBUG_TYPE_CLSID            11
+
 typedef struct _IMAGE_COFF_SYMBOLS_HEADER {
     DWORD   NumberOfSymbols;
     DWORD   LvaToFirstSymbol;
