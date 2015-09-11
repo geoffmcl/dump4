@@ -579,6 +579,13 @@ typedef IMAGE_NT_HEADERS32                  IMAGE_NT_HEADERS;
 typedef PIMAGE_NT_HEADERS32                 PIMAGE_NT_HEADERS;
 #endif
 
+//
+// Calculate the byte offset of a field in a structure of type type.
+//
+
+#define FIELD_OFFSET(type, field)    ((LONG)(LONG_PTR)&(((type *)0)->field))
+
+
 // IMAGE_FIRST_SECTION doesn't need 32/64 versions since the file header is the same either way.
 
 #define IMAGE_FIRST_SECTION( ntheader ) ((PIMAGE_SECTION_HEADER)        \
