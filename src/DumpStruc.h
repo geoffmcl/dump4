@@ -413,6 +413,33 @@ typedef struct _IMAGE_COFF_SYMBOLS_HEADER {
 #define IMAGE_SIZEOF_SECTION_HEADER          40
 
 //
+// Directory format.
+//
+
+typedef struct _IMAGE_DATA_DIRECTORY {
+    DWORD   VirtualAddress;
+    DWORD   Size;
+} IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
+
+#define IMAGE_NUMBEROF_DIRECTORY_ENTRIES    16
+
+//
+// File header format.
+//
+
+typedef struct _IMAGE_FILE_HEADER {
+    WORD    Machine;
+    WORD    NumberOfSections;
+    DWORD   TimeDateStamp;
+    DWORD   PointerToSymbolTable;
+    DWORD   NumberOfSymbols;
+    WORD    SizeOfOptionalHeader;
+    WORD    Characteristics;
+} IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
+
+#define IMAGE_SIZEOF_FILE_HEADER             20
+
+//
 // Optional header format.
 //
 
