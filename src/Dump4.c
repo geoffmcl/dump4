@@ -200,6 +200,9 @@ void	DoOutput( DWORD fOff )
 //#define g_ReqAccess     FILE_MAP_READ
 
 //DFSTR gsDoFil;
+
+#ifdef WIN32
+////////////////////////////////////////////////////////////////////
 void	DoFile( char * fn, HANDLE hf )
 {
 	//int			rd;
@@ -412,7 +415,17 @@ void	DoFile( char * fn, HANDLE hf )
      LocalFree(pb);
 
 }
-
+////////////////////////////////////////////////////////////////////
+#else // !#ifdef WIN32
+////////////////////////////////////////////////////////////////////
+void	DoFile( char * fn, HANDLE hf )
+{
+    LPTSTR	   lptmp = &gszTmpOut[0];
+	sprintf( lptmp, "ERROR: This service has to be ported to unix [%s]!"MEOR, fn );
+	prt( lptmp );
+}
+////////////////////////////////////////////////////////////////////
+#endif // #ifdef WIN32 y/n
 
 int	GetDir( LPSTR lpDest, LPSTR lpSrc )
 {
