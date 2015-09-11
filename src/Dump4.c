@@ -619,7 +619,7 @@ Try_WILD:
 				}
 				//if( (fd.dwFileAttributes == FILE_ATTRIBUTE_NORMAL) ||
 				//	(fd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) )
-				while( FindNextFile( hFind, &fd ) );
+				// while( FindNextFile( hFind, &fd ) );
             do
             {
 					if( !(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
@@ -675,6 +675,7 @@ Try_WILD:
 HANDLE	grmOpenFile( LPTSTR fn, HANDLE * ph, UINT uFlag )
 {
 	HANDLE	h = 0;
+#ifdef WIN323
 	DWORD	dwa = GENERIC_READ;
 	if( uFlag )
 		dwa |= GENERIC_WRITE;
@@ -690,12 +691,26 @@ HANDLE	grmOpenFile( LPTSTR fn, HANDLE * ph, UINT uFlag )
 			NULL );	// handle to file with attributes to copy
       *ph = h;
 	}
+#else
+    FILE *fp = 0;
+    char *mode = "r";
+    if (uFlag)
+        mode = "w";
+    if ((fn) && (*fn)) {
+        fp = fopen(fn,mode);
+        if (fp) {
+            h = (HANDLE)fp;
+            *ph = h;
+        }
+    }
+#endif
 	return h;
 }
 
 HANDLE	grmCreateFile( LPTSTR fn )
 {
 	HANDLE	h = 0;
+#ifdef WIN32
 	DWORD	dwa = (GENERIC_READ|GENERIC_WRITE);
 	if( ( fn  ) &&
 		( *fn ) )
@@ -708,6 +723,13 @@ HANDLE	grmCreateFile( LPTSTR fn )
 			FILE_ATTRIBUTE_NORMAL,	// file attributes
 			NULL );	// handle to file with attributes to copy
 	}
+#else
+	if( ( fn  ) &&
+		( *fn ) )
+	{
+        h = (HANDLE)fopen(fn,"w");	
+	}
+#endif
 	return h;
 }
  
@@ -720,11 +742,15 @@ DWORD	grmReadFile( HANDLE hf, BYTE * lpb, DWORD dwMax )
 		( lpb              ) &&
 		( dwMax            ) )
 	{
+#ifdef WIN32	
 		ReadFile( hf,	// handle of file to read
 			lpb,		// address of buffer that receives data
 			dwMax,		// number of bytes to read
 			&dwr,		// address of number of bytes read
 			NULL );		// address of structure for data
+#else
+        dwr = fread(lpb,1,dwMax,hf);
+#endif			
 	}
 	return dwr;
 }

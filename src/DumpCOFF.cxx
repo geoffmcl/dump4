@@ -79,8 +79,8 @@ COFFSymbol::GetTypeName()
 SHORT
 COFFSymbol::GetSectionNumber(void)
 {
+#ifdef WIN32
    SHORT num = 0;
-   //return m_pSymbolData ? m_pSymbolData->SectionNumber : 0;
    if (m_pSymbolData) {
 
       __try
@@ -94,6 +94,9 @@ COFFSymbol::GetSectionNumber(void)
    }
 
    return num;
+#else
+    return m_pSymbolData ? m_pSymbolData->SectionNumber : 0;
+#endif
 }
 
 
@@ -162,6 +165,7 @@ char * SzStorageClass1[] = {
 char * SzStorageClass2[] = {
 "BLOCK","FUNCTION","END_OF_STRUCT","FILE","SECTION","WEAK_EXTERNAL"
 };
+
 
 PSTR
 COFFSymbol::GetStorageClassName()

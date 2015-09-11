@@ -2,6 +2,8 @@
 
 #include "Dump4.h"
 #include "DumpArch.h"
+#ifdef WIN32
+/////////////////////////////////////////////////////////////////////
 #include <Dbghelp.h>    // for UnDecorateSymbolName()
 
 #define DBGPRT  prt
@@ -364,4 +366,8 @@ int is_archive_format(unsigned char *base, int size, char * name)
     }
     return iret;
 }
+
+/////////////////////////////////////////////////////////////////////
+#endif // #ifdef WIN32
+
 

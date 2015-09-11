@@ -1836,10 +1836,10 @@ BOOL  DumpPPM( LPDFSTR lpdf )
        return FALSE;
 
    dwwp = WIDTHBYTES( (dww * 3 * 8) );
-   pln = LocalAlloc( LPTR, (dwwp + 16) );
+   pln = (PBYTE)dMALLOC( (dwwp + 16) );
    if( !pln )
       goto Got_Err;
-
+#ifdef WIN32
    fh = CreateFile( &g_szBmpNm[0],   // file name
       GENERIC_READ | GENERIC_WRITE,                      // access mode
       0,                          // share mode
@@ -1847,6 +1847,9 @@ BOOL  DumpPPM( LPDFSTR lpdf )
       CREATE_ALWAYS,                // how to create
       FILE_ATTRIBUTE_NORMAL,                 // file attributes
       0 );        // handle to template file
+#else
+    fh = (HANDLE)fopen(&g_szBmpNm[0],"wb");
+#endif      
    if( !VFH(fh) )
       goto Got_Err;
 
@@ -1899,10 +1902,12 @@ BOOL  DumpPPM( LPDFSTR lpdf )
          goto Got_Err;
       dwk = 0;       // restart line buffer
    }
-
+#ifdef WIN32
    CloseHandle(fh);
-
-   LocalFree(pln);
+#else
+    fclose((FILE *)fh);
+#endif
+   dFREE(pln);
 
 
    if( VERB )
@@ -1916,7 +1921,7 @@ Got_Err:
 
    dww = GetLastError();
    if(pln)
-      LocalFree(pln);
+      dFREE(pln);
    if(VFH(fh))
       CloseHandle(fh);
 

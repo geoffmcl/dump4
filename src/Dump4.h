@@ -21,10 +21,14 @@ extern "C" {
 
 // local includes
 #include "DumpStruc.h"
-//#define	dMALLOC(a)	malloc(a)
-//#define  dMFREE(a)   free(a)
+#ifdef WIN32
 #define	dMALLOC(a)	LocalAlloc(LPTR,a)
 #define  dMFREE(a)   LocalFree(a)
+#else
+#include <malloc.h>
+#define	dMALLOC(a)	malloc(a)
+#define  dMFREE(a)   free(a)
+#endif
 #define CHKMEM(a)   if( a == NULL ) { sprtf("ERROR: MEMORY FAILED!"MEOR); wait_keyin(); pgm_exit(-1); }
 extern void pgm_exit(int);
 

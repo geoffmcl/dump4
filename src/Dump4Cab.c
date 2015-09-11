@@ -9,9 +9,12 @@
  *	September, 2000	-	Geoff R. McLane
  *
  */
+#ifdef WIN32
+///////////////////////////////////////////////////////////////////
+
 #ifdef   DUMP4
-#include "dump4.h"
-#include "dump4fdi.h"
+#include "Dump4.h"
+#include "Dump4fdi.h"
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -2223,5 +2226,9 @@ LPTSTR   GetDWStg2( DWORD dwi )
    return( GetI64Stg2(li) );
 }
 
+///////////////////////////////////////////////////////////
+#endif
+
 // eof - dircab.c
 // eof - Dump4Cab.c
+

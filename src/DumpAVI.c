@@ -1,5 +1,7 @@
 // DumpAVI.c
 
+#ifdef WIN32
+//////////////////////////////////////////////////////////////////////////////////////
 #pragma warning(disable: 4995) // 'strcat': name was marked as #pragma deprecated
 #include <Dshow.h>
 #ifndef FOURCC
@@ -315,8 +317,8 @@ Another new feature was the inclusion of an "index" that allowed
 data stored in the file to be easily obtained. this meant that it 
 was more efficient and provided smother playback of AVI files.
 
-Base Index Form ‘indx’
-Thus the actual implementation is based on a base index form ‘indx’:
+Base Index Form indx
+Thus the actual implementation is based on a base index form indx:
 struct _aviindex_chunk {
     FOURCC fcc;
     DWORD cb;
@@ -343,13 +345,13 @@ struct quadword { long w[4]; };
 #define QUADWORD struct quadword
 #endif
 typedef struct _avistdindex_chunk {
-    FOURCC fcc; // ’ix##’
+    FOURCC fcc; // ix##
     DWORD cb;
     WORD wLongsPerEntry; // must be sizeof(aIndex[0])/sizeof(DWORD)
     BYTE bIndexSubType; // must be 0
     BYTE bIndexType; // must be AVI_INDEX_OF_CHUNKS
     DWORD nEntriesInUse; //
-    DWORD dwChunkId; // ’##dc’ or ’##db’ or ’##wb’ etc..
+    DWORD dwChunkId; // ##dc or ##db or ##wb etc..
     QUADWORD qwBaseOffset; // all dwOffsets in aIndex array are
                             // relative to this
     DWORD dwReserved3; // must be 0
@@ -368,14 +370,14 @@ the locations of each field in the frame.
 // already defined
 #else
 typedef struct _avifieldindex_chunk {
-    FOURCC fcc; // ’ix##’
+    FOURCC fcc; // ix##
     DWORD cb;
     WORD wLongsPerEntry; // must be 3 (size of each entry in
                          // aIndex array)
     BYTE bIndexSubType; // AVI_INDEX_2FIELD
     BYTE bIndexType; // AVI_INDEX_OF_CHUNKS
     DWORD nEntriesInUse; //
-    DWORD dwChunkId; // ’##dc’ or ’##db’
+    DWORD dwChunkId; // ##dc or ##db
     QUADWORD qwBaseOffset; // offsets in aIndex array are relative to this
     DWORD dwReserved3; // must be 0
     struct _avifieldindex_entry {
@@ -389,20 +391,20 @@ typedef struct _avifieldindex_chunk {
 /* ======================================================
 AVI Super Index Chunk
 The Super Index Chunk is an index of indexes and is always found 
-in the ‘indx’ chunk of an AVI file. It is defined as follows:
+in the indx chunk of an AVI file. It is defined as follows:
    ====================================================== */
 #ifdef AVIRIFF_H
 // already defined
 #else
 typedef struct _avisuperindex_chunk {
-    FOURCC fcc; // ’ix##’
+    FOURCC fcc; // ix##
     DWORD cb; // size of this structure
     WORD wLongsPerEntry; // must be 4 (size of each entry in aIndex array)
     BYTE bIndexSubType; // must be 0 or AVI_INDEX_2FIELD
     BYTE bIndexType; // must be AVI_INDEX_OF_INDEXES
     DWORD nEntriesInUse; // number of entries in aIndex array that
                             // are used
-    DWORD dwChunkId; // ’##dc’ or ’##db’ or ’##wb’, etc
+    DWORD dwChunkId; // ##dc or ##db or ##wb, etc
     DWORD dwReserved[3]; // must be 0
     struct _avisuperindex_entry {
         QUADWORD qwOffset; // absolute file offset, offset 0 is
@@ -414,18 +416,18 @@ typedef struct _avisuperindex_chunk {
 #endif
 /* ==================================================
 Index Locations in RIFF File
-Unlike the ‘idx1’ chunk, a single index is stored per 
-stream in the AVI file. An ‘indx’ chunk 
-follows the ‘strf’ chunk in the LIST ‘strl’ chunk of 
-an AVI header. This ‘indx’ chunk may
+Unlike the idx1 chunk, a single index is stored per 
+stream in the AVI file. An indx chunk 
+follows the strf chunk in the LIST strl chunk of 
+an AVI header. This indx chunk may
 either be an index of indexes (super index), or 
 may be an index to the chunks directly. In the
 case of video, this means that the chunk is 
 either a AVISUPERINDEX or an AVIFIELDINDEX/AVISTDINDEX.
-If the ‘indx’ chunk is a standard or field index 
+If the indx chunk is a standard or field index 
 chunk (i.e., not an index of indexes) then the
 stream has only one index chunk and there is none in 
-the ‘movi’ data.
+the movi data.
 
 AVIPALCHANGE Structure
 
@@ -2126,13 +2128,13 @@ int show_indx1(PBYTE pb, PBYTE pbegin, PBYTE pend, PBYTE pmovi)
 //              01dc size -> data2
 //            }
 /* ---------------
-    FOURCC fcc; // ’ix##’
+    FOURCC fcc; // ix##
     DWORD cb;
     WORD wLongsPerEntry; // must be sizeof(aIndex[0])/sizeof(DWORD)
     BYTE bIndexSubType; // must be 0
     BYTE bIndexType; // must be AVI_INDEX_OF_CHUNKS
     DWORD nEntriesInUse; //
-    DWORD dwChunkId; // ’##dc’ or ’##db’ or ’##wb’ etc..
+    DWORD dwChunkId; // ##dc or ##db or ##wb etc..
     QUADWORD qwBaseOffset; // all dwOffsets in aIndex array are
                             // relative to this
     DWORD dwReserved3; // must be 0
@@ -2646,5 +2648,9 @@ BOOL  DumpAVI( LPDFSTR lpdf )
 }
 
 #endif // ADD_AVI_FILE
+
+#endif // WIN32
+//////////////////////////////////////////////////////////////////////////////////////
+
 
 // eof - DumpAVI.c

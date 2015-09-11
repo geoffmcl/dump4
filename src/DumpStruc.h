@@ -18,6 +18,8 @@
 #define MCDECL
 #define TRUE 1
 #define FALSE 0
+#define OF_READ 0
+#define FILE_ATTRIBUTE_DIRECTORY 0x010
 
 typedef unsigned char BYTE;
 typedef BYTE *PBYTE;
@@ -26,10 +28,13 @@ typedef void *HANDLE;
 typedef void *HPALETTE;
 typedef void *HBITMAP;
 typedef void *HFONT;
+typedef void *HFILE;
 
 typedef void *PVOID;
 typedef void *LPVOID;
 typedef unsigned int DWORD;
+typedef DWORD *PDWORD;
+typedef DWORD *LPDWORD;
 typedef short SHORT;
 typedef unsigned short WORD;
 typedef char *LPTSTR;
@@ -40,10 +45,12 @@ typedef char CHAR;
 typedef char TCHAR;
 typedef int BOOL;
 typedef int INT;
+typedef INT *PINT;
 typedef unsigned int UINT;
 typedef void VOID;
 typedef long LONG;
 #define FAR
+#define HUGE
 #define INVALID_HANDLE_VALUE (PVOID)-1
 
 typedef struct _ULARGE_INTEGER {
@@ -97,7 +104,7 @@ typedef struct tagRGBQUAD {
     BYTE rgbGreen;
     BYTE rgbRed;
     BYTE rgbReserved;
-} RGBQUAD;
+} RGBQUAD, *LPRGBQUAD;
 
 typedef struct tagBITMAPFILEHEADER {
     WORD bfType;
@@ -154,6 +161,14 @@ typedef struct {
         DWORD        bV5ProfileSize;
         DWORD        bV5Reserved;
 } BITMAPV5HEADER, *LPBITMAPV5HEADER, *PBITMAPV5HEADER;
+
+/* constants for the biCompression field */
+#define BI_RGB        0L
+#define BI_RLE8       1L
+#define BI_RLE4       2L
+#define BI_BITFIELDS  3L
+#define BI_JPEG       4L
+#define BI_PNG        5L
 
 typedef struct tagBITMAPINFOHEADER{
         DWORD      biSize;
@@ -215,6 +230,141 @@ typedef struct _IMAGE_DOS_HEADER {      // DOS .EXE header
     WORD   e_res2[10];                  // Reserved words
     LONG   e_lfanew;                    // File address of new exe header
   } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
+
+typedef struct _SYSTEMTIME {
+    WORD wYear;
+    WORD wMonth;
+    WORD wDayOfWeek;
+    WORD wDay;
+    WORD wHour;
+    WORD wMinute;
+    WORD wSecond;
+    WORD wMilliseconds;
+} SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
+
+#define UNALIGNED
+
+#define IMAGE_SYM_DTYPE_NULL                0       // no derived type.
+#define IMAGE_SYM_DTYPE_POINTER             1       // pointer.
+#define IMAGE_SYM_DTYPE_FUNCTION            2       // function.
+#define IMAGE_SYM_DTYPE_ARRAY               3       // array.
+
+#define IMAGE_SYM_CLASS_EXTERNAL            0x0002
+#define IMAGE_SYM_CLASS_STATIC              0x0003
+
+#define IMAGE_SYM_CLASS_BIT_FIELD           0x0012
+#define IMAGE_SYM_CLASS_BLOCK               0x0064
+#define IMAGE_SYM_CLASS_FILE                0x0067
+#define IMAGE_SYM_CLASS_WEAK_EXTERNAL       0x0069
+
+typedef struct _IMAGE_SYMBOL_EX {
+    union {
+        BYTE     ShortName[8];
+        struct {
+            DWORD   Short;     // if 0, use LongName
+            DWORD   Long;      // offset into string table
+        } Name;
+        DWORD   LongName[2];    // PBYTE  [2]
+    } N;
+    DWORD   Value;
+    LONG    SectionNumber;
+    WORD    Type;
+    BYTE    StorageClass;
+    BYTE    NumberOfAuxSymbols;
+} IMAGE_SYMBOL_EX;
+typedef IMAGE_SYMBOL_EX UNALIGNED *PIMAGE_SYMBOL_EX;
+
+typedef struct IMAGE_AUX_SYMBOL_TOKEN_DEF {
+    BYTE  bAuxType;                  // IMAGE_AUX_SYMBOL_TYPE
+    BYTE  bReserved;                 // Must be 0
+    DWORD SymbolTableIndex;
+    BYTE  rgbReserved[12];           // Must be 0
+} IMAGE_AUX_SYMBOL_TOKEN_DEF;
+
+typedef IMAGE_AUX_SYMBOL_TOKEN_DEF UNALIGNED *PIMAGE_AUX_SYMBOL_TOKEN_DEF;
+
+// #include <poppack.h>
+
+//
+// Auxiliary entry format.
+//
+
+typedef union _IMAGE_AUX_SYMBOL {
+    struct {
+        DWORD    TagIndex;                      // struct, union, or enum tag index
+        union {
+            struct {
+                WORD    Linenumber;             // declaration line number
+                WORD    Size;                   // size of struct, union, or enum
+            } LnSz;
+           DWORD    TotalSize;
+        } Misc;
+        union {
+            struct {                            // if ISFCN, tag, or .bb
+                DWORD    PointerToLinenumber;
+                DWORD    PointerToNextFunction;
+            } Function;
+            struct {                            // if ISARY, up to 4 dimen.
+                WORD     Dimension[4];
+            } Array;
+        } FcnAry;
+        WORD    TvIndex;                        // tv index
+    } Sym;
+    struct {
+        BYTE    Name[IMAGE_SIZEOF_SYMBOL];
+    } File;
+    struct {
+        DWORD   Length;                         // section length
+        WORD    NumberOfRelocations;            // number of relocation entries
+        WORD    NumberOfLinenumbers;            // number of line numbers
+        DWORD   CheckSum;                       // checksum for communal
+        SHORT   Number;                         // section number to associate with
+        BYTE    Selection;                      // communal selection type
+	BYTE    bReserved;
+	SHORT   HighNumber;                     // high bits of the section number
+    } Section;
+    IMAGE_AUX_SYMBOL_TOKEN_DEF TokenDef;   
+    struct {
+        DWORD crc;
+        BYTE  rgbReserved[14];
+    } CRC;
+} IMAGE_AUX_SYMBOL;
+typedef IMAGE_AUX_SYMBOL UNALIGNED *PIMAGE_AUX_SYMBOL;
+
+typedef union _IMAGE_AUX_SYMBOL_EX {
+    struct {
+        DWORD   WeakDefaultSymIndex;                       // the weak extern default symbol index
+        DWORD   WeakSearchType;
+        BYTE    rgbReserved[12];
+    } Sym;
+    struct {
+        BYTE    Name[sizeof(IMAGE_SYMBOL_EX)];
+    } File;
+    struct {
+        DWORD   Length;                         // section length
+        WORD    NumberOfRelocations;            // number of relocation entries
+        WORD    NumberOfLinenumbers;            // number of line numbers
+        DWORD   CheckSum;                       // checksum for communal
+        SHORT   Number;                         // section number to associate with
+        BYTE    Selection;                      // communal selection type
+        BYTE    bReserved;
+        SHORT   HighNumber;                     // high bits of the section number
+        BYTE    rgbReserved[2];
+    } Section;
+    struct{ 
+        IMAGE_AUX_SYMBOL_TOKEN_DEF TokenDef;   
+        BYTE  rgbReserved[2];
+    };
+    struct {
+        DWORD crc;
+        BYTE  rgbReserved[16];
+    } CRC;
+} IMAGE_AUX_SYMBOL_EX;
+typedef IMAGE_AUX_SYMBOL_EX UNALIGNED *PIMAGE_AUX_SYMBOL_EX;
+
+typedef enum IMAGE_AUX_SYMBOL_TYPE {
+    IMAGE_AUX_SYMBOL_TYPE_TOKEN_DEF = 1,
+} IMAGE_AUX_SYMBOL_TYPE;
 
 
 // ======================================

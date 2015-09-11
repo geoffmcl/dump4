@@ -2,7 +2,7 @@
 
 // Dump4v.c
 
-#include	"dump4.h"
+#include	"Dump4.h"
 
 BOOL	IsVosTab( LPDFSTR lpdf, LPTSTR lpb, DWORD dwRd )
 {
@@ -170,7 +170,7 @@ int	ChkVosTab( LPDFSTR lpdf )
 
       dwmbs = (( rd + 5 ) / 3);
       dwbgn = sizeof(VBLKS) + ( dwmbs * sizeof(GBLK) );
-      if( ( lpv = LocalAlloc(LPTR,dwbgn) ) == 0 )
+      if( ( lpv = (LPVBLKS)dMALLOC(dwbgn) ) == 0 )
       {
          chkme( "YOW!!! Memory FAILED!!!!!!!" );
          return iRet;
@@ -235,7 +235,7 @@ int	ChkVosTab( LPDFSTR lpdf )
          prt(lptmp);
       }
 
-      LocalFree(lpv);
+      dFREE(lpv);
    }
 
    return iRet;
