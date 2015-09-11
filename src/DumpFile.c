@@ -2,6 +2,11 @@
 // DumpFile.c
 #include "Dump4.h"
 //#include	<windows.h>
+#ifndef FILE_END
+#define FILE_BEGIN      0
+#define FILE_CURRENT    1
+#define FILE_END        2
+#endif
 
 #define	MXIOB		512
 // File Name and Handle
@@ -16,7 +21,11 @@ VOID  prt_init( VOID )
 {
 	if( !gw_fUsePrintf && !gw_fDnUseP )
 	{
+#ifdef WIN32
 		gw_hStdOut = GetStdHandle( STD_OUTPUT_HANDLE );
+#else
+        gw_hStdOut = 1;
+#endif
       if( !VFH(gw_hStdOut) )
 		{
 			gw_hStdOut = 0;
@@ -329,7 +338,7 @@ int vsprtf( PTSTR ps, va_list arglist )
    return i;
 }
 
-int   _cdecl sprtf( LPTSTR lpf, ... )
+int   MCDECL sprtf( LPTSTR lpf, ... )
 {
     int res;
     va_list arglist;
@@ -340,7 +349,7 @@ int   _cdecl sprtf( LPTSTR lpf, ... )
 }
 
 #if 0
-int   _cdecl sprtf_org( LPTSTR lpf, ... )
+int   MCDECL sprtf_org( LPTSTR lpf, ... )
 {
    static TCHAR _s_sprtfbuf[1024];
    LPTSTR   lpb = &_s_sprtfbuf[0];
@@ -355,7 +364,7 @@ int   _cdecl sprtf_org( LPTSTR lpf, ... )
 #endif
 
 
-void  _cdecl chkme( LPTSTR lpf, ... )
+void  MCDECL chkme( LPTSTR lpf, ... )
 {
    static TCHAR _s_chkbuf[1024];
    LPTSTR   lpb = &_s_chkbuf[0];

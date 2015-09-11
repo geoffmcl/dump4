@@ -33,29 +33,47 @@ typedef void *HFILE;
 typedef void *PVOID;
 typedef void *LPVOID;
 typedef unsigned int DWORD;
+typedef DWORD COLORREF;
 typedef DWORD *PDWORD;
 typedef DWORD *LPDWORD;
 typedef short SHORT;
 typedef unsigned short WORD;
+typedef WORD *PWORD;
 typedef char *LPTSTR;
 typedef char *PTSTR;
 typedef char *LPSTR;
 typedef char *PSTR;
 typedef char CHAR;
+typedef CHAR *PINT8;
 typedef char TCHAR;
+typedef unsigned char UCHAR;
+typedef UCHAR *PUINT8;
+
 typedef int BOOL;
+typedef BOOL *PBOOL;
 typedef int INT;
 typedef INT *PINT;
+typedef INT INT32;
 typedef unsigned int UINT;
 typedef void VOID;
 typedef long LONG;
+typedef long long LONGLONG;
+typedef unsigned long long ULONGLONG;
+typedef unsigned long long DWORDLONG;
 #define FAR
 #define HUGE
 #define INVALID_HANDLE_VALUE (PVOID)-1
 
-typedef struct _ULARGE_INTEGER {
-    DWORD LowPart;
-    DWORD HighPart;
+typedef union _ULARGE_INTEGER {
+    //struct {
+    //    DWORD LowPart;
+    //    DWORD HighPart;
+    //}DUMMYSTRUCTNAME;
+    struct {
+        DWORD LowPart;
+        DWORD HighPart;
+    };
+    ULONGLONG QuadPart;
 } ULARGE_INTEGER;
 
 typedef struct _LIST_ENTRY {

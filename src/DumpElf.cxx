@@ -53,18 +53,26 @@
 //#include <cmath>
 #include "Dump4.h"
 
+#ifdef WIN32
+/////////////////////////////////////////////////////////////////////
+
+
 #ifdef _MSC_VER
+/////////////////////////////////////////////////////////////////////
 #pragma warning( disable : 4018 ) // signed/unsigned mismatch
 #include <io.h>
 #ifndef HAVE_STRTOUL
 #define HAVE_STRTOUL 1
 #endif
+
 #ifndef HAVE_STRERROR
 #define HAVE_STRERROR 1
 #endif
+
 #ifndef ELFCORE
 #define ELFCORE 1
 #endif
+
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #else // !_HAVE_STDINT_H
@@ -77,12 +85,20 @@ typedef unsigned __int16    uint16_t;
 typedef unsigned __int64    uint64_t;
 typedef unsigned __int8     uint8_t;
 #endif // HAVE_STDINT_H
+
 #define SIZEOF_UINT64_T 8 //sizeof(__int64)
+
 #define ssize_t   size_t
 #define inline __inline
+
+/////////////////////////////////////////////////////////////////////
 #endif // _MSC_VER
 
 #include "elffile.h"
+#ifndef WIN32
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 #ifdef BUILTIN_ELF
 //#include <string.h>
@@ -100,12 +116,14 @@ FILE_RCSID("@(#)$File: readelf.c,v 1.63 2007/01/16 14:56:45 ljt Exp $")
 #endif
 
 #ifdef _MSC_VER
+/////////////////////////////////////////////////////////////////////
 // TODO: need to do something with these STUBS
 protected void file_badread(struct magic_set *ms) { }
 protected void file_badseek(struct magic_set *ms) { }
 protected int file_pipe2file(struct magic_set *ms, int i, const void *v, size_t s) { return -1; }
 protected int file_printf(struct magic_set *ms, const char * cp, ...) { return 0; }
 protected void file_error(struct magic_set *ms, int error, const char *f, ...) { }
+/////////////////////////////////////////////////////////////////////
 #endif // _MSC_VER
 
 
@@ -114,6 +132,7 @@ private int dophn_core(struct magic_set *ms, int iclass, int swap, int fd,
     off_t off, int num, size_t size, off_t fsize, int *flags)
         /*@modifies ms, *flags @*/;
 #endif
+
 private int dophn_exec(struct magic_set *ms, int iclass, int swap, int fd,
     off_t off, int num, size_t size, off_t fsize, int *flags, int sh_num)
         /*@modifies ms, *flags @*/;
@@ -181,7 +200,11 @@ getu64(int swap, uint64_t value)
         union {
                 uint64_t ui;
                 char c[8];
-        } retval, tmpval;
+        } retval;
+        union {
+                uint64_t ui;
+                char c[8];
+        } tmpval;
 
         if (swap) {
                 tmpval.ui = value;
@@ -308,19 +331,12 @@ size_t  prpsoffsets64[] = {
  * signal it was.)
  */
 
-#define OS_STYLE_SVR4           0
-#define OS_STYLE_FREEBSD        1
-#define OS_STYLE_NETBSD         2
-
 /*@unchecked@*/ /*@observer@*/
 private const char *os_style_names[] = {
         "SVR4",
         "FreeBSD",
         "NetBSD",
 };
-
-#define FLAGS_DID_CORE          1
-#define FLAGS_DID_NOTE          2
 
 private int
 dophn_core(struct magic_set *ms, int iclass, int swap, int fd, off_t off,
@@ -398,6 +414,13 @@ dophn_core(struct magic_set *ms, int iclass, int swap, int fd, off_t off,
 }
 #endif
 
+#define OS_STYLE_SVR4           0
+#define OS_STYLE_FREEBSD        1
+#define OS_STYLE_NETBSD         2
+
+#define FLAGS_DID_CORE          1
+#define FLAGS_DID_NOTE          2
+
 private size_t
 donote(struct magic_set *ms, unsigned char *nbuf, size_t offset, size_t size,
     int iclass, int swap, size_t align, int *flags)
@@ -405,9 +428,9 @@ donote(struct magic_set *ms, unsigned char *nbuf, size_t offset, size_t size,
         Elf32_Nhdr nh32;
         Elf64_Nhdr nh64;
         size_t noff, doff;
-#ifdef ELFCORE
+//#ifdef ELFCORE
         int os_style = -1;
-#endif
+//#endif
         uint32_t namesz, descsz;
 
         (void)memcpy(xnh_addr, &nbuf[offset], xnh_sizeof);
@@ -1739,5 +1762,7 @@ int DumpELFFile(char *buf, size_t nbytes)
     return 0;   // successful dump done
 }
 
+/////////////////////////////////////////////////////////////////////
+#endif // WIN32
 
-// eof - DumpElf.c
+// eof - DumpElf.cxx

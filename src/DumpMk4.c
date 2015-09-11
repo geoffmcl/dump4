@@ -2,7 +2,7 @@
 
 
 // Dumpmk4.c
-#include	"dump4.h"
+#include	"Dump4.h"
 
 
 short kStor = 0x4C4A; // b0 = 'J', b1 = <4C> (on Intel)

@@ -97,8 +97,9 @@ if(WIN32 AND MSVC)
     #else(MINGW)
         #SET(test_EXE_SRCS ${test_EXE_SRCS} test.rc)
     #endif(MINGW)
-#else()
-#    message( FATAL_ERROR "This program can ONLY be compiled in Windows!" )
+else()
+    # unix stuff
+    set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-write-strings")
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT" )
@@ -111,7 +112,7 @@ add_definitions( -DDUMP4 )
 # to distinguish between debug and release lib
 set( CMAKE_DEBUG_POSTFIX "d" )
 
-include_directories ( "${PROJECT_SOURCE_DIR}" )
+include_directories ( "${PROJECT_SOURCE_DIR}" src )
 
 # presently ONLY building an EXE so...
 #if(BUILD_SHARED_LIB)

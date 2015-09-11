@@ -1,7 +1,8 @@
 
 // DumpLib.c
 // Dump of COFF ARCHIVE (*.lib) file
-#include	"dump4.h"
+#include	"Dump4.h"
+
 #ifndef USE_PEDUMP_CODE // FIX20080507
 
 #include <time.h>

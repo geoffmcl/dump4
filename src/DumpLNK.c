@@ -3,6 +3,9 @@
 // Dump a Microsoft LNK (shortcut) file
 #include    "Dump4.h"
 
+#ifdef WIN32
+///////////////////////////////////////////////////////////////////
+
 // these source downloaded from : http://www.wotsit.org/search.asp?page=24&s=ALLFILES
 //#define CHKMEM(a)   if( a == NULL ) { sprtf("ERROR: MEMORY FAILED!"MEOR); pgm_exit(-1); }
 
@@ -465,19 +468,19 @@ Jesse Hager
 jessehager@iname.com
 Document Version 1.0
 Disclaimer
-This document is provided “AS-IS” basis, without any warranties or representations express, implied or statutory; including, without
+This document is provided AS-IS basis, without any warranties or representations express, implied or statutory; including, without
 limitation, warranties of quality, performance, non-infringement, merchantability or fitness for a particular purpose. Jesse Hager does
 not warrant that this document will meet your needs or be free from errors.
 This document assumes that you are familiar with shortcuts and the IShellLink interface.
 If not, this in probably not the best place to start.
-This document is also unofficial, so I don’t claim that it is 100% accurate. This
+This document is also unofficial, so I don't claim that it is 100% accurate. This
 information is based solely on the examination of hundreds of shortcut files and
-comparing them to the documented IShellLink interface. There’s still a few things I’m
+comparing them to the documented IShellLink interface. There's still a few things I'm
 unsure of, namely which time value is which, the contents of the network volume
 structure and the extra stuff at the end of the file.
-If you’re writing software under Windows I highly recommend you use the IShellLink
+If you're writing software under Windows I highly recommend you use the IShellLink
 interface. For the DOS, Linux, JAVA and other crowds, this is the document you need,
-‘cause MS isn’t gonna give you squat.
+cause MS isn't gonna give you squat.
 Basic File Structure
 The file is structured like this:
 File header
@@ -498,7 +501,7 @@ The File Header
 This is of course at the start of the file.
 .LNK File Header
 Offset Size/Type Contents
-0h 1 dword Always 0000004Ch ‘L’
+0h 1 dword Always 0000004Ch L
 4h 16 bytes GUID of shortcut files
 14h 1 dword Flags
 18h 1 dword File attributes
@@ -634,7 +637,7 @@ The next long integer is the type of volume.
 3 Fixed (Hard disk)
 4 Remote (Network drive)
 5 CD-ROM
-6 Ram drive (Shortcuts to stuff on a ram drive, now that’s smart...)
+6 Ram drive (Shortcuts to stuff on a ram drive, now that's smart...)
 The next long integer is the volume serial number.
 The next long integer is the offset of the volume label within the structure. Always
 10h under normal conditions.
@@ -647,7 +650,7 @@ Ch 1 dword Unknown, always zero?
 10h 1 dword Unknown, always 20000h?
 14h ASCIZ Network share name
 Note 1: The above unknown values are the same for a printer or file share.
-Note 2: The above values are for Microsoft Networks, I don’t have a NetWare
+Note 2: The above values are for Microsoft Networks, I don't have a NetWare
 server to test.
 The first long integer is the length of the structure including the length of the network
 share name.
@@ -681,7 +684,7 @@ icon.
 Extra stuff
 The last item in the file is usually a long integer with the value zero. In rare cases,
 this long integer seems to be the length of some unknown structure that follows.
-The only values I’ve ever seen in here are:
+The only values I ve ever seen in here are:
 1 dword 10h Length of following data
 1 dword A0000005h ?
 1 dword 1Ah ?
@@ -694,7 +697,7 @@ Another possible arrangement is:
 Disassembly of a hypothetical shortcut file
 Offset Bytes Contents
 Header
-0000 4C 00 00 00 ‘L’ Magic value
+0000 4C 00 00 00 L Magic value
 0004 01 04 02 00 GUID of shortcut files
 00 00 00 00
 C0 00 00 00
@@ -728,10 +731,10 @@ First item
 0052 A0 86 00 00 File length
 0056 76 25 71 3E ???
 005A 20 00 File attributes?
-005C 62 65 73 74 5F 37 “best_773.mid” Long name
+005C 62 65 73 74 5F 37 best_773.mid Long name
 37 33 2E 6D 69 64
 00 Null terminator
-0069 42 45 53 54 5F 37 “BEST_773.MID” Short name
+0069 42 45 53 54 5F 37 BEST_773.MID Short name
 37 33 2E 4D 49 44
 00 Null terminator
 Last item
@@ -752,9 +755,9 @@ Local volume table
 0098 03 00 00 00 Fixed disk
 009C D0 07 33 3A Volume serial number 3A33-07D0
 00A0 10 00 00 00 Offset to volume label
-00A4 44 52 49 56 45 20 “DRIVE C”,0
+00A4 44 52 49 56 45 20 DRIVE C,0
 43 00
-00AC 43 3A 5C 57 49 4E “C:\WINDOWS\” local path string
+00AC 43 3A 5C 57 49 4E C:\WINDOWS\ local path string
 44 4F 57 53 5C 00
 Network volume table
 00B8 1F 00 00 00 Length of network volume table
@@ -762,34 +765,34 @@ Network volume table
 00C0 14 00 00 00 Offset of share name
 00C4 00 00 00 00 ???
 00C8 00 00 02 00 ???
-00CC 5C 5C 4A 45 53 53 “\\JESSE\WD”,0 Share name
+00CC 5C 5C 4A 45 53 53 \\JESSE\WD,0 Share name
 45 5C 57 44 00
-00D7 44 65 73 6B 74 6F “Desktop\best_773.mid”,0
+00D7 44 65 73 6B 74 6F Desktop\best_773.mid,0
 70 5C 62 65 73 74 Final path name
 5F 37 37 33 2E 6D
 69 64 00
 Description string
 00EC 12 00 Length of string
-00EE 42 65 73 74 20 37 “Best 773 midi file”
+00EE 42 65 73 74 20 37 Best 773 midi file
 37 33 20 6D 69 64
 69 20 66 69 6C 65
 Relative path
 0100 0E 00 Length of string
-0102 2E 5C 62 65 73 74 “.\best_773.mid”
+0102 2E 5C 62 65 73 74 .\best_773.mid
 5F 37 37 33 2E 6D
 69 64
 Working directory
 0114 12 00 Length of string
-0116 43 3A 5C 57 49 4E “C:\WINDOWS\Desktop”
+0116 43 3A 5C 57 49 4E C:\WINDOWS\Desktop
 44 4F 57 53 5C 44
 65 73 6B 74 6F 70
 Offset Bytes Contents
 Command line arguments
 0128 06 00
-012A 2F 63 6C 6F 73 65 “/close”
+012A 2F 63 6C 6F 73 65 /close
 Icon file
 0130 16 00 Length of string
-0132 43 3A 5C 57 49 4E “C:\WINDOWS\Mplayer.exe”
+0132 43 3A 5C 57 49 4E C:\WINDOWS\Mplayer.exe
 44 4F 57 53 5C 4D
 70 6C 61 79 65 72
 2E 65 78 65
@@ -920,9 +923,9 @@ typedef struct tagLOCVOL { // Local volume table
     DWORD   snum;   // 009C D0 07 33 3A Volume serial number 3A33-07D0
     DWORD   vl_off; // 00A0 10 00 00 00 Offset to volume label
 } LOCVOL, * PLOCVOL;
-//00A4 44 52 49 56 45 20 “DRIVE C”,0
+//00A4 44 52 49 56 45 20 DRIVE C,0
 //     43 00
-// 00AC 43 3A 5C 57 49 4E “C:\WINDOWS\” local path string
+// 00AC 43 3A 5C 57 49 4E C:\WINDOWS\ local path string
 //      44 4F 57 53 5C 00
 
 typedef struct tagNETVOL { // Network volume table
@@ -931,9 +934,9 @@ typedef struct tagNETVOL { // Network volume table
     DWORD   sn_off;  // 00C0 14 00 00 00 Offset of share name
     DWORD   nv_unk2[2]; // 00C4 00 00 00 00 ???
 //                      // 00C8 00 00 02 00 ???
-// 00CC 5C 5C 4A 45 53 53 “\\JESSE\WD”,0 Share name
+// 00CC 5C 5C 4A 45 53 53 \\JESSE\WD,0 Share name
 //      45 5C 57 44 00
-// 00D7 44 65 73 6B 74 6F “Desktop\best_773.mid”,0
+// 00D7 44 65 73 6B 74 6F Desktop\best_773.mid,0
 //      70 5C 62 65 73 74 Final path name
 //      5F 37 37 33 2E 6D
 //      69 64 00
@@ -941,26 +944,26 @@ typedef struct tagNETVOL { // Network volume table
 
 typedef struct tagSTG { // Description string
     WORD s_len; // 00EC 12 00 Length of string
-    BYTE  stg[1]; // 00EE 42 65 73 74 20 37 “Best 773 midi file”
+    BYTE  stg[1]; // 00EE 42 65 73 74 20 37 Best 773 midi file
                     //    37 33 20 6D 69 64
                     //    69 20 66 69 6C 65
 } STG, * PSTG;
 // Relative path
 // 0100 0E 00 Length of string
-// 0102 2E 5C 62 65 73 74 “.\best_773.mid”
+// 0102 2E 5C 62 65 73 74 .\best_773.mid
 //      5F 37 37 33 2E 6D
 //      69 64
 // Working directory
 // 0114 12 00 Length of string
-// 0116 43 3A 5C 57 49 4E “C:\WINDOWS\Desktop”
+// 0116 43 3A 5C 57 49 4E C:\WINDOWS\Desktop
 //      44 4F 57 53 5C 44
 //      65 73 6B 74 6F 70
 // Command line arguments
 // 0128 06 00
-// 012A 2F 63 6C 6F 73 65 “/close”
+// 012A 2F 63 6C 6F 73 65 /close
 // Icon file
 // 0130 16 00 Length of string
-// 0132 43 3A 5C 57 49 4E “C:\WINDOWS\Mplayer.exe”
+// 0132 43 3A 5C 57 49 4E C:\WINDOWS\Mplayer.exe
 //      44 4F 57 53 5C 4D
 //      70 6C 61 79 65 72
 //      2E 65 78 65
@@ -1266,9 +1269,9 @@ typedef struct tagNETVOL { // Network volume table
     DWORD   sn_off;  // 00C0 14 00 00 00 Offset of share name
     DWORD   nv_unk2[2]; // 00C4 00 00 00 00 ???
 //                      // 00C8 00 00 02 00 ???
-// 00CC 5C 5C 4A 45 53 53 “\\JESSE\WD”,0 Share name
+// 00CC 5C 5C 4A 45 53 53 \\JESSE\WD,0 Share name
 //      45 5C 57 44 00
-// 00D7 44 65 73 6B 74 6F “Desktop\best_773.mid”,0
+// 00D7 44 65 73 6B 74 6F Desktop\best_773.mid,0
 //      70 5C 62 65 73 74 Final path name
 //      5F 37 37 33 2E 6D
 //      69 64 00
@@ -1366,4 +1369,9 @@ typedef struct tagNETVOL { // Network volume table
     return FALSE;
 }
 
+#endif // WIN32
+
+///////////////////////////////////////////////////////////////////
+
 // eof - DumpLNK.c
+

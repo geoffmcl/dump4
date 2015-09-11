@@ -7,9 +7,9 @@
     14 Archive (Library) File Format
     The first 8 bytes of an archive consist of the file signature.
     The rest of the archive consists of a series of archive members, as follows:
-    The first and second members are “linker members.” Each of these members has its own format as described in section 8.3, “Import Name Type.”
+    The first and second members are linker members. Each of these members has its own format as described in section 8.3, Import Name Type.
     the general structure of an archive.
-    * Signature :”!<arch>\n”
+    * Signature :!<arch>\n
     * Header
     * 1st Linker Member
     * Header
@@ -53,7 +53,9 @@
 
 #include <time.h>
 #include "DumpCOFF.h"
+#ifdef WIN32
 #include <Dbghelp.h>
+#endif
 #include <algorithm> // for std::sort
 #include <vector>
 #include <string>
@@ -434,7 +436,8 @@ void show_machine_list()
 #endif // #ifndef DUMP4
 
 LE pDllList = { &pDllList, &pDllList };
-PLE GetDllList(VOID) { return &pDllList; }
+PLE GetDllList(void) { return &pDllList; }
+
 typedef struct tagDLLLIST {
     LE link;
     int done;
@@ -442,14 +445,14 @@ typedef struct tagDLLLIST {
 }DLLLIST, * PDLLLIST;
 
 // general ADD TO LIST
-VOID Add_2_list( PLE ph, PDLLLIST pdll, PSTR pnm )
+void Add_2_list( PLE ph, PDLLLIST pdll, PSTR pnm )
 {
     strcpy(pdll->name, pnm);
     pdll->done = 0;
     InsertTailList(ph,(PLE)pdll);  // add to LIST
 }
 
-VOID KillDllList(VOID) { KillLList(GetDllList()); }
+void KillDllList(void) { KillLList(GetDllList()); }
 
 PLE Add2DllList( PSTR pnm )
 {
@@ -472,14 +475,14 @@ PLE Add2DllList( PSTR pnm )
 
 LE listDoneDll = { &listDoneDll, &listDoneDll };
 LE listDoneFound = { &listDoneFound, &listDoneFound };
-PLE GetlistDoneDll(VOID) { return &listDoneDll; }
-PLE GetlistDoneFound(VOID) { return &listDoneFound; };
-VOID KilllistDoneDll(VOID) { KillLList(GetlistDoneDll()); }
-VOID KilllistDoneFound(VOID) { KillLList(GetlistDoneFound()); }
+PLE GetlistDoneDll(void) { return &listDoneDll; }
+PLE GetlistDoneFound(void) { return &listDoneFound; };
+void KilllistDoneDll(void) { KillLList(GetlistDoneDll()); }
+void KilllistDoneFound(void) { KillLList(GetlistDoneFound()); }
 
 LE pPathList = { &pPathList, &pPathList };
-PLE GetPathList(VOID) { return &pPathList; }
-VOID KillPathList(VOID) { KillLList(GetPathList()); }
+PLE GetPathList(void) { return &pPathList; }
+void KillPathList(void) { KillLList(GetPathList()); }
 PLE Is_in_List( PLE ph, PSTR pnm )
 {
     PLE pn;
@@ -527,8 +530,9 @@ PLE Add2PathList( PSTR pnm )
 }
 
 LE pFoundList = { &pFoundList, &pFoundList };
-PLE GetFoundList(VOID) { return &pFoundList; }
-VOID KillFoundList(VOID) { KillLList(GetFoundList()); }
+PLE GetFoundList(void) { return &pFoundList; }
+void KillFoundList(void) { KillLList(GetFoundList()); }
+
 PLE Add2FoundList( PSTR pnm )
 {
     PLE ph,pn;
@@ -4606,3 +4610,4 @@ char * Get_Current_Opts( void ) {
 
 #endif // #ifdef   USE_PEDUMP_CODE - FIX20080507
 // eof - DumpPE.c
+

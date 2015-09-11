@@ -1295,8 +1295,7 @@ Err_P:
 		}
 		else if( c == '@' )
 		{
-			HFILE		hf;
-			OFSTRUCT	of;
+			FILE	*	hf;
 			DWORD		fs, fr, fii, fib, fibu;
 			char	*	fcmd;
 			char	*	fb;
@@ -1304,11 +1303,15 @@ Err_P:
 			BOOL		flg;
 
  Do_Input_File:
-			cp++;
-			hf = OpenFile( cp, &of, OF_READ );
-         if( VFHO(hf) )
+ 			cp++;
+            hf = fopen(cp,"r");
+         if( hf )
 			{
-				fs = GetFileSize( (HANDLE)hf, NULL );
+			    
+				//fs = GetFileSize( (HANDLE)hf, NULL );
+				fseek( hf, 0, SEEK_END );
+				fs = ftell( hf );
+				fseek( hf, 0, SEEK_SET );
 				if( ( fs              ) &&
 					 ( fs != (DWORD)-1 ) )
 				{
@@ -1321,7 +1324,8 @@ Err_P:
 						fb = fcmd + sizeof(CMDHDR);
 						pch = (PCMDHDR)fcmd;
 //						if( ( fr = _lread( hf, fb, fs ) ) &&
-						if( ( fr = grmReadFile( (HANDLE)hf, fb, fs ) ) &&
+                        fr = fread(fb,1,fs,hf);
+						if( ( fr ) &&
 							( fr == fs ) )
 						{
 							flg = FALSE;
@@ -1403,7 +1407,7 @@ Err_P:
 						{
 							free( fcmd );
 							prt( "ERROR: Read File FAILED!"MEOR );
-							_lclose( hf );
+							fclose( hf );
 							UsageX();
 						}
 						free( fcmd );
@@ -1411,17 +1415,17 @@ Err_P:
 					else
 					{
 						prt( "ERROR: Memory allocation FAILED!"MEOR );
-						_lclose( hf );
+						fclose( hf );
 						UsageX();
 					}
 				}
 				else
 				{
 					prt( "ERROR: Unable to get file size!"MEOR );
-					_lclose( hf );
+					fclose( hf );
 					UsageX();
 				}
-				_lclose( hf );
+				fclose( hf );
 			}
 			else
 			{

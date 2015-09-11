@@ -99,7 +99,20 @@ COFFSymbol::GetSectionNumber(void)
 #endif
 }
 
-
+#ifndef WIN32
+char *lstrcpyn( char *in_dst, char *src, unsigned len )
+{
+    char *dst = in_dst;
+    while(len) {
+        *dst = *src;
+        dst++;
+        src++;
+        len--;
+    }
+    *dst = 0;
+    return in_dst;
+}
+#endif
 //
 // Dumps the auxillary symbol for a regular symbol.  It takes a pointer
 // to the regular symbol, since the the information in that record defines
@@ -125,7 +138,7 @@ COFFSymbol::GetAuxSymbolAsString( PSTR pszBuffer, unsigned cbBuffer )
     {
         if ( (m_pSymbolData->Type & 0xF0) == (IMAGE_SYM_DTYPE_FUNCTION << 4))
         {   
-        	wsprintf( pszBuffer,
+        	sprintf( pszBuffer,
 				"tag: %04X  size: %04X  Line #'s: %08X  next fn: %04X",
             	auxSym->Sym.TagIndex, auxSym->Sym.Misc.TotalSize,
 	            auxSym->Sym.FcnAry.Function.PointerToLinenumber,
@@ -134,7 +147,7 @@ COFFSymbol::GetAuxSymbolAsString( PSTR pszBuffer, unsigned cbBuffer )
     }
     else if ( (m_pSymbolData->StorageClass == IMAGE_SYM_CLASS_STATIC) )
     {
-        wsprintf( pszBuffer,
+        sprintf( pszBuffer,
             "Section: %04X  Len: %05X  Relocs: %04X  LineNums: %04X",
             auxSym->Section.Number, auxSym->Section.Length,
             auxSym->Section.NumberOfRelocations,

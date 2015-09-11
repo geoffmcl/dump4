@@ -1,7 +1,7 @@
 
 // DumpObj.c
 // Dump of OBJECT (*.obj) file
-#include	"dump4.h"
+#include	"Dump4.h"
 
 #ifndef USE_PEDUMP_CODE // FIX20080507
 #include <time.h>
@@ -5103,7 +5103,7 @@ void DumpSectionName(PBYTE pHead, INT iOff, INT iLen, INT iNum,
 // SymbolTableIndex - A zero-based index into the symbol table.
 // This symbol gives the address to be used for the relocation.
 // If the specified symbol has section storage class,
-// then the symbol’s address is the address with the first section
+// then the symbol's address is the address with the first section
 // of the same name. 
       //                 "12345678 12345678 12345678
       AddStringandAdjust("  Offset    Index Type     Name");
@@ -5609,7 +5609,7 @@ VOID DumpObjSection(PBYTE pHead, INT iOff, INT iLen, INT iNum,
 // SymbolTableIndex - A zero-based index into the symbol table.
 // This symbol gives the address to be used for the relocation.
 // If the specified symbol has section storage class,
-// then the symbol’s address is the address with the first section
+// then the symbol's address is the address with the first section
 // of the same name. 
       //                 "12345678 12345678 12345678
       AddStringandAdjust("  Offset    Index Type     Name");
@@ -6084,7 +6084,7 @@ VOID DumpObjSection(PBYTE pHead, INT iOff, INT iLen, INT iNum,
 // SymbolTableIndex - A zero-based index into the symbol table.
 // This symbol gives the address to be used for the relocation.
 // If the specified symbol has section storage class,
-// then the symbol’s address is the address with the first section
+// then the symbol's address is the address with the first section
 // of the same name. 
       //                 "12345678 12345678 12345678
       AddStringandAdjust("  Offset    Index Type     Name");
@@ -6144,3 +6144,4 @@ VOID DumpObjSection(PBYTE pHead, INT iOff, INT iLen, INT iNum,
 
 #endif // #ifndef USE_PEDUMP_CODE // FIX20080507
 // ===============================================================
+
