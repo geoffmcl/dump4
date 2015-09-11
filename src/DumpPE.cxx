@@ -581,7 +581,8 @@ More added later ...
 // pointers) together without dealing with C's pointer arithmetic.  It
 // essentially treats the last two parameters as DWORDs.  The first
 // parameter is used to typecast the result to the appropriate pointer type.
-#define MakePtr( cast, ptr, addValue ) (cast)( (DWORD)(ptr) + (DWORD)(addValue))
+// #define MakePtr( cast, ptr, addValue ) (cast)( (DWORD)(ptr) + (DWORD)(addValue))
+#define MakePtr( cast, ptr, addValue ) (cast)( (char *)(ptr) + (DWORD)(addValue))
 
 PIMAGE_DEBUG_MISC g_pMiscDebugInfo = 0;
 PDWORD g_pCVHeader = 0;
