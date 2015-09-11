@@ -2,7 +2,7 @@
 // DumpUtil.c
 // Utility Module
 
-#include "dump4.h"
+#include "Dump4.h"
 #include "DumpUtil.h"
 #include <conio.h>
 
@@ -381,7 +381,7 @@ INT      strbgni( LPTSTR lpb, LPTSTR lps )
    {
       strncpy(lpd, lpb, j);
       lpd[j] = 0;
-      i = strcmpi(lpd,lps);
+      i = STRCMPI(lpd,lps);
    }
    return i;
 }

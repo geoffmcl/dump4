@@ -395,7 +395,7 @@ BOOL  Chk4Debug( LPTSTR lpd )
          if(p)
          {
             p++;
-            if( strcmpi(p, "DEBUG") == 0 )
+            if( STRCMPI(p, "DEBUG") == 0 )
             {
                *p = 0;
                strcpy(lpd,ptmp);    // use this

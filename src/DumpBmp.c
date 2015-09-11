@@ -1702,7 +1702,7 @@ BOOL  IsPPMFile( LPDFSTR lpdf, LPTSTR lpf, PBYTE pb, DWORD dwmax )
    dwk = GetPPMLine( lpb, pb, dwmax, &dwi );
    if( !dwk )
       return FALSE;
-   if( strcmpi( lpb, "P6" ) )
+   if( STRCMPI( lpb, "P6" ) )
       return FALSE;
 Nxt_Line:
    dwk = GetPPMLine( lpb, pb, dwmax, &dwi );

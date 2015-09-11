@@ -1229,7 +1229,7 @@ Next_Cycle:
          // do we have more previous CABS
          if( ( gs_fdici.hasprev ) &&
             ( gcPrevCab2[0] ) &&
-            ( strcmpi(gcPrevCab,gcPrevCab2) ) )
+            ( STRCMPI(gcPrevCab,gcPrevCab2) ) )
          {
             strcpy(gcPrevCab,gcPrevCab2);
             goto Next_Cycle;
@@ -1335,7 +1335,7 @@ Next_Cycle2:
          // do we have more previous CABS
          if( ( gs_fdici.hasnext ) &&
             ( gcNextCab2[0] ) &&
-            ( strcmpi(gcNextCab,gcNextCab2) ) )
+            ( STRCMPI(gcNextCab,gcNextCab2) ) )
          {
             strcpy(gcNextCab,gcNextCab2);
             goto Next_Cycle2;

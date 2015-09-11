@@ -462,7 +462,7 @@ PLE Add2DllList( PSTR pnm )
     Traverse_List(ph,pn)
     {
         pdll = (PDLLLIST)pn;
-        if (strcmpi(pnm, pdll->name) == 0)
+        if (STRCMPI(pnm, pdll->name) == 0)
             return pn;
     }
     pdll = (PDLLLIST)dMALLOC( sizeof(DLLLIST) );
@@ -490,7 +490,7 @@ PLE Is_in_List( PLE ph, PSTR pnm )
     Traverse_List(ph,pn)
     {
         pdll = (PDLLLIST)pn;
-        if (strcmpi(pnm, pdll->name) == 0)
+        if (STRCMPI(pnm, pdll->name) == 0)
             return pn;
     }
     return NULL;
@@ -518,7 +518,7 @@ PLE Add2PathList( PSTR pnm )
     Traverse_List(ph,pn)
     {
         pdll = (PDLLLIST)pn;
-        if (strcmpi(pnm, pdll->name) == 0)
+        if (STRCMPI(pnm, pdll->name) == 0)
             return pn;
     }
     pdll = (PDLLLIST)dMALLOC( sizeof(DLLLIST) );
@@ -541,7 +541,7 @@ PLE Add2FoundList( PSTR pnm )
     Traverse_List(ph,pn)
     {
         pdll = (PDLLLIST)pn;
-        if (strcmpi(pnm, pdll->name) == 0)
+        if (STRCMPI(pnm, pdll->name) == 0)
             return pn;
     }
     pdll = (PDLLLIST)dMALLOC( sizeof(DLLLIST) );

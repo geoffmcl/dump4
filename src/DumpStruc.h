@@ -7,11 +7,15 @@
 #ifdef WIN32
 // ======================================
 #define MCDECL _cdecl
+#define STRCMPI strcmpi
 // ======================================
 #else
 // ======================================
 // some unix glue
 #include <string.h> // for strcat, ...
+
+#define STRCMPI strcasecmp
+
 #ifndef MAX_PATH
 #define MAX_PATH 260
 #endif

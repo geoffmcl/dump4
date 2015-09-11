@@ -1137,7 +1137,7 @@ int ProcessCommand( int argc, char *argv[], LPSTR lpc )
                lpb[k] = 0;
                // do we have a SYNEDIT -prof "profile" file
 #ifdef   ADDSYNPROF  // #define  ADDSYNPROF
-               if( strcmpi(lpb, "ROF") == 0 )
+               if( STRCMPI(lpb, "ROF") == 0 )
                {
                   gbDoSynEdit = TRUE;
                   break;
