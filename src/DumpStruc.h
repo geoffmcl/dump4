@@ -27,6 +27,7 @@
 
 typedef unsigned char BYTE;
 typedef BYTE *PBYTE;
+typedef BYTE BOOLEAN;
 
 typedef void *HANDLE;
 typedef void *HPALETTE;
@@ -387,6 +388,16 @@ typedef IMAGE_AUX_SYMBOL_EX UNALIGNED *PIMAGE_AUX_SYMBOL_EX;
 typedef enum IMAGE_AUX_SYMBOL_TYPE {
     IMAGE_AUX_SYMBOL_TYPE_TOKEN_DEF = 1,
 } IMAGE_AUX_SYMBOL_TYPE;
+
+
+typedef struct _IMAGE_DEBUG_MISC {
+    DWORD       DataType;               // type of misc data, see defines
+    DWORD       Length;                 // total length of record, rounded to four
+                                        // byte multiple.
+    BOOLEAN     Unicode;                // TRUE if data is unicode string
+    BYTE        Reserved[ 3 ];
+    BYTE        Data[ 1 ];              // Actual data
+} IMAGE_DEBUG_MISC, *PIMAGE_DEBUG_MISC;
 
 
 // ======================================
