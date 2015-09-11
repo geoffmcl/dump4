@@ -10,3 +10,7 @@ config.h
 *.dir/*
 *.sln
 x64/*
+*.user
+*.sdf
+*.suo
+ipch/*
