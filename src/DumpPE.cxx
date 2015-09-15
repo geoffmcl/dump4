@@ -816,7 +816,7 @@ typedef struct tagSPLITPATH {
 }SPLITPATH, * PSPLITPATH;
 
 static SPLITPATH splitpath;
-VOID Do_Import_Init(VOID)
+void Do_Import_Init(void)
 {
     PSPLITPATH psp = &splitpath;
     char * env, * cp;
