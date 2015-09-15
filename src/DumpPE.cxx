@@ -1071,7 +1071,7 @@ BOOL Get_List_Copy( PLE pc, PLE ph )
 }
 
 static BOOL In_Process_Import_List = FALSE;
-VOID Process_Import_List(VOID)
+void Process_Import_List(void)
 {
     PLE pn1;
     PLE pn2;
