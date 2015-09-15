@@ -25,6 +25,16 @@
 #define OF_READ 0
 #define FILE_ATTRIBUTE_DIRECTORY 0x010
 
+/*
+ * Sizes for buffers used by the _makepath() and _splitpath() functions.
+ * note that the sizes include space for 0-terminator
+ */
+#define _MAX_PATH   260 /* max. length of full pathname */
+#define _MAX_DRIVE  3   /* max. length of drive component */
+#define _MAX_DIR    256 /* max. length of path component */
+#define _MAX_FNAME  256 /* max. length of file name component */
+#define _MAX_EXT    256 /* max. length of extension component */
+
 typedef unsigned char BYTE;
 typedef BYTE *PBYTE;
 typedef BYTE BOOLEAN;
