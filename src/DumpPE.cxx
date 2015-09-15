@@ -788,10 +788,14 @@ LPVOID GetPtrFromRVA( DWORD rva, PIMAGE_NT_HEADERS pNTHeader, char *imageBase )
 
 char * pedump_ctime( time_t * ptm )
 {
-   __time32_t * timer = (__time32_t *)ptm;
    char * ctm = NULL;
-   // ctm = ctime(ptm); // this will use 64-bit time
+#ifdef WIN32
+   __time32_t * timer = (__time32_t *)ptm;
    ctm = _ctime32(timer); // NOTE: Returns buffer with "\n" appended
+#else
+   ctm = ctime(ptm); // this will use 64-bit time
+#endif
+   
    if(ctm == NULL)  // if OUT OF RANGE
       ctm = "Out of range"MEOR;
 
@@ -816,6 +820,94 @@ typedef struct tagSPLITPATH {
 }SPLITPATH, * PSPLITPATH;
 
 static SPLITPATH splitpath;
+#ifndef _MSC_VER
+#define _fullpath(a,b,c) realpath(a,b)
+#define ZeroMemory(a,b) memset(a,0,b)
+void _splitpath( const char *absPath, char *pdrive, char *pdir, char *pfile, char *pext )
+{
+    size_t ii, len = strlen(absPath);
+    int c;
+    size_t lastsep, bgnoff, off;
+    if (pdrive)
+        *pdrive = 0;
+    if (pdir)
+        *pdir = 0;
+    if (pfile)
+        *pfile = 0;
+    if (pext)
+        *pext = 0;
+    ii = 0;
+    if ((len > 2) && (absPath[1] == ':')) {
+        if (pdrive) {
+            pdrive[0] = absPath[0];
+            pdrive[1] = absPath[1];
+            pdrive[2] = 0;
+        }
+        ii = 2;
+    }
+    lastsep = 0;    // no path separator
+    bgnoff = ii;
+    off = 0;
+    for (; ii < len; ii++) {
+        c = absPath[ii];
+        if ((c == '\\') || (c == '/')) {
+            lastsep = ii;
+        }
+    }
+    if (lastsep) {
+        ii = lastsep + 1;
+        for (; bgnoff < len; bgnoff++) {
+            if (pdir) {
+                pdir[off++] = absPath[bgnoff];
+            }
+            if (bgnoff == lastsep)
+                break;
+        }
+        if (pdir)
+            pdir[off] = 0;
+    }
+    lastsep = 0;    // no '.'
+    bgnoff = ii;
+    for (; ii < len; ii++) {
+        c = absPath[ii];
+        if (c == '.') {
+            lastsep = ii;
+        }
+    }
+    if (lastsep) {
+        off = 0;    
+        for (; bgnoff < len; bgnoff++) {
+            if (pfile) {
+                pfile[off++] = absPath[bgnoff];
+            }
+            if ((bgnoff + 1) == lastsep) {
+                bgnoff++;
+                break;
+            }
+        }
+        if (pfile)
+            pfile[off] = 0;
+        off = 0;    
+        for (; bgnoff < len; bgnoff++) {
+            if (pext) {
+                pext[off++] = absPath[bgnoff];
+            }
+        }
+        if (pext)
+            pext[off] = 0;
+        
+    } else {
+        off = 0;    
+        for (; bgnoff < len; bgnoff++) {
+            if (pfile) {
+                pfile[off++] = absPath[bgnoff];
+            }
+        }
+        if (pfile)
+            pfile[off] = 0;
+    }
+}
+#endif
 void Do_Import_Init(void)
 {
     PSPLITPATH psp = &splitpath;
