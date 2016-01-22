@@ -4,4 +4,15 @@ Makefile
 bldlog-1.txt
 cmake_install.cmake
 config.h
+*.vcxproj
+*.filters
+*.user
+Debug/*
+Release/*
+Win32/*
+*.sdf
+*.sln
+*.suo
+*.dir/*
+ipch/*
 
