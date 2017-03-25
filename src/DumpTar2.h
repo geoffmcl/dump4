@@ -134,6 +134,7 @@ typedef unsigned __int64 uintmax_t;
 #ifndef intmax_t
 typedef __int64 intmax_t;
 #endif
+#if (defined(_MSC_VER) && (_MSC_VER < 1900))
 #ifndef _TIMESPEC           
 #define _TIMESPEC
 struct timespec {
@@ -141,6 +142,7 @@ struct timespec {
         long    tv_nsec;        /* and nanoseconds */  
 };
 #endif
+#endif // for OLDER MSVC
 
 #ifdef USE_UNSIGNED_64BIT
 typedef uintmax_t off64_t;
