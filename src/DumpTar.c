@@ -44,7 +44,8 @@ int XGLTYPE_count = 0;  //, "global header" }, //  'g'            /* Global exte
 int default_count = 0;
 
 // some of tar.c
-static struct fmttab {
+//static
+struct fmttab {
   char const *name;
   enum archive_format fmt;
 };
