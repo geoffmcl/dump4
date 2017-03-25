@@ -593,12 +593,37 @@ PIMAGE_COFF_SYMBOLS_HEADER g_pCOFFHeader = 0;
 COFFSymbolTable * g_pCOFFSymbolTable = 0;
 #endif // #ifdef ADD_COFF_SYMBOL_TABLE
 
+#ifdef OLD_GETIMGA_RVA
 #define GetImgDirEntryRVA( pNTHdr, IDE ) \
 	(pNTHdr->OptionalHeader.DataDirectory[IDE].VirtualAddress)
 
 #define GetImgDirEntrySize( pNTHdr, IDE ) \
 	(pNTHdr->OptionalHeader.DataDirectory[IDE].Size)
+#else
+static DWORD GetImgDirEntryRVA(PIMAGE_NT_HEADERS pNTHdr, UINT IDE)
+{
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHdr;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHdr;
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+        return header32->OptionalHeader.DataDirectory[IDE].VirtualAddress;
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+        return header64->OptionalHeader.DataDirectory[IDE].VirtualAddress;
+    else
+        return 0;
+}
 
+static DWORD GetImgDirEntrySize(PIMAGE_NT_HEADERS pNTHdr, UINT IDE)
+{
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHdr;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHdr;
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+        return header32->OptionalHeader.DataDirectory[IDE].Size;
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+        return header64->OptionalHeader.DataDirectory[IDE].Size;
+    else
+        return 0;
+}
+#endif
 // Global variables set here, and used in EXEDUMP.C and OBJDUMP.C
 BOOL fShowRelocations = FALSE;
 BOOL fShowRawSectionData = FALSE;
@@ -759,17 +784,11 @@ void DumpExeDebugDirectory(char *base, PIMAGE_NT_HEADERS pNTHeader)
 {
     PIMAGE_DEBUG_DIRECTORY debugDir;
     PIMAGE_SECTION_HEADER header;
-    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
-    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
     DWORD va_debug_dir = 0;
     DWORD size;
-    
-    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
-        va_debug_dir = GetImgDirEntryRVA(header32, IMAGE_DIRECTORY_ENTRY_DEBUG);
-    }
-    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
-        va_debug_dir = GetImgDirEntryRVA(header64, IMAGE_DIRECTORY_ENTRY_DEBUG);
-    }
+
+    va_debug_dir = GetImgDirEntryRVA(pNTHeader, IMAGE_DIRECTORY_ENTRY_DEBUG);
+
     if ( va_debug_dir == 0 )
         return;
 
@@ -1363,8 +1382,10 @@ void DumpImportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
                 pOrdinalName = (PIMAGE_IMPORT_BY_NAME)thunk->u1.AddressOfData;
                 pOrdinalName = (PIMAGE_IMPORT_BY_NAME)
                 			GetPtrFromRVA((DWORD)pOrdinalName, pNTHeader, base);
-                    
-                sprtf("  %4u  %s", pOrdinalName->Hint, pOrdinalName->Name);
+                if (pOrdinalName)
+                    sprtf("  %4u  %s", pOrdinalName->Hint, pOrdinalName->Name);
+                else
+                    break;
             }
             
 		   	// If the user explicitly asked to see the IAT entries, or
