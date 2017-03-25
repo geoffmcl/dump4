@@ -1118,17 +1118,18 @@ void	Do_PE_File( char * fn, HANDLE hf )
             if( lpdf->df_pVoid ) {
                 lpdf->lpb = (PBYTE)lpdf->df_pVoid;
                 if( giVerbose ) {
+                    unsigned __int64 ui64 = lpdf->qwSize.QuadPart;
                     if( giVerbose > 1 ) {
                         sprintf( lptmp,
-                            "File [%s], %I64u bytes (map at %#x)." MEOR,
+                            "File [%s], %I64u bytes (map at %p)." MEOR,
                             fn,
-                            lpdf->qwSize,
+                            ui64,
                             lpdf->df_pVoid );
                     } else {
                         sprintf( lptmp,
                             "File [%s], %I64u bytes." MEOR,
                             fn,
-                            lpdf->qwSize );
+                            ui64 );
                     }
                     prt( lptmp );
                 }
@@ -1345,8 +1346,8 @@ void DumpImportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
          sprtf("  ForwarderChain:  %08X\n", importDesc->ForwarderChain);
          sprtf("  First thunk RVA: %08X\n", importDesc->FirstThunk);
     
-         thunk = (PIMAGE_THUNK_DATA)importDesc->Characteristics;
-         thunkIAT = (PIMAGE_THUNK_DATA)importDesc->FirstThunk;
+         thunk = (PIMAGE_THUNK_DATA)(UINT_PTR)importDesc->Characteristics;
+         thunkIAT = (PIMAGE_THUNK_DATA)(UINT_PTR)importDesc->FirstThunk;
 
          if ( thunk == 0 )   // No Characteristics field?
          {
@@ -1359,12 +1360,12 @@ void DumpImportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
         
         // Adjust the pointer to point where the tables are in the
         // mem mapped file.
-        thunk = (PIMAGE_THUNK_DATA)GetPtrFromRVA((DWORD)thunk, pNTHeader, base);
+        thunk = (PIMAGE_THUNK_DATA)GetPtrFromRVA((DWORD)(UINT_PTR)thunk, pNTHeader, base);
         if (!thunk )
            goto ImportsExit;
 
         thunkIAT = (PIMAGE_THUNK_DATA)
-        			GetPtrFromRVA((DWORD)thunkIAT, pNTHeader, base);
+        			GetPtrFromRVA((DWORD)(UINT_PTR)thunkIAT, pNTHeader, base);
     
         sprtf("  Ordn  Name\n");
         
@@ -1381,7 +1382,7 @@ void DumpImportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
             {
                 pOrdinalName = (PIMAGE_IMPORT_BY_NAME)thunk->u1.AddressOfData;
                 pOrdinalName = (PIMAGE_IMPORT_BY_NAME)
-                			GetPtrFromRVA((DWORD)pOrdinalName, pNTHeader, base);
+                			GetPtrFromRVA((DWORD)(UINT_PTR)pOrdinalName, pNTHeader, base);
                 if (pOrdinalName)
                     sprtf("  %4u  %s", pOrdinalName->Hint, pOrdinalName->Name);
                 else
@@ -1931,6 +1932,27 @@ WORD_FLAG_DESCRIPTIONS DllCharacteristics[] =
 #define NUMBER_DLL_CHARACTERISTICS \
     (sizeof(DllCharacteristics) / sizeof(WORD_FLAG_DESCRIPTIONS))
 
+void printDllCharacteristics(WORD dllchars)
+{
+    int i, cnt = 0;
+    cnt = 0;
+    for (i = 0; i < NUMBER_DLL_CHARACTERISTICS; i++)
+    {
+        if (dllchars & DllCharacteristics[i].flag) {
+            cnt++;
+            SPRTF(" %s", DllCharacteristics[i].name);
+            dllchars &= ~(DllCharacteristics[i].flag);
+        }
+        if (!dllchars)
+            break;
+    }
+    if (dllchars) {
+        SPRTF("Bits-%04X remain", dllchars);
+        cnt++;
+    }
+    if (cnt)
+        SPRTF("\n");
+}
 
 #if 0
 // Marked as obsolete in MSDN CD 9
@@ -1993,6 +2015,7 @@ void DumpOptionalHeader(PIMAGE_NT_HEADERS pNTHeader, char *base)
     char *s;
     UINT i, cnt = 0;
     int Is32 = 1;
+    WORD dllchars;
     PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
     PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
     PIMAGE_OPTIONAL_HEADER64 opt64 = 0;
@@ -2102,19 +2125,10 @@ void DumpOptionalHeader(PIMAGE_NT_HEADERS pNTHeader, char *base)
             SPRTF("  %-*s%04X (%s)\n", width, "Subsystem",
                 opt32->Subsystem, s);
             // Marked as obsolete in MSDN CD 9
-            SPRTF("  %-*s%04X\n", width, "DLL flags",
-                opt32->DllCharacteristics);
-            cnt = 0;
-            for (i = 0; i < NUMBER_DLL_CHARACTERISTICS; i++)
-            {
-                if (opt32->DllCharacteristics & DllCharacteristics[i].flag) {
-                    cnt++;
-                    SPRTF("  %s", DllCharacteristics[i].name);
-                }
-            }
-            if (cnt)
-                SPRTF("\n");
-
+            // BUT is still output by 'dumpbin' tool!
+            dllchars = opt32->DllCharacteristics;
+            SPRTF("  %-*s%04X\n", width, "DLL flags", dllchars);
+            printDllCharacteristics(dllchars);
             SPRTF("  %-*s%X\n", width, "stack reserve size",
                 opt32->SizeOfStackReserve);
             SPRTF("  %-*s%X\n", width, "stack commit size",
@@ -2184,19 +2198,10 @@ void DumpOptionalHeader(PIMAGE_NT_HEADERS pNTHeader, char *base)
             SPRTF("  %-*s%04X (%s)\n", width, "Subsystem",
                 opt64->Subsystem, s);
             // Marked as obsolete in MSDN CD 9
-            SPRTF("  %-*s%04X\n", width, "DLL flags",
-                opt64->DllCharacteristics);
-            cnt = 0;
-            for (i = 0; i < NUMBER_DLL_CHARACTERISTICS; i++)
-            {
-                if (opt64->DllCharacteristics & DllCharacteristics[i].flag) {
-                    cnt++;
-                    SPRTF("  %s", DllCharacteristics[i].name);
-                }
-            }
-            if (cnt)
-                SPRTF("\n");
-
+            // BUT is still output by 'dumpbin' tool!
+            dllchars = opt64->DllCharacteristics;
+            SPRTF("  %-*s%04X\n", width, "DLL flags", dllchars);
+            printDllCharacteristics(dllchars);
             SPRTF("  %-*s%I64X\n", width, "stack reserve size",
                 opt64->SizeOfStackReserve);
             SPRTF("  %-*s%I64X\n", width, "stack commit size",
