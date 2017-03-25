@@ -675,7 +675,7 @@ Try_WILD:
 HANDLE	grmOpenFile( LPTSTR fn, HANDLE * ph, UINT uFlag )
 {
 	HANDLE	h = 0;
-#ifdef WIN323
+#ifdef WIN32
 	DWORD	dwa = GENERIC_READ;
 	if( uFlag )
 		dwa |= GENERIC_WRITE;
