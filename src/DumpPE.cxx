@@ -70,7 +70,9 @@ using namespace std;
 #ifndef MIN
 #define MIN(a,b) ((a < b) ? a : b)
 #endif
-
+#ifndef SPRTF
+#define SPRTF sprtf
+#endif
 
 #if defined(IMAGE_SIZEOF_ROM_OPTIONAL_HEADER)
 #define ADD_DUMP_ROM_IMAGE
@@ -630,9 +632,21 @@ BOOL fDumpExportsOnly = FALSE;
 PIMAGE_SECTION_HEADER GetSectionHeader(PSTR name, PIMAGE_NT_HEADERS pNTHeader)
 {
     PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(pNTHeader);
-    unsigned i;
-    
-    for ( i=0; i < pNTHeader->FileHeader.NumberOfSections; i++, section++ )
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
+    unsigned i, max;
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+        section = IMAGE_FIRST_SECTION(header32);
+        max = header32->FileHeader.NumberOfSections;
+    }
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) { // PE32+
+        section = IMAGE_FIRST_SECTION(header64);
+        max = header64->FileHeader.NumberOfSections;
+    }
+    else
+        return 0;
+
+    for ( i = 0; i < max; i++, section++ )
     {
         if ( 0 == strncmp((char *)section->Name,name,IMAGE_SIZEOF_SHORT_NAME) )
             return section;
@@ -650,9 +664,21 @@ PIMAGE_SECTION_HEADER GetEnclosingSectionHeader(DWORD rva,
                                                 PIMAGE_NT_HEADERS pNTHeader)
 {
     PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(pNTHeader);
-    unsigned i;
-    
-    for ( i=0; i < pNTHeader->FileHeader.NumberOfSections; i++, section++ )
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
+    unsigned i, max;
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+        section = IMAGE_FIRST_SECTION(header32);
+        max = header32->FileHeader.NumberOfSections;
+    }
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) { // PE32+
+        section = IMAGE_FIRST_SECTION(header64);
+        max = header64->FileHeader.NumberOfSections;
+    }
+    else
+        return 0;
+
+    for ( i = 0; i < max; i++, section++ )
     {
         // Is the RVA within this section?
         if ( (rva >= section->VirtualAddress) && 
@@ -733,11 +759,17 @@ void DumpExeDebugDirectory(char *base, PIMAGE_NT_HEADERS pNTHeader)
 {
     PIMAGE_DEBUG_DIRECTORY debugDir;
     PIMAGE_SECTION_HEADER header;
-    DWORD va_debug_dir;
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
+    DWORD va_debug_dir = 0;
     DWORD size;
     
-    va_debug_dir = GetImgDirEntryRVA(pNTHeader, IMAGE_DIRECTORY_ENTRY_DEBUG);
-
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+        va_debug_dir = GetImgDirEntryRVA(header32, IMAGE_DIRECTORY_ENTRY_DEBUG);
+    }
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+        va_debug_dir = GetImgDirEntryRVA(header64, IMAGE_DIRECTORY_ENTRY_DEBUG);
+    }
     if ( va_debug_dir == 0 )
         return;
 
@@ -797,7 +829,7 @@ char * pedump_ctime( time_t * ptm )
 #endif
    
    if(ctm == NULL)  // if OUT OF RANGE
-      ctm = "Out of range"MEOR;
+      ctm = "Out of range" MEOR;
 
    return ctm;
 }
@@ -1001,16 +1033,16 @@ VOID Process_Next_Import(PSTR pName)
     if (fnd) {
         sprtf(" found [%s]", cp);
         if (Is_In_Found_Done(cp)) {
-            sprtf( "... done above."MEOR );
+            sprtf( "... done above." MEOR );
         } else {
             Add2FoundList(cp);
             if (Is_in_List( GetFoundList(), cp ))
-                sprtf("... done..."MEOR);
+                sprtf("... done..." MEOR);
             else
-                sprtf("... added"MEOR);
+                sprtf("... added" MEOR);
         } 
     } else {
-        sprtf(" NOT FOUND!"MEOR);
+        sprtf(" NOT FOUND!" MEOR);
     }
 }
 
@@ -1069,13 +1101,13 @@ void	Do_PE_File( char * fn, HANDLE hf )
                 if( giVerbose ) {
                     if( giVerbose > 1 ) {
                         sprintf( lptmp,
-                            "File [%s], %I64u bytes (map at %#x)."MEOR,
+                            "File [%s], %I64u bytes (map at %#x)." MEOR,
                             fn,
                             lpdf->qwSize,
                             lpdf->df_pVoid );
                     } else {
                         sprintf( lptmp,
-                            "File [%s], %I64u bytes."MEOR,
+                            "File [%s], %I64u bytes." MEOR,
                             fn,
                             lpdf->qwSize );
                     }
@@ -1087,11 +1119,11 @@ void	Do_PE_File( char * fn, HANDLE hf )
                     if(( gdwEndOff ) &&
                        ( gdwEndOff < fsiz ) ) 
                     {
-                        sprintf( lptmp, "Done [%s] Ended after %d byte offset."MEOR,
+                        sprintf( lptmp, "Done [%s] Ended after %d byte offset." MEOR,
                             fn,
                             gdwEndOff );
                      } else {
-                         sprintf( lptmp, "Completed [%s] = %u Bytes."MEOR,
+                         sprintf( lptmp, "Completed [%s] = %u Bytes." MEOR,
                              fn, fsiz );
                      }
 				     prt( lptmp );
@@ -1107,21 +1139,21 @@ void	Do_PE_File( char * fn, HANDLE hf )
                 lpdf->df_hMap = 0;
             } else {
                 if( VERB ) {
-                    sprintf( lptmp, "ERROR: Unable to get MAP View of File"MEOR
-                        "\t[%s]!"MEOR, fn );
+                    sprintf( lptmp, "ERROR: Unable to get MAP View of File" MEOR
+                        "\t[%s]!" MEOR, fn );
                     prt( lptmp );
                 }
                 CloseHandle( lpdf->df_hMap );
             }
 		} else {
             if( VERB ) {
-                sprintf( lptmp, "WARNING: File [%s] is NULL!"MEOR, fn );
+                sprintf( lptmp, "WARNING: File [%s] is NULL!" MEOR, fn );
 				prt( lptmp );
 			}
 		}
 	} else {
         if( giVerbose ) {
-            sprintf( lptmp, "ERROR: Unable to OPEN file [%s]!"MEOR, fn );
+            sprintf( lptmp, "ERROR: Unable to OPEN file [%s]!" MEOR, fn );
 			prt( lptmp );
 		}
 	}
@@ -1221,7 +1253,7 @@ void Process_Import_List(void)
         Traverse_List(pDoneFound,pn2)
         {
             pdll = (PDLLLIST)pn2;
-            sprtf("%s"MEOR,pdll->name);
+            sprtf("%s" MEOR,pdll->name);
         }
     }
     KilllistDoneDll(); // or KillLList(pDoneDll);
@@ -1406,23 +1438,32 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
         return;
 
     delta = (header->VirtualAddress - header->PointerToRawData);
-        
-    e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA + 
-        header->PointerToRawData - header->VirtualAddress);
+    // DWORD64 delta2 = header->VirtualAddress - header->PointerToRawData;
 
-    exportDir = MakePtr(PIMAGE_EXPORT_DIRECTORY, base,
-                         exportsStartRVA - delta);
+    //e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA + 
+    //    header->PointerToRawData - header->VirtualAddress);
+    //e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA + delta);
+    e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA);
 
-    if (e2 != exportDir) {
-        return;
-    }
+    //exportDir = MakePtr(PIMAGE_EXPORT_DIRECTORY, base,
+    //                     exportsStartRVA + delta);
+    //exportDir = MakePtr(PIMAGE_EXPORT_DIRECTORY, base,
+    //    exportsStartRVA);
+    exportDir = exports;
+
+    //if (e2 != exportDir) {
+    //    return;
+    //}
+
     // Does not work!!!!
     //if (exportDir != exports) {
     //    exportDir = exports;
     //}
         
-    filename = (PSTR)(exportDir->Name - delta + base);
-        
+    // filename = (PSTR)(exportDir->Name - delta + base);
+    filename = (PSTR)(base + exportDir->Name + delta);
+    //filename = (PSTR)(base + exportDir->Name);
+
     sprtf("exports table:\n\n");
     sprtf("  Name:            %s\n", filename);
     sprtf("  Characteristics: %08X\n", exportDir->Characteristics);
@@ -1436,9 +1477,9 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
     sprtf("  # of Names:      %08X\n", exportDir->NumberOfNames);
     
     // AddressOfNames is a RVA to a list of RVAs to string names not a RVA to a list of strings.
-    functions = (PDWORD)((DWORD)exportDir->AddressOfFunctions - delta + base);
-    ordinals = (PWORD)((DWORD)exportDir->AddressOfNameOrdinals - delta + base);
-    name = (PSTR *)((DWORD)exportDir->AddressOfNames - delta + base);
+    functions = (PDWORD)(base + (DWORD)exportDir->AddressOfFunctions - delta);
+    ordinals = (PWORD)(base + (DWORD)exportDir->AddressOfNameOrdinals - delta);
+    name = (PSTR *)(base + (DWORD)exportDir->AddressOfNames - delta);
 
     sprtf("\n  Entry Pt  Ordn  Name\n");
     for ( i=0; i < exportDir->NumberOfFunctions; i++ )
@@ -1831,12 +1872,44 @@ void DumpHeader(PIMAGE_FILE_HEADER pImageFileHeader)
 
 // Marked as obsolete in MSDN CD 9
 // Bitfield values and names for the DllCharacteritics flags
-WORD_FLAG_DESCRIPTIONS DllCharacteristics[] = 
+// 20170324 - Updated per winnt.h
+/*
+// DllCharacteristics Entries
+
+//      IMAGE_LIBRARY_PROCESS_INIT            0x0001     // Reserved.
+//      IMAGE_LIBRARY_PROCESS_TERM            0x0002     // Reserved.
+//      IMAGE_LIBRARY_THREAD_INIT             0x0004     // Reserved.
+//      IMAGE_LIBRARY_THREAD_TERM             0x0008     // Reserved.
+#define IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA    0x0020  // Image can handle a high entropy 64-bit virtual address space.
+#define IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE 0x0040     // DLL can move.
+#define IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY    0x0080     // Code Integrity Image
+#define IMAGE_DLLCHARACTERISTICS_NX_COMPAT    0x0100     // Image is NX compatible
+#define IMAGE_DLLCHARACTERISTICS_NO_ISOLATION 0x0200     // Image understands isolation and doesn't want it
+#define IMAGE_DLLCHARACTERISTICS_NO_SEH       0x0400     // Image does not use SEH.  No SE handler may reside in this image
+#define IMAGE_DLLCHARACTERISTICS_NO_BIND      0x0800     // Do not bind this image.
+#define IMAGE_DLLCHARACTERISTICS_APPCONTAINER 0x1000     // Image should execute in an AppContainer
+#define IMAGE_DLLCHARACTERISTICS_WDM_DRIVER   0x2000     // Driver uses WDM model
+#define IMAGE_DLLCHARACTERISTICS_GUARD_CF     0x4000     // Image supports Control Flow Guard.
+#define IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE     0x8000
+
+*/
+WORD_FLAG_DESCRIPTIONS DllCharacteristics[] =
 {
-{ IMAGE_DLLCHARACTERISTICS_WDM_DRIVER, "WDM_DRIVER" },
+    { IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA, "64BIT_VA" },
+    { IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE , "DYNAMIC" },
+    { IMAGE_DLLCHARACTERISTICS_FORCE_INTEGRITY, "INTEGRITY" }, //    0x0080     // Code Integrity Image
+    { IMAGE_DLLCHARACTERISTICS_NX_COMPAT, "NX_CONPAT" },    //    0x0100     // Image is NX compatible
+    { IMAGE_DLLCHARACTERISTICS_NO_ISOLATION, "NO_ISO" },    // 0x0200     // Image understands isolation and doesn't want it
+    { IMAGE_DLLCHARACTERISTICS_NO_SEH, "NO_SEH" },  //       0x0400     // Image does not use SEH.  No SE handler may reside in this image
+    { IMAGE_DLLCHARACTERISTICS_NO_BIND, "NO_BIND" },    //     0x0800     // Do not bind this image.
+    { IMAGE_DLLCHARACTERISTICS_APPCONTAINER, "APP_CONT" },  // 0x1000     // Image should execute in an AppContainer
+    { IMAGE_DLLCHARACTERISTICS_WDM_DRIVER, "WDM_DRIVER" },  //   0x2000     // Driver uses WDM model
+    { IMAGE_DLLCHARACTERISTICS_GUARD_CF, "GUARD_CF" },  //     0x4000     // Image supports Control Flow Guard.
+    { IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE, "TX_AWARE" }  //     0x8000
 };
 #define NUMBER_DLL_CHARACTERISTICS \
     (sizeof(DllCharacteristics) / sizeof(WORD_FLAG_DESCRIPTIONS))
+
 
 #if 0
 // Marked as obsolete in MSDN CD 9
@@ -1851,11 +1924,37 @@ DWORD_FLAG_DESCRIPTIONS LoaderFlags[] =
 #endif
 
 // Names of the data directory elements that are defined
+/* 20170324 - from winnt.h
+// Directory Entries
+
+#define IMAGE_DIRECTORY_ENTRY_EXPORT          0   // Export Directory
+#define IMAGE_DIRECTORY_ENTRY_IMPORT          1   // Import Directory
+#define IMAGE_DIRECTORY_ENTRY_RESOURCE        2   // Resource Directory
+#define IMAGE_DIRECTORY_ENTRY_EXCEPTION       3   // Exception Directory
+#define IMAGE_DIRECTORY_ENTRY_SECURITY        4   // Security Directory
+#define IMAGE_DIRECTORY_ENTRY_BASERELOC       5   // Base Relocation Table
+#define IMAGE_DIRECTORY_ENTRY_DEBUG           6   // Debug Directory
+//      IMAGE_DIRECTORY_ENTRY_COPYRIGHT       7   // (X86 usage)
+#define IMAGE_DIRECTORY_ENTRY_ARCHITECTURE    7   // Architecture Specific Data
+#define IMAGE_DIRECTORY_ENTRY_GLOBALPTR       8   // RVA of GP
+#define IMAGE_DIRECTORY_ENTRY_TLS             9   // TLS Directory
+#define IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG    10   // Load Configuration Directory
+#define IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT   11   // Bound Import Directory in headers
+#define IMAGE_DIRECTORY_ENTRY_IAT            12   // Import Address Table
+#define IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT   13   // Delay Load Import Descriptors
+#define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14   // COM Runtime descriptor
+
+*/
 char *ImageDirectoryNames[] = {
     "EXPORT", "IMPORT", "RESOURCE", "EXCEPTION", "SECURITY", "BASERELOC",
-    "DEBUG", "COPYRIGHT", "GLOBALPTR", "TLS", "LOAD_CONFIG",
+    "DEBUG",
+    // "COPYRIGHT",
+    "ARCHITECTURE",
+    "GLOBALPTR", "TLS", "LOAD_CONFIG",
     "BOUND_IMPORT", "IAT",  // These two entries added for NT 3.51
-	"DELAY_IMPORT" };		// This entry added in NT 5
+    "DELAY_IMPORT",		// This entry added in NT 5
+    "COM_DIR",
+    "RESERVED" };
 
 #define NUMBER_IMAGE_DIRECTORY_ENTRYS \
     (sizeof(ImageDirectoryNames)/sizeof(char *))
@@ -1863,122 +1962,280 @@ char *ImageDirectoryNames[] = {
 //
 // Dump the IMAGE_OPTIONAL_HEADER from a PE file
 //
-void DumpOptionalHeader(PIMAGE_OPTIONAL_HEADER optionalHeader)
+// void DumpOptionalHeader(PIMAGE_OPTIONAL_HEADER optionalHeader)
+
+// PIMAGE_NT_HEADERS
+void DumpOptionalHeader(PIMAGE_NT_HEADERS pNTHeader, char *base)
 {
-   UINT width = 30;
-   char *s;
-   UINT i;
+    PIMAGE_OPTIONAL_HEADER optionalHeader = &pNTHeader->OptionalHeader;
+    UINT width = 30;
+    char *s;
+    UINT i, cnt = 0;
+    int Is32 = 1;
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
+    PIMAGE_OPTIONAL_HEADER64 opt64 = 0;
+    PIMAGE_OPTIONAL_HEADER32 opt32 = 0;
 
-   if ( fDumpOptionalHeader )
-   {
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+                                                                           // offset = header32->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+                                                                           // exports = (PIMAGE_EXPORT_DIRECTORY)(base + offset);
+        Is32 = 1;
+        opt32 = &header32->OptionalHeader;
+    }
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) { // PE32+
+                                                                                // offset = header64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+                                                                                // exports = (PIMAGE_EXPORT_DIRECTORY)(base + offset);
+        opt64 = &header64->OptionalHeader;
+        Is32 = 0;
+    }
+    else {
+        SPRTF("Is NOT a PE32 nor PE32+ magic value! Got %x\n", header32->OptionalHeader.Magic);
+        return;
+    }
 
-      sprtf("Optional Header:\n");
 
-      sprtf("  %-*s%04X\n", width, "Magic", optionalHeader->Magic);
-      sprtf("  %-*s%u.%02u\n", width, "linker version",
-        optionalHeader->MajorLinkerVersion,
-        optionalHeader->MinorLinkerVersion);
-      sprtf("  %-*s%X\n", width, "size of code", optionalHeader->SizeOfCode);
-      sprtf("  %-*s%X\n", width, "size of initialized data",
-        optionalHeader->SizeOfInitializedData);
-      sprtf("  %-*s%X\n", width, "size of uninitialized data",
-        optionalHeader->SizeOfUninitializedData);
-      sprtf("  %-*s%X\n", width, "entrypoint RVA",
-        optionalHeader->AddressOfEntryPoint);
-      sprtf("  %-*s%X\n", width, "base of code", optionalHeader->BaseOfCode);
-      // TODO: This could be a dump of a 32-bit PE files, in whihc case need to use DWORD BaseOfData
-#if (defined(IS_64BIT_BUILD) || defined(_WIN64))    // base offset is now a ULONGLONG (63-bit)
-      sprtf("  %-*s%I64X\n", width, "base of data", optionalHeader->ImageBase);
-#else
-      sprtf("  %-*s%X\n", width, "base of data", optionalHeader->BaseOfData);
+    if (fDumpOptionalHeader)
+    {
+        /*
+        DWORD   SizeOfCode;
+        DWORD   SizeOfInitializedData;
+        DWORD   SizeOfUninitializedData;
+        DWORD   AddressOfEntryPoint;
+        DWORD   BaseOfCode;
+        */
+        SPRTF("Optional Header: %s\n",
+            (Is32 ? "PE32" : "PE32+"));
+
+        SPRTF("  %-*s%04X\n", width, "Magic",
+            (Is32 ? opt32->Magic : opt64->Magic));
+
+        SPRTF("  %-*s%u.%02u\n", width, "linker version",
+            optionalHeader->MajorLinkerVersion,
+            optionalHeader->MinorLinkerVersion);
+        SPRTF("  %-*s%X\n", width, "size of code", optionalHeader->SizeOfCode);
+
+        SPRTF("  %-*s%X\n", width, "size of initialized data",
+            optionalHeader->SizeOfInitializedData);
+        SPRTF("  %-*s%X\n", width, "size of uninitialized data",
+            optionalHeader->SizeOfUninitializedData);
+        SPRTF("  %-*s%X\n", width, "entrypoint RVA",
+            optionalHeader->AddressOfEntryPoint);
+        SPRTF("  %-*s%X\n", width, "base of code", optionalHeader->BaseOfCode);
+
+        // TODO: This could be a dump of a 32-bit PE files, in which case need to use DWORD BaseOfData
+        if (Is32) {
+            /*
+            DWORD   BaseOfData;
+            DWORD   ImageBase;
+            DWORD   SectionAlignment;
+            DWORD   FileAlignment;
+            WORD    MajorOperatingSystemVersion;
+            WORD    MinorOperatingSystemVersion;
+            WORD    MajorImageVersion;
+            WORD    MinorImageVersion;
+            WORD    MajorSubsystemVersion;
+            WORD    MinorSubsystemVersion;
+            DWORD   Win32VersionValue;
+            DWORD   SizeOfImage;
+            DWORD   SizeOfHeaders;
+            DWORD   CheckSum;
+            WORD    Subsystem;
+            WORD    DllCharacteristics;
+            DWORD   SizeOfStackReserve;
+            DWORD   SizeOfStackCommit;
+            DWORD   SizeOfHeapReserve;
+            DWORD   SizeOfHeapCommit;
+            DWORD   LoaderFlags;
+            DWORD   NumberOfRvaAndSizes;
+            IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+            */
+            SPRTF("  %-*s%X\n", width, "base of data", opt32->BaseOfData);
+            SPRTF("  %-*s%X\n", width, "base of data", opt32->ImageBase);
+            SPRTF("  %-*s%X\n", width, "section align", opt32->SectionAlignment);
+            SPRTF("  %-*s%X\n", width, "file align", opt32->FileAlignment);
+            SPRTF("  %-*s%u.%02u\n", width, "required OS version",
+                opt32->MajorOperatingSystemVersion,
+                opt32->MinorOperatingSystemVersion);
+            SPRTF("  %-*s%u.%02u\n", width, "image version",
+                opt32->MajorImageVersion,
+                opt32->MinorImageVersion);
+            SPRTF("  %-*s%u.%02u\n", width, "subsystem version",
+                opt32->MajorSubsystemVersion,
+                opt32->MinorSubsystemVersion);
+            SPRTF("  %-*s%X\n", width, "Win32 Version",
+                opt32->Win32VersionValue);
+            SPRTF("  %-*s%X\n", width, "size of image", opt32->SizeOfImage);
+            SPRTF("  %-*s%X\n", width, "size of headers",
+                opt32->SizeOfHeaders);
+            SPRTF("  %-*s%X\n", width, "checksum", opt32->CheckSum);
+            switch (opt32->Subsystem)
+            {
+            case IMAGE_SUBSYSTEM_NATIVE: s = "Native"; break;
+            case IMAGE_SUBSYSTEM_WINDOWS_GUI: s = "Windows GUI"; break;
+            case IMAGE_SUBSYSTEM_WINDOWS_CUI: s = "Windows character"; break;
+            case IMAGE_SUBSYSTEM_OS2_CUI: s = "OS/2 character"; break;
+            case IMAGE_SUBSYSTEM_POSIX_CUI: s = "Posix character"; break;
+            default: s = "unknown";
+            }
+            SPRTF("  %-*s%04X (%s)\n", width, "Subsystem",
+                opt32->Subsystem, s);
+            // Marked as obsolete in MSDN CD 9
+            SPRTF("  %-*s%04X\n", width, "DLL flags",
+                opt32->DllCharacteristics);
+            cnt = 0;
+            for (i = 0; i < NUMBER_DLL_CHARACTERISTICS; i++)
+            {
+                if (opt32->DllCharacteristics & DllCharacteristics[i].flag) {
+                    cnt++;
+                    SPRTF("  %s", DllCharacteristics[i].name);
+                }
+            }
+            if (cnt)
+                SPRTF("\n");
+
+            SPRTF("  %-*s%X\n", width, "stack reserve size",
+                opt32->SizeOfStackReserve);
+            SPRTF("  %-*s%X\n", width, "stack commit size",
+                opt32->SizeOfStackCommit);
+            SPRTF("  %-*s%X\n", width, "heap reserve size",
+                opt32->SizeOfHeapReserve);
+            SPRTF("  %-*s%X\n", width, "heap commit size",
+                opt32->SizeOfHeapCommit);
+            SPRTF("  %-*s%X\n", width, "loader flag",
+                opt32->LoaderFlags);
+            SPRTF("  %-*s%X\n", width, "RVAs & sizes",
+                opt32->NumberOfRvaAndSizes);
+        }
+        else {
+            /*
+            ULONGLONG   ImageBase;
+            DWORD       SectionAlignment;
+            DWORD       FileAlignment;
+            WORD        MajorOperatingSystemVersion;
+            WORD        MinorOperatingSystemVersion;
+            WORD        MajorImageVersion;
+            WORD        MinorImageVersion;
+            WORD        MajorSubsystemVersion;
+            WORD        MinorSubsystemVersion;
+            DWORD       Win32VersionValue;
+            DWORD       SizeOfImage;
+            DWORD       SizeOfHeaders;
+            DWORD       CheckSum;
+            WORD        Subsystem;
+            WORD        DllCharacteristics;
+            //
+            ULONGLONG   SizeOfStackReserve;
+            ULONGLONG   SizeOfStackCommit;
+            ULONGLONG   SizeOfHeapReserve;
+            ULONGLONG   SizeOfHeapCommit;
+            DWORD       LoaderFlags;
+            DWORD       NumberOfRvaAndSizes;
+            IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
+
+            */
+            SPRTF("  %-*s%I64X\n", width, "base of data", opt64->ImageBase);
+            SPRTF("  %-*s%X\n", width, "file align", opt64->FileAlignment);
+            SPRTF("  %-*s%u.%02u\n", width, "required OS version",
+                opt64->MajorOperatingSystemVersion,
+                opt64->MinorOperatingSystemVersion);
+            SPRTF("  %-*s%u.%02u\n", width, "image version",
+                opt64->MajorImageVersion,
+                opt64->MinorImageVersion);
+            SPRTF("  %-*s%u.%02u\n", width, "subsystem version",
+                opt64->MajorSubsystemVersion,
+                opt64->MinorSubsystemVersion);
+            SPRTF("  %-*s%X\n", width, "Win32 Version",
+                opt64->Win32VersionValue);
+            SPRTF("  %-*s%X\n", width, "size of image", opt64->SizeOfImage);
+            SPRTF("  %-*s%X\n", width, "size of headers",
+                opt64->SizeOfHeaders);
+            SPRTF("  %-*s%X\n", width, "checksum", opt64->CheckSum);
+            switch (opt64->Subsystem)
+            {
+            case IMAGE_SUBSYSTEM_NATIVE: s = "Native"; break;
+            case IMAGE_SUBSYSTEM_WINDOWS_GUI: s = "Windows GUI"; break;
+            case IMAGE_SUBSYSTEM_WINDOWS_CUI: s = "Windows character"; break;
+            case IMAGE_SUBSYSTEM_OS2_CUI: s = "OS/2 character"; break;
+            case IMAGE_SUBSYSTEM_POSIX_CUI: s = "Posix character"; break;
+            default: s = "unknown";
+            }
+            SPRTF("  %-*s%04X (%s)\n", width, "Subsystem",
+                opt64->Subsystem, s);
+            // Marked as obsolete in MSDN CD 9
+            SPRTF("  %-*s%04X\n", width, "DLL flags",
+                opt64->DllCharacteristics);
+            cnt = 0;
+            for (i = 0; i < NUMBER_DLL_CHARACTERISTICS; i++)
+            {
+                if (opt64->DllCharacteristics & DllCharacteristics[i].flag) {
+                    cnt++;
+                    SPRTF("  %s", DllCharacteristics[i].name);
+                }
+            }
+            if (cnt)
+                SPRTF("\n");
+
+            SPRTF("  %-*s%I64X\n", width, "stack reserve size",
+                opt64->SizeOfStackReserve);
+            SPRTF("  %-*s%I64X\n", width, "stack commit size",
+                opt64->SizeOfStackCommit);
+            SPRTF("  %-*s%I64X\n", width, "heap reserve size",
+                opt64->SizeOfHeapReserve);
+            SPRTF("  %-*s%I64X\n", width, "heap commit size",
+                opt64->SizeOfHeapCommit);
+            SPRTF("  %-*s%X\n", width, "loader flag",
+                opt64->LoaderFlags);
+            SPRTF("  %-*s%X\n", width, "RVAs & sizes",
+                opt64->NumberOfRvaAndSizes);
+
+        }
+
+
+#if 0
+        // Marked as obsolete in MSDN CD 9
+        SPRTF("  %-*s%08X\n", width, "loader flags",
+            optionalHeader->LoaderFlags);
+
+        for (i = 0; i < NUMBER_LOADER_FLAGS; i++)
+        {
+            if (optionalHeader->LoaderFlags &
+                LoaderFlags[i].flag)
+                SPRTF("  %s", LoaderFlags[i].name);
+        }
+        if (optionalHeader->LoaderFlags)
+            SPRTF("\n");
 #endif
-      sprtf("  %-*s%X\n", width, "image base", optionalHeader->ImageBase);
 
-      sprtf("  %-*s%X\n", width, "section align",
-        optionalHeader->SectionAlignment);
-      sprtf("  %-*s%X\n", width, "file align", optionalHeader->FileAlignment);
-      sprtf("  %-*s%u.%02u\n", width, "required OS version",
-        optionalHeader->MajorOperatingSystemVersion,
-        optionalHeader->MinorOperatingSystemVersion);
-      sprtf("  %-*s%u.%02u\n", width, "image version",
-        optionalHeader->MajorImageVersion,
-        optionalHeader->MinorImageVersion);
-      sprtf("  %-*s%u.%02u\n", width, "subsystem version",
-        optionalHeader->MajorSubsystemVersion,
-        optionalHeader->MinorSubsystemVersion);
-      sprtf("  %-*s%X\n", width, "Win32 Version",
-      optionalHeader->Win32VersionValue);
-      sprtf("  %-*s%X\n", width, "size of image", optionalHeader->SizeOfImage);
-      sprtf("  %-*s%X\n", width, "size of headers",
-            optionalHeader->SizeOfHeaders);
-      sprtf("  %-*s%X\n", width, "checksum", optionalHeader->CheckSum);
-      switch( optionalHeader->Subsystem )
-      {
-        case IMAGE_SUBSYSTEM_NATIVE: s = "Native"; break;
-        case IMAGE_SUBSYSTEM_WINDOWS_GUI: s = "Windows GUI"; break;
-        case IMAGE_SUBSYSTEM_WINDOWS_CUI: s = "Windows character"; break;
-        case IMAGE_SUBSYSTEM_OS2_CUI: s = "OS/2 character"; break;
-        case IMAGE_SUBSYSTEM_POSIX_CUI: s = "Posix character"; break;
-        default: s = "unknown";
-      }
-      sprtf("  %-*s%04X (%s)\n", width, "Subsystem",
-            optionalHeader->Subsystem, s);
 
-      // Marked as obsolete in MSDN CD 9
-      sprtf("  %-*s%04X\n", width, "DLL flags",
-            optionalHeader->DllCharacteristics);
-      for ( i=0; i < NUMBER_DLL_CHARACTERISTICS; i++ )
-      {
-        if ( optionalHeader->DllCharacteristics & 
-             DllCharacteristics[i].flag )
-            sprtf( "  %-*s%s", width, " ", DllCharacteristics[i].name );
-      }
-      if ( optionalHeader->DllCharacteristics )
-        sprtf("\n");
+        SPRTF("\n");
+    }
 
-      sprtf("  %-*s%X\n", width, "stack reserve size",
-        optionalHeader->SizeOfStackReserve);
-      sprtf("  %-*s%X\n", width, "stack commit size",
-        optionalHeader->SizeOfStackCommit);
-      sprtf("  %-*s%X\n", width, "heap reserve size",
-        optionalHeader->SizeOfHeapReserve);
-      sprtf("  %-*s%X\n", width, "heap commit size",
-        optionalHeader->SizeOfHeapCommit);
-
-      #if 0
-      // Marked as obsolete in MSDN CD 9
-      sprtf("  %-*s%08X\n", width, "loader flags",
-        optionalHeader->LoaderFlags);
-
-      for ( i=0; i < NUMBER_LOADER_FLAGS; i++ )
-      {
-        if ( optionalHeader->LoaderFlags & 
-             LoaderFlags[i].flag )
-            sprtf( "  %s", LoaderFlags[i].name );
-      }
-      if ( optionalHeader->LoaderFlags )
-        sprtf("\n");
-      #endif
-
-      sprtf("  %-*s%X\n", width, "RVAs & sizes",
-        optionalHeader->NumberOfRvaAndSizes);
-
-      sprtf("\n");
-   }
-
-   if ( fDumpDataDirectory )
-   {
-      sprtf("\nData Directory:\n");
-      for ( i=0; i < optionalHeader->NumberOfRvaAndSizes; i++)
-      {
-        sprtf( "  %-12s rva: %08X  size: %08X\n",
-            (i >= NUMBER_IMAGE_DIRECTORY_ENTRYS)
-                ? "unused" : ImageDirectoryNames[i], 
-            optionalHeader->DataDirectory[i].VirtualAddress,
-            optionalHeader->DataDirectory[i].Size);
-      }
-   }
+    if (fDumpDataDirectory)
+    {
+        UINT max = IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
+        SPRTF("\nData Directory: Count %u (%x)\n", max, max);
+        //for (i = 0; i < optionalHeader->NumberOfRvaAndSizes; i++)
+        for (i = 0; i < max; i++)
+        {
+            if (Is32) {
+                SPRTF("  %-12s rva: %08X  size: %08X\n",
+                    (i >= NUMBER_IMAGE_DIRECTORY_ENTRYS)
+                    ? "unused" : ImageDirectoryNames[i],
+                    opt32->DataDirectory[i].VirtualAddress,
+                    opt32->DataDirectory[i].Size);
+            }
+            else {
+                SPRTF("  %-12s rva: %08X  size: %08X\n",
+                    (i >= NUMBER_IMAGE_DIRECTORY_ENTRYS)
+                    ? "unused" : ImageDirectoryNames[i],
+                    opt64->DataDirectory[i].VirtualAddress,
+                    opt64->DataDirectory[i].Size);
+            }
+        }
+    }
 }
+
 
 #define ADD_DUMP_SECTION_TABLE
 
@@ -3617,7 +3874,8 @@ void DumpExeFile( PIMAGE_DOS_HEADER dosHeader )
 #endif // #ifdef ADD_DUMP_HEADER    
 
 #ifdef ADD_DUMP_OPTIONAL
-    DumpOptionalHeader((PIMAGE_OPTIONAL_HEADER)&pNTHeader->OptionalHeader);
+    //DumpOptionalHeader((PIMAGE_OPTIONAL_HEADER)&pNTHeader->OptionalHeader);
+    DumpOptionalHeader( pNTHeader, base );
 #endif // #ifdef ADD_DUMP_OPTIONAL
 
 #ifdef ADD_DUMP_SECTION_TABLE
@@ -4663,7 +4921,7 @@ CHAR2FUNC sCharFunc[] = {
    { Set_PEDUMP_C, 'C', &fDumpSectionTable },
    { Set_PEDUMP_D, 'D', &fDumpFileHeader },
 // 20100527 - add -exe:F
-// " F = follow import trail, using PATH to find, and dump imported DLLs: def = OFF."MEOR
+// " F = follow import trail, using PATH to find, and dump imported DLLs: def = OFF." MEOR
 #ifdef ADD_EXE_FOLLOW
    { Set_PEDUMP_F, 'F', &fDumpFollowImports },
 #endif
