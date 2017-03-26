@@ -3403,7 +3403,7 @@ void DumpMiscDebugInfo( PIMAGE_DEBUG_MISC pMiscDebugInfo )
 }
 
 #define ADD_DUMP_CV_DEBUG
-
+// CodeView signature, equal to "NB10"
 typedef struct _PDB_INFO {
     CHAR    Signature[4];   // "NBxx"
     ULONG   Offset;         // always zero
@@ -3414,17 +3414,16 @@ typedef struct _PDB_INFO {
 
 void DumpCVDebugInfo( PDWORD pCVHeader )
 {
-	PPDB_INFO pPDBInfo;
-
+	PPDB_INFO pPDBInfo = (PPDB_INFO)pCVHeader;
+    
 	sprtf( "CodeView Signature: %08X\n", *pCVHeader );
 
-	if ( '01BN' != *pCVHeader )
+	//if ( '01BN' != *pCVHeader )
+    if ((pPDBInfo->Signature[0] != 'N') || (pPDBInfo->Signature[1] != 'B'))
 	{
 		sprtf( "Unhandled CodeView Information format %.4s\n", pCVHeader );
 		return;
 	}
-
-	pPDBInfo = (PPDB_INFO)pCVHeader;
 
 	sprtf( "  Offset: %08X  Signature: %08X  Age: %08X\n",
 			pPDBInfo->Offset, pPDBInfo->sig, pPDBInfo->age );
