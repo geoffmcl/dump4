@@ -702,6 +702,170 @@ typedef struct _IMAGE_IMPORT_DESCRIPTOR {
 typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;
 
 
+///////////////////////////////////////////////////////////////////////////////////////
+//// 20170326 - Add THUNK data
+//
+// Import Format
+//
+
+typedef struct _IMAGE_IMPORT_BY_NAME {
+    WORD    Hint;
+    CHAR   Name[1];
+} IMAGE_IMPORT_BY_NAME, *PIMAGE_IMPORT_BY_NAME;
+
+// #include "pshpack8.h"                       // Use align 8 for the 64-bit IAT.
+
+typedef struct _IMAGE_THUNK_DATA64 {
+    union {
+        ULONGLONG ForwarderString;  // PBYTE 
+        ULONGLONG Function;         // PDWORD
+        ULONGLONG Ordinal;
+        ULONGLONG AddressOfData;    // PIMAGE_IMPORT_BY_NAME
+    } u1;
+} IMAGE_THUNK_DATA64;
+typedef IMAGE_THUNK_DATA64 * PIMAGE_THUNK_DATA64;
+
+// #include "poppack.h"                        // Back to 4 byte packing
+
+typedef struct _IMAGE_THUNK_DATA32 {
+    union {
+        DWORD ForwarderString;      // PBYTE 
+        DWORD Function;             // PDWORD
+        DWORD Ordinal;
+        DWORD AddressOfData;        // PIMAGE_IMPORT_BY_NAME
+    } u1;
+} IMAGE_THUNK_DATA32;
+typedef IMAGE_THUNK_DATA32 * PIMAGE_THUNK_DATA32;
+
+#define IMAGE_ORDINAL_FLAG64 0x8000000000000000
+#define IMAGE_ORDINAL_FLAG32 0x80000000
+#define IMAGE_ORDINAL64(Ordinal) (Ordinal & 0xffff)
+#define IMAGE_ORDINAL32(Ordinal) (Ordinal & 0xffff)
+#define IMAGE_SNAP_BY_ORDINAL64(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG64) != 0)
+#define IMAGE_SNAP_BY_ORDINAL32(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG32) != 0)
+
+//
+// Thread Local Storage
+//
+
+typedef VOID
+(NTAPI *PIMAGE_TLS_CALLBACK) (
+    PVOID DllHandle,
+    DWORD Reason,
+    PVOID Reserved
+    );
+
+typedef struct _IMAGE_TLS_DIRECTORY64 {
+    ULONGLONG StartAddressOfRawData;
+    ULONGLONG EndAddressOfRawData;
+    ULONGLONG AddressOfIndex;         // PDWORD
+    ULONGLONG AddressOfCallBacks;     // PIMAGE_TLS_CALLBACK *;
+    DWORD SizeOfZeroFill;
+    union {
+        DWORD Characteristics;
+        struct {
+            DWORD Reserved0 : 20;
+            DWORD Alignment : 4;
+            DWORD Reserved1 : 8;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+
+} IMAGE_TLS_DIRECTORY64;
+
+typedef IMAGE_TLS_DIRECTORY64 * PIMAGE_TLS_DIRECTORY64;
+
+typedef struct _IMAGE_TLS_DIRECTORY32 {
+    DWORD   StartAddressOfRawData;
+    DWORD   EndAddressOfRawData;
+    DWORD   AddressOfIndex;             // PDWORD
+    DWORD   AddressOfCallBacks;         // PIMAGE_TLS_CALLBACK *
+    DWORD   SizeOfZeroFill;
+    union {
+        DWORD Characteristics;
+        struct {
+            DWORD Reserved0 : 20;
+            DWORD Alignment : 4;
+            DWORD Reserved1 : 8;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+
+} IMAGE_TLS_DIRECTORY32;
+typedef IMAGE_TLS_DIRECTORY32 * PIMAGE_TLS_DIRECTORY32;
+
+#ifdef _WIN64
+#define IMAGE_ORDINAL_FLAG              IMAGE_ORDINAL_FLAG64
+#define IMAGE_ORDINAL(Ordinal)          IMAGE_ORDINAL64(Ordinal)
+typedef IMAGE_THUNK_DATA64              IMAGE_THUNK_DATA;
+typedef PIMAGE_THUNK_DATA64             PIMAGE_THUNK_DATA;
+#define IMAGE_SNAP_BY_ORDINAL(Ordinal)  IMAGE_SNAP_BY_ORDINAL64(Ordinal)
+typedef IMAGE_TLS_DIRECTORY64           IMAGE_TLS_DIRECTORY;
+typedef PIMAGE_TLS_DIRECTORY64          PIMAGE_TLS_DIRECTORY;
+#else
+#define IMAGE_ORDINAL_FLAG              IMAGE_ORDINAL_FLAG32
+#define IMAGE_ORDINAL(Ordinal)          IMAGE_ORDINAL32(Ordinal)
+typedef IMAGE_THUNK_DATA32              IMAGE_THUNK_DATA;
+typedef PIMAGE_THUNK_DATA32             PIMAGE_THUNK_DATA;
+#define IMAGE_SNAP_BY_ORDINAL(Ordinal)  IMAGE_SNAP_BY_ORDINAL32(Ordinal)
+typedef IMAGE_TLS_DIRECTORY32           IMAGE_TLS_DIRECTORY;
+typedef PIMAGE_TLS_DIRECTORY32          PIMAGE_TLS_DIRECTORY;
+#endif
+
+typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+    union {
+        DWORD   Characteristics;            // 0 for terminating null import descriptor
+        DWORD   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+    } DUMMYUNIONNAME;
+    DWORD   TimeDateStamp;                  // 0 if not bound,
+                                            // -1 if bound, and real date\time stamp
+                                            //     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
+                                            // O.W. date/time stamp of DLL bound to (Old BIND)
+
+    DWORD   ForwarderChain;                 // -1 if no forwarders
+    DWORD   Name;
+    DWORD   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;
+
+//
+// New format import descriptors pointed to by DataDirectory[ IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT ]
+//
+
+typedef struct _IMAGE_BOUND_IMPORT_DESCRIPTOR {
+    DWORD   TimeDateStamp;
+    WORD    OffsetModuleName;
+    WORD    NumberOfModuleForwarderRefs;
+    // Array of zero or more IMAGE_BOUND_FORWARDER_REF follows
+} IMAGE_BOUND_IMPORT_DESCRIPTOR, *PIMAGE_BOUND_IMPORT_DESCRIPTOR;
+
+typedef struct _IMAGE_BOUND_FORWARDER_REF {
+    DWORD   TimeDateStamp;
+    WORD    OffsetModuleName;
+    WORD    Reserved;
+} IMAGE_BOUND_FORWARDER_REF, *PIMAGE_BOUND_FORWARDER_REF;
+
+typedef struct _IMAGE_DELAYLOAD_DESCRIPTOR {
+    union {
+        DWORD AllAttributes;
+        struct {
+            DWORD RvaBased : 1;             // Delay load version 2
+            DWORD ReservedAttributes : 31;
+        } DUMMYSTRUCTNAME;
+    } Attributes;
+
+    DWORD DllNameRVA;                       // RVA to the name of the target library (NULL-terminate ASCII string)
+    DWORD ModuleHandleRVA;                  // RVA to the HMODULE caching location (PHMODULE)
+    DWORD ImportAddressTableRVA;            // RVA to the start of the IAT (PIMAGE_THUNK_DATA)
+    DWORD ImportNameTableRVA;               // RVA to the start of the name table (PIMAGE_THUNK_DATA::AddressOfData)
+    DWORD BoundImportAddressTableRVA;       // RVA to an optional bound IAT
+    DWORD UnloadInformationTableRVA;        // RVA to an optional unload info table
+    DWORD TimeDateStamp;                    // 0 if not bound,
+                                            // Otherwise, date/time of the target DLL
+
+} IMAGE_DELAYLOAD_DESCRIPTOR, *PIMAGE_DELAYLOAD_DESCRIPTOR;
+
+typedef const IMAGE_DELAYLOAD_DESCRIPTOR *PCIMAGE_DELAYLOAD_DESCRIPTOR;
+
+
 // ======================================
 #endif
 
