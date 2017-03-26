@@ -1215,6 +1215,48 @@ typedef _PIMAGE_RUNTIME_FUNCTION_ENTRY PIMAGE_RUNTIME_FUNCTION_ENTRY;
 
 #endif
 
+////////////////////////////////////////////////////////////////////
+//
+// Based relocation format.
+//
+
+typedef struct _IMAGE_BASE_RELOCATION {
+    DWORD   VirtualAddress;
+    DWORD   SizeOfBlock;
+    //  WORD    TypeOffset[1];
+} IMAGE_BASE_RELOCATION;
+typedef IMAGE_BASE_RELOCATION UNALIGNED * PIMAGE_BASE_RELOCATION;
+
+//
+// Based relocation types.
+//
+
+#define IMAGE_REL_BASED_ABSOLUTE              0
+#define IMAGE_REL_BASED_HIGH                  1
+#define IMAGE_REL_BASED_LOW                   2
+#define IMAGE_REL_BASED_HIGHLOW               3
+#define IMAGE_REL_BASED_HIGHADJ               4
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_5    5
+#define IMAGE_REL_BASED_RESERVED              6
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_7    7
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_8    8
+#define IMAGE_REL_BASED_MACHINE_SPECIFIC_9    9
+#define IMAGE_REL_BASED_DIR64                 10
+
+//
+// Platform-specific based relocation types.
+//
+
+#define IMAGE_REL_BASED_IA64_IMM64            9
+
+#define IMAGE_REL_BASED_MIPS_JMPADDR          5
+#define IMAGE_REL_BASED_MIPS_JMPADDR16        9
+
+#define IMAGE_REL_BASED_ARM_MOV32             5
+#define IMAGE_REL_BASED_THUMB_MOV32           7
+
+
+
 
 
 
