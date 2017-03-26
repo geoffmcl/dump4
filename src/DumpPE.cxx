@@ -1204,7 +1204,7 @@ void	Do_PE_File( char * fn, HANDLE hf )
 		}
 	}
     if(pb)
-        LocalFree(pb);
+        dMFREE(pb);
     dMFREE(lpdf);
 }
 
