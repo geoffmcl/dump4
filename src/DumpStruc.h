@@ -703,7 +703,30 @@ typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_IMPORT_DESCRIPTOR;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-//// 20170326 - Add THUNK data
+//// 20170326 - Add THUNK data and Export Format...
+//
+// DLL support.
+//
+
+//
+// Export Format
+//
+
+typedef struct _IMAGE_EXPORT_DIRECTORY {
+    DWORD   Characteristics;
+    DWORD   TimeDateStamp;
+    WORD    MajorVersion;
+    WORD    MinorVersion;
+    DWORD   Name;
+    DWORD   Base;
+    DWORD   NumberOfFunctions;
+    DWORD   NumberOfNames;
+    DWORD   AddressOfFunctions;     // RVA from base of image
+    DWORD   AddressOfNames;         // RVA from base of image
+    DWORD   AddressOfNameOrdinals;  // RVA from base of image
+} IMAGE_EXPORT_DIRECTORY, *PIMAGE_EXPORT_DIRECTORY;
+
+
 //
 // Import Format
 //
