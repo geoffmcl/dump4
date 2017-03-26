@@ -1090,6 +1090,14 @@ int Process_Next_PE(  LPDFSTR lpdf )
    return DumpMemoryMap( lpdf->df_pVoid, lpdf->fn, lpdf->dwmax );
 }
 
+size_t GetFileSizeFP(FILE * fp)
+{
+    size_t sz;
+    fseek(fp, 0L, SEEK_END);
+    sz = ftell(fp);
+    fseek(fp, 0L, SEEK_SET);
+    return sz;
+}
 
 void	Do_PE_File( char * fn, HANDLE hf )
 {
@@ -1108,6 +1116,7 @@ void	Do_PE_File( char * fn, HANDLE hf )
     lpdf->lptmp = lptmp;
     if( VFH(hf) ) {
         lpdf->hf = (HANDLE)hf;
+#ifdef WIN32
         fsiz = GetFileSize( (HANDLE)hf, NULL );
 		lpdf->qwSize.LowPart = GetFileSize( (HANDLE)hf, &lpdf->qwSize.HighPart );
         if( lpdf->qwSize.HighPart )
@@ -1184,6 +1193,10 @@ void	Do_PE_File( char * fn, HANDLE hf )
 				prt( lptmp );
 			}
 		}
+#else   // !WIN32
+        sprintf(lptmp, "ERROR: File [%s] not ported to unix yet!" MEOR, fn);
+        prt(lptmp);
+#endif // WIN32 y/n
 	} else {
         if( giVerbose ) {
             sprintf( lptmp, "ERROR: Unable to OPEN file [%s]!" MEOR, fn );
