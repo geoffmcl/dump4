@@ -871,6 +871,350 @@ typedef struct _IMAGE_DELAYLOAD_DESCRIPTOR {
 
 typedef const IMAGE_DELAYLOAD_DESCRIPTOR *PCIMAGE_DELAYLOAD_DESCRIPTOR;
 
+//////////////////////////////////////////////////////////////////
+//
+// Resource Format.
+//
+
+//
+// Resource directory consists of two counts, following by a variable length
+// array of directory entries.  The first count is the number of entries at
+// beginning of the array that have actual names associated with each entry.
+// The entries are in ascending order, case insensitive strings.  The second
+// count is the number of entries that immediately follow the named entries.
+// This second count identifies the number of entries that have 16-bit integer
+// Ids as their name.  These entries are also sorted in ascending order.
+//
+// This structure allows fast lookup by either name or number, but for any
+// given resource entry only one form of lookup is supported, not both.
+// This is consistant with the syntax of the .RC file and the .RES file.
+//
+
+typedef struct _IMAGE_RESOURCE_DIRECTORY {
+    DWORD   Characteristics;
+    DWORD   TimeDateStamp;
+    WORD    MajorVersion;
+    WORD    MinorVersion;
+    WORD    NumberOfNamedEntries;
+    WORD    NumberOfIdEntries;
+    //  IMAGE_RESOURCE_DIRECTORY_ENTRY DirectoryEntries[];
+} IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;
+
+#define IMAGE_RESOURCE_NAME_IS_STRING        0x80000000
+#define IMAGE_RESOURCE_DATA_IS_DIRECTORY     0x80000000
+//
+// Each directory contains the 32-bit Name of the entry and an offset,
+// relative to the beginning of the resource directory of the data associated
+// with this directory entry.  If the name of the entry is an actual text
+// string instead of an integer Id, then the high order bit of the name field
+// is set to one and the low order 31-bits are an offset, relative to the
+// beginning of the resource directory of the string, which is of type
+// IMAGE_RESOURCE_DIRECTORY_STRING.  Otherwise the high bit is clear and the
+// low-order 16-bits are the integer Id that identify this resource directory
+// entry. If the directory entry is yet another resource directory (i.e. a
+// subdirectory), then the high order bit of the offset field will be
+// set to indicate this.  Otherwise the high bit is clear and the offset
+// field points to a resource data entry.
+//
+
+typedef struct _IMAGE_RESOURCE_DIRECTORY_ENTRY {
+    union {
+        struct {
+            DWORD NameOffset : 31;
+            DWORD NameIsString : 1;
+        } DUMMYSTRUCTNAME;
+        DWORD   Name;
+        WORD    Id;
+    } DUMMYUNIONNAME;
+    union {
+        DWORD   OffsetToData;
+        struct {
+            DWORD   OffsetToDirectory : 31;
+            DWORD   DataIsDirectory : 1;
+        } DUMMYSTRUCTNAME2;
+    } DUMMYUNIONNAME2;
+} IMAGE_RESOURCE_DIRECTORY_ENTRY, *PIMAGE_RESOURCE_DIRECTORY_ENTRY;
+
+//
+// For resource directory entries that have actual string names, the Name
+// field of the directory entry points to an object of the following type.
+// All of these string objects are stored together after the last resource
+// directory entry and before the first resource data object.  This minimizes
+// the impact of these variable length objects on the alignment of the fixed
+// size directory entry objects.
+//
+
+typedef struct _IMAGE_RESOURCE_DIRECTORY_STRING {
+    WORD    Length;
+    CHAR    NameString[1];
+} IMAGE_RESOURCE_DIRECTORY_STRING, *PIMAGE_RESOURCE_DIRECTORY_STRING;
+
+
+typedef struct _IMAGE_RESOURCE_DIR_STRING_U {
+    WORD    Length;
+    WCHAR   NameString[1];
+} IMAGE_RESOURCE_DIR_STRING_U, *PIMAGE_RESOURCE_DIR_STRING_U;
+
+
+//
+// Each resource data entry describes a leaf node in the resource directory
+// tree.  It contains an offset, relative to the beginning of the resource
+// directory of the data for the resource, a size field that gives the number
+// of bytes of data at that offset, a CodePage that should be used when
+// decoding code point values within the resource data.  Typically for new
+// applications the code page would be the unicode code page.
+//
+
+typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
+    DWORD   OffsetToData;
+    DWORD   Size;
+    DWORD   CodePage;
+    DWORD   Reserved;
+} IMAGE_RESOURCE_DATA_ENTRY, *PIMAGE_RESOURCE_DATA_ENTRY;
+
+//
+// Code Integrity in loadconfig (CI)
+//
+
+typedef struct _IMAGE_LOAD_CONFIG_CODE_INTEGRITY {
+    WORD    Flags;          // Flags to indicate if CI information is available, etc.
+    WORD    Catalog;        // 0xFFFF means not available
+    DWORD   CatalogOffset;
+    DWORD   Reserved;       // Additional bitmask to be defined later
+} IMAGE_LOAD_CONFIG_CODE_INTEGRITY, *PIMAGE_LOAD_CONFIG_CODE_INTEGRITY;
+
+//
+// Dynamic value relocation table in loadconfig
+//
+
+typedef struct _IMAGE_DYNAMIC_RELOCATION_TABLE {
+    DWORD Version;
+    DWORD Size;
+    //  IMAGE_DYNAMIC_RELOCATION DynamicRelocations[0];
+} IMAGE_DYNAMIC_RELOCATION_TABLE, *PIMAGE_DYNAMIC_RELOCATION_TABLE;
+
+//
+// Dynamic value relocation entries following IMAGE_DYNAMIC_RELOCATION_TABLE
+//
+
+typedef struct _IMAGE_DYNAMIC_RELOCATION {
+    PVOID Symbol;
+    DWORD BaseRelocSize;
+    //  IMAGE_BASE_RELOCATION BaseRelocations[0];
+} IMAGE_DYNAMIC_RELOCATION, *PIMAGE_DYNAMIC_RELOCATION;
+
+//
+// Load Configuration Directory Entry
+//
+
+typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY32 {
+    DWORD   Size;
+    DWORD   TimeDateStamp;
+    WORD    MajorVersion;
+    WORD    MinorVersion;
+    DWORD   GlobalFlagsClear;
+    DWORD   GlobalFlagsSet;
+    DWORD   CriticalSectionDefaultTimeout;
+    DWORD   DeCommitFreeBlockThreshold;
+    DWORD   DeCommitTotalFreeThreshold;
+    DWORD   LockPrefixTable;                // VA
+    DWORD   MaximumAllocationSize;
+    DWORD   VirtualMemoryThreshold;
+    DWORD   ProcessHeapFlags;
+    DWORD   ProcessAffinityMask;
+    WORD    CSDVersion;
+    WORD    DependentLoadFlags;
+    DWORD   EditList;                       // VA
+    DWORD   SecurityCookie;                 // VA
+    DWORD   SEHandlerTable;                 // VA
+    DWORD   SEHandlerCount;
+    DWORD   GuardCFCheckFunctionPointer;    // VA
+    DWORD   GuardCFDispatchFunctionPointer; // VA
+    DWORD   GuardCFFunctionTable;           // VA
+    DWORD   GuardCFFunctionCount;
+    DWORD   GuardFlags;
+    IMAGE_LOAD_CONFIG_CODE_INTEGRITY CodeIntegrity;
+    DWORD   GuardAddressTakenIatEntryTable; // VA
+    DWORD   GuardAddressTakenIatEntryCount;
+    DWORD   GuardLongJumpTargetTable;       // VA
+    DWORD   GuardLongJumpTargetCount;
+    DWORD   DynamicValueRelocTable;         // VA
+    DWORD   HybridMetadataPointer;
+} IMAGE_LOAD_CONFIG_DIRECTORY32, *PIMAGE_LOAD_CONFIG_DIRECTORY32;
+
+typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY64 {
+    DWORD      Size;
+    DWORD      TimeDateStamp;
+    WORD       MajorVersion;
+    WORD       MinorVersion;
+    DWORD      GlobalFlagsClear;
+    DWORD      GlobalFlagsSet;
+    DWORD      CriticalSectionDefaultTimeout;
+    ULONGLONG  DeCommitFreeBlockThreshold;
+    ULONGLONG  DeCommitTotalFreeThreshold;
+    ULONGLONG  LockPrefixTable;                // VA
+    ULONGLONG  MaximumAllocationSize;
+    ULONGLONG  VirtualMemoryThreshold;
+    ULONGLONG  ProcessAffinityMask;
+    DWORD      ProcessHeapFlags;
+    WORD       CSDVersion;
+    WORD       DependentLoadFlags;
+    ULONGLONG  EditList;                       // VA
+    ULONGLONG  SecurityCookie;                 // VA
+    ULONGLONG  SEHandlerTable;                 // VA
+    ULONGLONG  SEHandlerCount;
+    ULONGLONG  GuardCFCheckFunctionPointer;    // VA
+    ULONGLONG  GuardCFDispatchFunctionPointer; // VA
+    ULONGLONG  GuardCFFunctionTable;           // VA
+    ULONGLONG  GuardCFFunctionCount;
+    DWORD      GuardFlags;
+    IMAGE_LOAD_CONFIG_CODE_INTEGRITY CodeIntegrity;
+    ULONGLONG  GuardAddressTakenIatEntryTable; // VA
+    ULONGLONG  GuardAddressTakenIatEntryCount;
+    ULONGLONG  GuardLongJumpTargetTable;       // VA
+    ULONGLONG  GuardLongJumpTargetCount;
+    ULONGLONG  DynamicValueRelocTable;         // VA
+    ULONGLONG  HybridMetadataPointer;          // VA
+} IMAGE_LOAD_CONFIG_DIRECTORY64, *PIMAGE_LOAD_CONFIG_DIRECTORY64;
+
+
+#ifdef _WIN64
+typedef IMAGE_LOAD_CONFIG_DIRECTORY64     IMAGE_LOAD_CONFIG_DIRECTORY;
+typedef PIMAGE_LOAD_CONFIG_DIRECTORY64    PIMAGE_LOAD_CONFIG_DIRECTORY;
+#else
+typedef IMAGE_LOAD_CONFIG_DIRECTORY32     IMAGE_LOAD_CONFIG_DIRECTORY;
+typedef PIMAGE_LOAD_CONFIG_DIRECTORY32    PIMAGE_LOAD_CONFIG_DIRECTORY;
+#endif
+
+#define IMAGE_GUARD_CF_INSTRUMENTED                    0x00000100 // Module performs control flow integrity checks using system-supplied support
+#define IMAGE_GUARD_CFW_INSTRUMENTED                   0x00000200 // Module performs control flow and write integrity checks
+#define IMAGE_GUARD_CF_FUNCTION_TABLE_PRESENT          0x00000400 // Module contains valid control flow target metadata
+#define IMAGE_GUARD_SECURITY_COOKIE_UNUSED             0x00000800 // Module does not make use of the /GS security cookie
+#define IMAGE_GUARD_PROTECT_DELAYLOAD_IAT              0x00001000 // Module supports read only delay load IAT
+#define IMAGE_GUARD_DELAYLOAD_IAT_IN_ITS_OWN_SECTION   0x00002000 // Delayload import table in its own .didat section (with nothing else in it) that can be freely reprotected
+#define IMAGE_GUARD_CF_EXPORT_SUPPRESSION_INFO_PRESENT 0x00004000 // Module contains suppressed export information
+#define IMAGE_GUARD_CF_ENABLE_EXPORT_SUPPRESSION       0x00008000 // Module enables suppression of exports
+#define IMAGE_GUARD_CF_LONGJUMP_TABLE_PRESENT          0x00010000 // Module contains longjmp target information
+#define IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK        0xF0000000 // Stride of Guard CF function table encoded in these bits (additional count of bytes per element)
+#define IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_SHIFT       28         // Shift to right-justify Guard CF function table stride
+
+//
+// GFIDS table entry flags.
+//
+
+#define IMAGE_GUARD_FLAG_FID_SUPPRESSED               0x01       // The containing GFID entry is suppressed
+#define IMAGE_GUARD_FLAG_EXPORT_SUPPRESSED            0x02       // The containing GFID entry is suppressed
+
+//
+// WIN CE Exception table format
+//
+
+//
+// Function table entry format.  Function table is pointed to by the
+// IMAGE_DIRECTORY_ENTRY_EXCEPTION directory entry.
+//
+
+typedef struct _IMAGE_CE_RUNTIME_FUNCTION_ENTRY {
+    DWORD FuncStart;
+    DWORD PrologLen : 8;
+    DWORD FuncLen : 22;
+    DWORD ThirtyTwoBit : 1;
+    DWORD ExceptionFlag : 1;
+} IMAGE_CE_RUNTIME_FUNCTION_ENTRY, *PIMAGE_CE_RUNTIME_FUNCTION_ENTRY;
+
+typedef struct _IMAGE_ARM_RUNTIME_FUNCTION_ENTRY {
+    DWORD BeginAddress;
+    union {
+        DWORD UnwindData;
+        struct {
+            DWORD Flag : 2;
+            DWORD FunctionLength : 11;
+            DWORD Ret : 2;
+            DWORD H : 1;
+            DWORD Reg : 3;
+            DWORD R : 1;
+            DWORD L : 1;
+            DWORD C : 1;
+            DWORD StackAdjust : 10;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+} IMAGE_ARM_RUNTIME_FUNCTION_ENTRY, *PIMAGE_ARM_RUNTIME_FUNCTION_ENTRY;
+
+typedef struct _IMAGE_ARM64_RUNTIME_FUNCTION_ENTRY {
+    DWORD BeginAddress;
+    union {
+        DWORD UnwindData;
+        struct {
+            DWORD Flag : 2;
+            DWORD FunctionLength : 11;
+            DWORD RegF : 3;
+            DWORD RegI : 4;
+            DWORD H : 1;
+            DWORD CR : 2;
+            DWORD FrameSize : 9;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+} IMAGE_ARM64_RUNTIME_FUNCTION_ENTRY, *PIMAGE_ARM64_RUNTIME_FUNCTION_ENTRY;
+
+typedef struct _IMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY {
+    ULONGLONG BeginAddress;
+    ULONGLONG EndAddress;
+    ULONGLONG ExceptionHandler;
+    ULONGLONG HandlerData;
+    ULONGLONG PrologEndAddress;
+} IMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY, *PIMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY;
+
+typedef struct _IMAGE_ALPHA_RUNTIME_FUNCTION_ENTRY {
+    DWORD BeginAddress;
+    DWORD EndAddress;
+    DWORD ExceptionHandler;
+    DWORD HandlerData;
+    DWORD PrologEndAddress;
+} IMAGE_ALPHA_RUNTIME_FUNCTION_ENTRY, *PIMAGE_ALPHA_RUNTIME_FUNCTION_ENTRY;
+
+typedef struct _IMAGE_RUNTIME_FUNCTION_ENTRY {
+    DWORD BeginAddress;
+    DWORD EndAddress;
+    union {
+        DWORD UnwindInfoAddress;
+        DWORD UnwindData;
+    } DUMMYUNIONNAME;
+} _IMAGE_RUNTIME_FUNCTION_ENTRY, *_PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+typedef  _IMAGE_RUNTIME_FUNCTION_ENTRY  IMAGE_IA64_RUNTIME_FUNCTION_ENTRY;
+typedef _PIMAGE_RUNTIME_FUNCTION_ENTRY PIMAGE_IA64_RUNTIME_FUNCTION_ENTRY;
+
+#if defined(_AXP64_)
+
+typedef  IMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY  IMAGE_AXP64_RUNTIME_FUNCTION_ENTRY;
+typedef PIMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY PIMAGE_AXP64_RUNTIME_FUNCTION_ENTRY;
+typedef  IMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY  IMAGE_RUNTIME_FUNCTION_ENTRY;
+typedef PIMAGE_ALPHA64_RUNTIME_FUNCTION_ENTRY PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+#elif defined(_ALPHA_)
+
+typedef  IMAGE_ALPHA_RUNTIME_FUNCTION_ENTRY  IMAGE_RUNTIME_FUNCTION_ENTRY;
+typedef PIMAGE_ALPHA_RUNTIME_FUNCTION_ENTRY PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+#elif defined(_ARM64_)
+
+typedef  IMAGE_ARM64_RUNTIME_FUNCTION_ENTRY  IMAGE_RUNTIME_FUNCTION_ENTRY;
+typedef PIMAGE_ARM64_RUNTIME_FUNCTION_ENTRY PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+#elif defined(_ARM_)
+
+typedef  IMAGE_ARM_RUNTIME_FUNCTION_ENTRY  IMAGE_RUNTIME_FUNCTION_ENTRY;
+typedef PIMAGE_ARM_RUNTIME_FUNCTION_ENTRY PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+#else
+
+typedef  _IMAGE_RUNTIME_FUNCTION_ENTRY  IMAGE_RUNTIME_FUNCTION_ENTRY;
+typedef _PIMAGE_RUNTIME_FUNCTION_ENTRY PIMAGE_RUNTIME_FUNCTION_ENTRY;
+
+#endif
+
+
+
 
 // ======================================
 #endif
