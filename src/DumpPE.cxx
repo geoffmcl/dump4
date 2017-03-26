@@ -2553,7 +2553,7 @@ DWORD cVerResEntries = 0;
 
 void GetResourceTypeName(DWORD type, PSTR buffer, UINT cBytes);
 void DumpResourceEntry( PIMAGE_RESOURCE_DIRECTORY_ENTRY resDirEntry,
-    DWORD resourceBase,
+    DWORD64 resourceBase,
     DWORD level,
     DWORD resourceType,
     DWORD baseResType,
@@ -2563,7 +2563,7 @@ void DumpResourceEntry( PIMAGE_RESOURCE_DIRECTORY_ENTRY resDirEntry,
 //
 // Dump the information about one resource directory.
 //
-void DumpResourceDirectory( PIMAGE_RESOURCE_DIRECTORY resDir, DWORD resourceBase, 
+void DumpResourceDirectory( PIMAGE_RESOURCE_DIRECTORY resDir, DWORD64 resBase, 
     DWORD level,
     DWORD resourceType,
     DWORD baseResType,
@@ -2583,7 +2583,7 @@ void DumpResourceDirectory( PIMAGE_RESOURCE_DIRECTORY resDir, DWORD resourceBase
 
 		if ( resourceType & IMAGE_RESOURCE_NAME_IS_STRING )
 		{
-			GetResourceNameFromId( resourceType, resourceBase,
+			GetResourceNameFromId( resourceType, resBase,
 									szType, sizeof(szType) );
 		}
 		else
@@ -2593,7 +2593,7 @@ void DumpResourceDirectory( PIMAGE_RESOURCE_DIRECTORY resDir, DWORD resourceBase
 	}
     else    // All other levels, just print out the regular id or name
     {
-        GetResourceNameFromId( resourceType, resourceBase, szType,
+        GetResourceNameFromId( resourceType, resBase, szType,
                                sizeof(szType) );
     }
 
@@ -2645,10 +2645,10 @@ void DumpResourceDirectory( PIMAGE_RESOURCE_DIRECTORY resDir, DWORD resourceBase
 	sprtf( "\n" );
 	    
     for ( i=0; i < resDir->NumberOfNamedEntries; i++, resDirEntry++ )
-        DumpResourceEntry(resDirEntry, resourceBase, level+1, resourceType, baseResType, base, pNTHeader);
+        DumpResourceEntry(resDirEntry, resBase, level+1, resourceType, baseResType, base, pNTHeader);
 
     for ( i=0; i < resDir->NumberOfIdEntries; i++, resDirEntry++ ) {
-        DumpResourceEntry(resDirEntry, resourceBase, level+1, resourceType, baseResType, base, pNTHeader);
+        DumpResourceEntry(resDirEntry, resBase, level+1, resourceType, baseResType, base, pNTHeader);
     }
 
 }
@@ -2922,7 +2922,7 @@ void Dump_RT_VERSION( PIMAGE_RESOURCE_DATA_ENTRY pResDataEntry,
 void DumpResourceEntry
 (
     PIMAGE_RESOURCE_DIRECTORY_ENTRY resDirEntry,
-    DWORD resourceBase,
+    DWORD64 resourceBase,
     DWORD level,
     DWORD resourceType,
     DWORD baseResType,
@@ -3310,21 +3310,24 @@ void DumpDialogs( 	char *base,
 void DumpResourceSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
 {
 	DWORD resourcesRVA;
-    PIMAGE_RESOURCE_DIRECTORY resDir;
+    PIMAGE_RESOURCE_DIRECTORY resDir, resDir2;
 
 	resourcesRVA = GetImgDirEntryRVA(pNTHeader, IMAGE_DIRECTORY_ENTRY_RESOURCE);
 	if ( !resourcesRVA )
 		return;
 
-    resDir = (PIMAGE_RESOURCE_DIRECTORY)
-    		GetPtrFromRVA( resourcesRVA, pNTHeader, base );
+    resDir2 = (PIMAGE_RESOURCE_DIRECTORY)GetPtrFromRVA( resourcesRVA, pNTHeader, base );
+    resDir = (PIMAGE_RESOURCE_DIRECTORY)ImageRvaToVa(pNTHeader, base, resourcesRVA, 0);
 
 	if ( !resDir )
 		return;
 		
+    if (resDir != resDir2)
+        return;
+
     sprtf("Resources (RVA: %X)\n", resourcesRVA );
 
-    DumpResourceDirectory(resDir, (DWORD)resDir, 0, 0, 0, base, pNTHeader);
+    DumpResourceDirectory(resDir, (DWORD64)resDir, 0, 0, 0, base, pNTHeader);
 
 	sprtf( "\n" );
 
