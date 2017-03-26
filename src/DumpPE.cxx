@@ -82,6 +82,10 @@ using namespace std;
 
 using std::vector;
 
+#ifndef WIN32
+typedef unsigned long long UINT_PTR, *PUINT_PTR;
+#endif
+
 // forward refs
 PSTR GetMachineTypeName( WORD wMachineType );
 
