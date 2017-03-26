@@ -1018,6 +1018,7 @@ void Do_Import_Init(void)
     Done_Import_Init = 1;
 }
 
+#define USE_FILE_STAT
 
 VOID Process_Next_Import(PSTR pName)
 {
@@ -1025,8 +1026,12 @@ VOID Process_Next_Import(PSTR pName)
     PDLLLIST pdll;
     char * cp;
     int fnd;
+#ifdef USE_FILE_STAT
+    struct stat buf;
+#else
     WIN32_FIND_DATA fd;
     HANDLE hFind;
+#endif
 
     if (Is_In_Dll_Done(pName))
         return;
@@ -1041,6 +1046,13 @@ VOID Process_Next_Import(PSTR pName)
         pdll = (PDLLLIST)pn;
         strcpy(cp,pdll->name);  // already ensured it ends in '\'
         strcat(cp,pName);       // so just copy the name
+#ifdef USE_FILE_STAT
+        if (stat(cp, &buf) == 0)
+        {
+            fnd = 1;
+            break;
+        }
+#else 
         hFind = FindFirstFile(cp,&fd);
         if (hFind && (hFind != INVALID_HANDLE_VALUE)) {
             fnd = 1;
@@ -1048,6 +1060,7 @@ VOID Process_Next_Import(PSTR pName)
             break;
 
         }
+#endif 
     }
     if (fnd) {
         sprtf(" found [%s]", cp);
