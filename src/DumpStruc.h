@@ -14,7 +14,7 @@
 // some unix glue
 #include <string.h> // for strcat, ...
 
-/* from winnt.h
+/* from winnt.h */
 #define IMAGE_DOS_SIGNATURE                 0x5A4D      // MZ
 #define IMAGE_OS2_SIGNATURE                 0x454E      // NE
 #define IMAGE_OS2_SIGNATURE_LE              0x454C      // LE
