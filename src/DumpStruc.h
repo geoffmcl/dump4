@@ -84,6 +84,8 @@ typedef unsigned long long DWORDLONG;
 #define HUGE
 #define INVALID_HANDLE_VALUE (PVOID)-1
 
+typedef unsigned short WCHAR;    // wc,   16-bit UNICODE character
+
 typedef union _ULARGE_INTEGER {
     //struct {
     //    DWORD LowPart;
