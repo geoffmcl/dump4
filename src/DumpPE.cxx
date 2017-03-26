@@ -1365,10 +1365,13 @@ void DumpImportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
          pszTimeDate = pedump_ctime((time_t *)&importDesc->TimeDateStamp);
          sprtf("  TimeDateStamp:   %08X", importDesc->TimeDateStamp );
          // 20100502 - do NOT show Unix epoc '-> Thu Jan 01 01:00:00 1970' if NULL
-         if (importDesc->TimeDateStamp)
-             sprtf( pszTimeDate ?  " -> %s" : "\n", pszTimeDate );
+         if (importDesc->TimeDateStamp) {
+             if (pszTimeDate)
+                 sprtf(" -> %s", pszTimeDate);
+         } 
          else
-             sprtf( " (NULL)\n" );
+             sprtf( " (NULL)" );
+         sprtf("\n");
          sprtf("  ForwarderChain:  %08X\n", importDesc->ForwarderChain);
          sprtf("  First thunk RVA: %08X\n", importDesc->FirstThunk);
     
