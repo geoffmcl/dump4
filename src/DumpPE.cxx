@@ -714,7 +714,7 @@ PIMAGE_SECTION_HEADER GetEnclosingSectionHeader(DWORD rva,
     return 0;
 }
 
-char *SzDebugFormats[] = {
+const char *SzDebugFormats[] = {
 "UNKNOWN/BORLAND","COFF","CODEVIEW","FPO","MISC","EXCEPTION","FIXUP",
 "OMAP_TO_SRC", "OMAP_FROM_SRC"};
 
@@ -724,7 +724,7 @@ char *SzDebugFormats[] = {
 void DumpDebugDirectory(PIMAGE_DEBUG_DIRECTORY debugDir, DWORD size, void *vbase)
 {
    DWORD cDebugFormats = size / sizeof(IMAGE_DEBUG_DIRECTORY);
-   PSTR szDebugFormat;
+   const char *szDebugFormat;
    unsigned i;
    char *base = (char *)vbase;
 
