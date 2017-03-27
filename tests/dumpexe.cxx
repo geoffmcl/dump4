@@ -4,6 +4,8 @@
  * Copyright (c) 2015 - Geoff R. McLane
  * Licence: GNU GPL version 2
  *
+ * Also reviewed : http://www.skynet.ie/~caolan/pub/winresdump/winresdump/doc/pefile.html
+ *
 \*/
 
 #include <stdio.h>
@@ -11,6 +13,9 @@
 #include <Windows.h>
 #include <Dbghelp.h>
 #include <time.h>
+#include <iostream>      
+
+using namespace std;
 
 // other includes
 #ifndef SPRTF
@@ -23,6 +28,10 @@
 #define MEOR "\n"
 #endif
 #endif
+
+// forward ref
+int test_main();
+
 
 /*
 
@@ -692,11 +701,48 @@ void DumpOptionalHeader(PIMAGE_NT_HEADERS pNTHeader, char *base)
     }
 }
 
+LPVOID GetFileMap(const char *szFileName)
+{
+    hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (hFile == INVALID_HANDLE_VALUE) {
+        cerr << "failed to open file " << szFileName << endl;
+        return 0;
+    }
+    hFileMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+    if (hFileMapping == 0)
+    {
+        cerr << "failed to map file " << szFileName << endl;
+        CloseHandle(hFile);
+        return 0;
+    }
+    lpFileBase = MapViewOfFile(hFileMapping, FILE_MAP_READ, 0, 0, 0);
+    if (lpFileBase == 0)
+    {
+        cerr << "failed to get map view of file " << szFileName << endl;
+        CloseHandle(hFileMapping);
+        CloseHandle(hFile);
+        return 0;
+    }
+    return lpFileBase;
+}
+
+void CloseFileMap()
+{
+    if (lpFileBase)
+        UnmapViewOfFile(lpFileBase);
+    if (hFileMapping)
+        CloseHandle(hFileMapping);
+    if (hFile && (hFile != INVALID_HANDLE_VALUE))
+        CloseHandle(hFile);
+    hFile = 0;
+    hFileMapping = 0;
+    lpFileBase = 0;
+
+}
+
+
 bool GetDLLFileExports(char *szFileName, unsigned int *nNoOfExports, char **&pszFunctions)
 {
-    HANDLE hFile;
-    HANDLE hFileMapping;
-    LPVOID lpFileBase;
     PIMAGE_DOS_HEADER pImg_DOS_Header;
     PIMAGE_NT_HEADERS pImg_NT_Header;
     PIMAGE_EXPORT_DIRECTORY pImg_Export_Dir;
@@ -996,7 +1042,7 @@ int parse_args( int argc, char **argv )
 }
 
 // main() OS entry
-int main( int argc, char **argv )
+int old_main( int argc, char **argv )
 {
     int iret = 0;
     iret = parse_args(argc,argv);
@@ -1031,6 +1077,155 @@ int main( int argc, char **argv )
     // iret |= ProcessFile(usr_input);  // actions of app
 
     return iret;
+}
+
+// from : https://www.experts-exchange.com/questions/21066562/Listing-the-Export-Address-Table-EAT-IMAGE-EXPORT-DIRECTORY.html
+// #define USE_GETMODULE_HANDLE
+#define RVAToPtr(BASE,RVA) ( ((LPBYTE)BASE) + ((DWORD)(RVA)) )
+
+// ================================================================================================
+// see : http://stackoverflow.com/questions/26616379/pimage-export-directory-memory-access-error
+// Given an RVA, look up the section header that encloses it and return a
+// pointer to its IMAGE_SECTION_HEADER
+// ================================================================================================
+PIMAGE_SECTION_HEADER GetEnclosingSectionHeader(DWORD rva,
+    PIMAGE_NT_HEADERS pNTHeader)
+{
+    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(pNTHeader);
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
+    unsigned i, max;
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+        section = IMAGE_FIRST_SECTION(header32);
+        max = header32->FileHeader.NumberOfSections;
+    }
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) { // PE32+
+        section = IMAGE_FIRST_SECTION(header64);
+        max = header64->FileHeader.NumberOfSections;
+    }
+    else
+        return 0;
+
+    for (i = 0; i < max; i++, section++)
+    {
+        // Is the RVA within this section?
+        if ((rva >= section->VirtualAddress) &&
+            (rva < (section->VirtualAddress + section->Misc.VirtualSize)))
+            return section;
+    }
+
+    return 0;
+}
+
+LPVOID GetPtrFromRVA(DWORD rva, PIMAGE_NT_HEADERS pNTHeader, char *imageBase)
+{
+    PIMAGE_SECTION_HEADER pSectionHdr;
+    UINT delta;
+
+    pSectionHdr = GetEnclosingSectionHeader(rva, pNTHeader);
+    if (!pSectionHdr)
+        return 0;
+
+    delta = (UINT)(pSectionHdr->VirtualAddress - pSectionHdr->PointerToRawData);
+    return (PVOID)(imageBase + (rva - delta));
+}
+
+
+int main(int argc, char **argv)
+{
+    IMAGE_DOS_HEADER *dosHeader;
+#ifdef USE_GETMODULE_HANDLE
+    HINSTANCE hInstance;
+    hInstance = GetModuleHandle("kernel32.dll");
+    dosHeader = (IMAGE_DOS_HEADER *)hInstance;
+#else
+    dosHeader = (PIMAGE_DOS_HEADER)GetFileMap("C:\\Windows\\System32\\kernel32.dll");
+    if (!dosHeader)
+    {
+        cerr << "Failed to open file!" << endl;
+        return 1;
+    }
+#endif
+
+    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+    {
+        cerr << "Failed to get DOS signature!" << endl;
+        //MessageBox(0, "1", "", 0);
+#ifndef USE_GETMODULE_HANDLE
+        CloseFileMap();
+#endif
+        return 1;
+    }
+    char *base = (char *)dosHeader;
+    IMAGE_NT_HEADERS *ntHeaders = (IMAGE_NT_HEADERS *)(((BYTE *)dosHeader) + dosHeader->e_lfanew);
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)ntHeaders;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)ntHeaders;
+
+    if (ntHeaders->Signature != 0x00004550)
+    {
+        cerr << "Failed to get NT signature!" << endl;
+        //MessageBox(0, "2", "", 0);
+#ifndef USE_GETMODULE_HANDLE
+        CloseFileMap();
+#endif
+        return 1;
+    }
+    bool is32 = true;
+    IMAGE_OPTIONAL_HEADER *optionalHeader = &ntHeaders->OptionalHeader;
+    IMAGE_DATA_DIRECTORY *dataDirectory = &optionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+    IMAGE_EXPORT_DIRECTORY *Exp;
+    DWORD Rva = dataDirectory->VirtualAddress;
+    Exp = (IMAGE_EXPORT_DIRECTORY *)((DWORD)dosHeader + dataDirectory->VirtualAddress);
+
+    if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+        Rva = header32->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+        Exp = (PIMAGE_EXPORT_DIRECTORY)(base + header32->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+    }
+    else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) { // PE32+
+        Rva = header64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+        Exp = (PIMAGE_EXPORT_DIRECTORY)(base + header64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+        is32 = false;
+    }
+    else
+    {
+        cerr << "Not HDR32 or HDR64!" << endl;
+#ifndef USE_GETMODULE_HANDLE
+        CloseFileMap();
+#endif
+        return 1;    // Get the IMAGE_SECTION_HEADER that contains the exports.  This is
+    }
+
+    int count = 0;
+#ifndef USE_GETMODULE_HANDLE
+    Exp = (PIMAGE_EXPORT_DIRECTORY)GetPtrFromRVA(Rva, ntHeaders, base);
+#endif
+    cout << "Exp.Dir offset  " << ((char *)Exp - base) << endl;
+    cout << "Exp.Addr offset " << Exp->AddressOfNames << endl;
+
+#ifdef USE_GETMODULE_HANDLE
+    ULONG * addressofnames = (ULONG*)((BYTE*)hInstance + Exp->AddressOfNames);
+#else
+    ULONG * addressofnames = (ULONG*)((BYTE*)base + Exp->AddressOfNames);
+#endif
+    cout << "Address offset " << ((char *)addressofnames - base) << endl;
+    cout << "List of " << Exp->NumberOfNames << " Export Names, kernel32.dll..." << endl;
+    for (count = 0; count < Exp->NumberOfNames; count++)
+    {
+#ifdef USE_GETMODULE_HANDLE
+        char*functionname = (char*)((BYTE*)hInstance + addressofnames[count]);
+#else
+        Rva = addressofnames[count];
+        char *functionname = (char*)((BYTE*)base + addressofnames[count]);
+        functionname = (char *)GetPtrFromRVA(Rva, ntHeaders, base);
+        if (!functionname)
+            break;
+#endif
+        cout << (count + 1) << ": " << functionname << endl;
+    }
+#ifndef USE_GETMODULE_HANDLE
+    CloseFileMap();
+#endif
+    return 0;
 }
 
 

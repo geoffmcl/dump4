@@ -42,6 +42,8 @@
     See also: https://msdn.microsoft.com/en-us/library/windows/hardware/gg463119.aspx
     DWN: 14/06/2014  16:43           217,765 pecoff_v83.docx
 
+    Also reviewed : http://www.skynet.ie/~caolan/pub/winresdump/winresdump/doc/pefile.html
+
    ===================================================================================== */
 #ifndef _USE_MATH_DEFINES
 #define  _USE_MATH_DEFINES
@@ -1413,9 +1415,9 @@ void DumpImportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
             }
             else
             {
-                pOrdinalName = (PIMAGE_IMPORT_BY_NAME)thunk->u1.AddressOfData;
+                // pOrdinalName = (PIMAGE_IMPORT_BY_NAME)thunk->u1.AddressOfData;
                 pOrdinalName = (PIMAGE_IMPORT_BY_NAME)
-                			GetPtrFromRVA((DWORD)(UINT_PTR)pOrdinalName, pNTHeader, base);
+                			GetPtrFromRVA(thunk->u1.AddressOfData, pNTHeader, base);
                 if (pOrdinalName)
                     sprtf("  %4u  %s", pOrdinalName->Hint, pOrdinalName->Name);
                 else
@@ -1467,11 +1469,12 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
     DWORD i;
     PDWORD functions;
     PWORD ordinals;
-    PSTR *name;
+    PDWORD name;
     DWORD exportsStartRVA, exportsEndRVA;
-    char* headerAddress = base + ((PIMAGE_DOS_HEADER)base)->e_lfanew;
-    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)headerAddress;
-    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)headerAddress;    
+    UINT Rva;
+    //char* headerAddress = base + ((PIMAGE_DOS_HEADER)base)->e_lfanew;
+    PIMAGE_NT_HEADERS32 header32 = (PIMAGE_NT_HEADERS32)pNTHeader;
+    PIMAGE_NT_HEADERS64 header64 = (PIMAGE_NT_HEADERS64)pNTHeader;
     PIMAGE_EXPORT_DIRECTORY exports = 0;
     bool is32 = true;
 
@@ -1480,8 +1483,10 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
 	   				GetImgDirEntrySize(pNTHeader, IMAGE_DIRECTORY_ENTRY_EXPORT);
 
     if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
+        Rva = header32->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
         exports = (PIMAGE_EXPORT_DIRECTORY)(base + header32->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
     } else if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) { // PE32+
+        Rva = header64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
         exports = (PIMAGE_EXPORT_DIRECTORY)(base + header64->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
         is32 = false;
     } else
@@ -1498,17 +1503,18 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
     //e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA + 
     //    header->PointerToRawData - header->VirtualAddress);
     //e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA + delta);
-    e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA);
-
+    //e2 = (PIMAGE_EXPORT_DIRECTORY)((PBYTE)base + exportsStartRVA);
+    e2 = (PIMAGE_EXPORT_DIRECTORY)GetPtrFromRVA(Rva, pNTHeader, base);
     //exportDir = MakePtr(PIMAGE_EXPORT_DIRECTORY, base,
     //                     exportsStartRVA + delta);
     //exportDir = MakePtr(PIMAGE_EXPORT_DIRECTORY, base,
     //    exportsStartRVA);
-    exportDir = exports;
+    //exportDir = exports;
+    exportDir = e2;
 
-    //if (e2 != exportDir) {
-    //    return;
-    //}
+    if (e2 != exportDir) {
+        return;
+    }
 
     // Does not work!!!!
     //if (exportDir != exports) {
@@ -1516,9 +1522,13 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
     //}
         
     // filename = (PSTR)(exportDir->Name - delta + base);
-    filename = (PSTR)(base + exportDir->Name + delta);
+    //filename = (PSTR)(base + exportDir->Name + delta);
+    filename = (PSTR)ImageRvaToVa(pNTHeader, base, exportDir->Name, 0);
+    Rva = exportDir->Name;
+    filename = (PSTR)GetPtrFromRVA(Rva, pNTHeader, base);
     //filename = (PSTR)(base + exportDir->Name);
-
+    if (!filename)
+        return;
     sprtf("exports table:\n\n");
     sprtf("  Name:            %s\n", filename);
     sprtf("  Characteristics: %08X\n", exportDir->Characteristics);
@@ -1534,9 +1544,10 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
     // AddressOfNames is a RVA to a list of RVAs to string names not a RVA to a list of strings.
     functions = (PDWORD)(base + (DWORD)exportDir->AddressOfFunctions - delta);
     ordinals = (PWORD)(base + (DWORD)exportDir->AddressOfNameOrdinals - delta);
-    name = (PSTR *)(base + (DWORD)exportDir->AddressOfNames - delta);
+    name = (PDWORD)(base + (DWORD)exportDir->AddressOfNames - delta);
 
     sprtf("\n  Entry Pt  Ordn  Name\n");
+    char *tmp;
     for ( i=0; i < exportDir->NumberOfFunctions; i++ )
     {
         DWORD entryPointRVA = functions[i];
@@ -1551,10 +1562,22 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
         // See if this function has an associated name exported for it.
         for ( j=0; j < exportDir->NumberOfNames; j++ ) {
             if ( ordinals[j] == i ) {
-                //char *tmp = name[j];
-                //tmp -= delta;
-                if (is32)
-                    sprtf("  %s", name[j] - delta + (DWORD)base);
+                Rva = name[j];
+                if (Rva)
+                {
+                    tmp = (char *)GetPtrFromRVA(Rva, pNTHeader, base);
+                    if (tmp)
+                    {
+                        //char *tmp = name[j];
+                        //tmp -= delta;
+                        //if (is32) {
+                            //sprtf("  %s", name[j] - delta + (DWORD)base);
+                            //tmp = base + name[j] - delta;
+                        //}
+                        sprtf("  %s", tmp);
+                        //sprtf("  %s", name[j] - delta + (DWORD)base);
+                    }
+                }
                 //sprtf("  %s", base + tmp);
                 //sprtf("  %s", tmp);
                 break;
@@ -1565,7 +1588,12 @@ void DumpExportsSection(char *base, PIMAGE_NT_HEADERS pNTHeader)
         if ( (entryPointRVA >= exportsStartRVA)
              && (entryPointRVA <= exportsEndRVA) )
         {
-            sprtf(" (forwarder -> %s)", entryPointRVA - delta + base );
+            tmp = (char *)GetPtrFromRVA(Rva, pNTHeader, base);
+            if (tmp)
+            {
+                //sprtf(" (forwarder -> %s)", entryPointRVA - delta + base);
+                sprtf(" (forwarder -> %s)", tmp);
+            }
         }
         
         sprtf("\n");
@@ -1637,7 +1665,7 @@ void DumpRuntimeFunctions( char *base, PIMAGE_NT_HEADERS pNTHeader )
 #endif // #ifdef ADD_RUNTIME_FUNCTIONS
 
 // The names of the available base relocations
-char *SzRelocTypes[] = {
+const char *SzRelocTypes[] = {
 "ABSOLUTE","HIGH","LOW","HIGHLOW","HIGHADJ","MIPS_JMPADDR",
 "SECTION","REL32" };
 
