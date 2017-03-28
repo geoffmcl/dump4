@@ -497,6 +497,7 @@ void	ProcessFile( LPTSTR fn )
 
 	lpb = &gszDiag[0];
 	pCnt = 0;
+#ifdef USE_FIND_FIRST
     hFind = FindFirstFile( fn, &fd );
     if( VFH(hFind) ) {
         if( giVerbose ) {
@@ -514,8 +515,26 @@ void	ProcessFile( LPTSTR fn )
             prt( lpb );
         }
     }
-
     lpdf->stat_res = stat(fn, &lpdf->stat_buf);
+#else
+    lpdf->stat_res = stat(fn, &lpdf->stat_buf);
+    if (lpdf->stat_res)
+    {
+        if (giVerbose) {
+            sprintf(lpb, "stat FAILED on File [%s]..." MEOR, fn);
+            prt(lpb);
+        }
+    } 
+    else
+    {
+        sprintf(lpb, "Processing File [%s], %I64d bytes..." MEOR,
+            fn,
+            lpdf->stat_buf.st_size);
+        if (giVerbose) {
+            prt(lpb);
+        }
+    }
+#endif
 
 	hf = grmOpenFile( fn, &hf, OF_READ );
     if( VFH(hf) ) {
