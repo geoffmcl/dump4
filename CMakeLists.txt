@@ -40,6 +40,23 @@ include (CheckIncludeFile)
 project( dump4 )
 
 # The version number - is through Dump4Vers.h
+# 20170328 - Change to using a version.txt file
+file(READ version.txt versionFile)
+if (NOT versionFile)
+    message(FATAL_ERROR "Unable to determine libtidy version. version.txt file is missing.")
+endif()
+string(STRIP "${versionFile}" VERSION_TEXT)
+string(REGEX REPLACE "(.*)[\r\n|\n](.*)" "\\1" DUMP4_VERSION ${VERSION_TEXT})
+string(REGEX REPLACE "(.*)[\r\n|\n](.*)" "\\2" DUMP4_DATE ${VERSION_TEXT})
+# establish version number
+if (NOT DUMP4_VERSION)
+    message(FATAL_ERROR "*** FAILED to get a VERSION from version.txt!")
+endif ()    
+# establish version date
+if (NOT DUMP4_DATE)
+    message(FATAL_ERROR "*** FAILED to get a DATE from version.txt!")
+endif ()
+add_definitions( -DDUMP4_VERSION="${DUMP4_VERSION}" -DDUMP4_DATE="${DUMP4_DATE}" )
 
 # special C:/MDOS install
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

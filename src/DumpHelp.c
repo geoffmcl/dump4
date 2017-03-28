@@ -12,11 +12,14 @@ typedef CMDHDR * PCMDHDR;
 DWORD	GetNumber( char * cp );
 
 // date and time of last compile of this module
-#if (defined(BLDDATE) && defined(BLDTIME))
-TCHAR g_szCDate[] = BLDDATE;
-TCHAR g_szCTime[] = BLDTIME;
+//#if (defined(BLDDATE) && defined(BLDTIME))
+#if (defined(DUMP4_DATE) && defined(DUMP4_VERSION))
+TCHAR g_szCDate[] = DUMP4_DATE;
+TCHAR g_szCVers[] = DUMP4_VERSION;
+TCHAR g_szCTime[] = "00:00:00";
 #else
 TCHAR g_szCDate[] = __DATE__;
+TCHAR g_szCVers[] = "0.9.9";
 TCHAR g_szCTime[] = __TIME__;
 #endif
 // application header
@@ -27,7 +30,7 @@ TCHAR	g_szDesc[] = "Dump4 64-Bits";
 TCHAR	g_szDesc[] = "Dump4 32-Bits";
 #endif
 TCHAR	g_szName[] = "HEX DUMP UTILITY";
-TCHAR	g_szDate[] = BLDDATE;
+//TCHAR	g_szDate[] = BLDDATE;
 
 TCHAR	g_szHelp[] =
  	"Usage   : Dump4 [@]InputFile[s] [Switches]"MEOR
@@ -137,10 +140,11 @@ void	ShwTitle( void )
 {
 	char	buf[256];
 	sprintf( &buf[0],
-		"%s - %s - %s"MEOR,
+		"%s - %s - circa %s, version %s" MEOR,
 		&g_szDesc[0],
 		&g_szName[0],
-		&g_szDate[0] );
+		&g_szCDate[0],
+        &g_szCVers[0] );
 	prt( buf );
 }
 

@@ -3,7 +3,8 @@
 #define  _DumpVers_H
 
 // HISTORY upwards:
-#define	BLDDATE	"23 Mar, 2017"	// FIX20170323 - Use msvc140, and try to fix -exe
+// 20170328 - From version 5.0.0 of 2017.03.28 the DUMP4_VERSION and DUMP4_DATE come from 'version.txt', through CMake parsing
+// BLDDATE	"23 Mar, 2017"	// FIX20170323 - Use msvc140, and try to fix -exe
 // BLDDATE	"10 Sep, 2015"	// FIX20150910 - Put in github repo, bgn unix port
 
 // BLDDATE	"21 April, 2015"	// FIX20150421 - Fix for BITMAPV5HEADER
@@ -11,7 +12,7 @@
 
 // #define	BLDDATE	"14 June, 2014"	// FIX20140614 - Try to tidy up the .lib display
 // as development of x64 apps and libraries increases, is important to know the machine type 386 vs x64, etc
-#define BLDTIME "18:13:11"
+// BLDTIME "18:13:11"
 
 // BLDDATE	"17 August, 2013"	// FIX20130817 - More work on ELF, but still not complete - borrowed from beye project
 // BLDTIME "17:01:59"

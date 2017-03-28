@@ -1342,16 +1342,7 @@ int main( int argc, char *argv[] )
    ZeroMemory( pWB, sizeof(WB) );
    prt_init();
 
-   sprtf( "Begin Dump4 (CONSOLE APP.) work %d bytes, %s %s, at %s."MEOR,
-       sizeof(WB), 
-#if (defined(BLDDATE) && defined(BLDTIME))
-       "version",
-       BLDDATE, BLDTIME 
-#else
-       "compiled",
-       __DATE__, __TIME__ 
-#endif
-       );
+   // sprtf( "Begin Dump4 (CONSOLE APP.) work %d bytes." MEOR, sizeof(WB) );
 
 	retv = 0;
 
