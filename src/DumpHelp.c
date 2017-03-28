@@ -144,6 +144,12 @@ void	ShwTitle( void )
 	prt( buf );
 }
 
+void showVersion()
+{
+    ShwTitle();
+    MyExit0();
+}
+
 void	Usage( void )
 {
 	ShwTitle();
@@ -877,6 +883,9 @@ int ProcessCommand( int argc, char *argv[], LPSTR lpc )
 		bcp = argv[i];
         cp = bcp;
 		len = strlen( cp ); 
+        if (strcmp(cp, "--version") == 0)
+            showVersion();
+
    	if( ( lpc                           ) &&
 	   	( (j = lstrlen(lpc)) < MXCMDBUF ) )
 	   {
@@ -1469,7 +1478,7 @@ DWORD	GetNumber( char * cp )
 {
 	DWORD	dw;
 	dw = 0;
-   sscanf( cp, "%lu", (LPSTR)&dw );
+   sscanf( cp, "%lu", &dw );
 	return dw;
 }
 
