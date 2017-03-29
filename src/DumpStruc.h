@@ -1263,8 +1263,21 @@ typedef IMAGE_BASE_RELOCATION UNALIGNED * PIMAGE_BASE_RELOCATION;
 #define IMAGE_REL_BASED_THUMB_MOV32           7
 
 
+//
+// Relocation format.
+//
 
+typedef struct _IMAGE_RELOCATION {
+    union {
+        DWORD   VirtualAddress;
+        DWORD   RelocCount;             // Set to the real count when IMAGE_SCN_LNK_NRELOC_OVFL is set
+    };
+    DWORD   SymbolTableIndex;
+    WORD    Type;
+} IMAGE_RELOCATION;
+typedef IMAGE_RELOCATION UNALIGNED *PIMAGE_RELOCATION;
 
+#define IMAGE_SIZEOF_RELOCATION         10
 
 
 // ======================================
