@@ -51,7 +51,6 @@
 #include "Dump4.h"
 #include <math.h>
 
-#ifdef   USE_PEDUMP_CODE // FIX20080507
 
 #include <time.h>
 #include "DumpCOFF.h"
@@ -76,6 +75,135 @@ using namespace std;
 #define SPRTF sprtf
 #endif
 
+typedef std::vector<WORD> vWORD;    // added 20140614
+
+typedef vector<PBYTE>   vPTRLIST;
+typedef vector<std::string> vSTR;   // FIX20130225
+typedef vSTR::iterator vSTRi;
+
+vPTRLIST    vPtrList;
+vSTR vDllList;  // FIX20130225
+vSTR vExports;  // FIX20130807
+vSTR vObjects;
+vWORD vMachineTypes;    // FIX20140614
+
+///////////////////////////////////////////////////////////////////////////////////////////
+char * pedump_ctime(time_t * ptm)
+{
+    char * ctm = NULL;
+#ifdef WIN32
+    __time32_t * timer = (__time32_t *)ptm;
+    ctm = _ctime32(timer); // NOTE: Returns buffer with "\n" appended
+#else
+    ctm = ctime(ptm); // this will use 64-bit time
+#endif
+
+    if (ctm == NULL)  // if OUT OF RANGE
+        ctm = "Out of range" MEOR;
+
+    return ctm;
+}
+
+// Routine to convert from big endian to little endian
+DWORD ConvertBigEndian(DWORD bigEndian)
+{
+    DWORD temp = 0;
+
+    // sprtf( "bigEndian: %08X\n", bigEndian );
+
+    temp |= bigEndian >> 24;
+    temp |= ((bigEndian & 0x00FF0000) >> 8);
+    temp |= ((bigEndian & 0x0000FF00) << 8);
+    temp |= ((bigEndian & 0x000000FF) << 24);
+
+    return temp;
+}
+
+// #define MX_BIG_BUF 16384
+static char my_big_buf[MX_BIG_BUF];
+char * get_my_big_buf(void) { return my_big_buf; }
+
+// 20140614: Increase Machine Type Names - from WinNT.h
+PSTR GetMachineTypeName(WORD wMachineType)
+{
+    switch (wMachineType)
+    {
+    case IMAGE_FILE_MACHINE_UNKNOWN: return "Unknown";  // 0
+    case IMAGE_FILE_MACHINE_I386: return "Intel 386";   // 0x014c  // Intel 386.
+    case IMAGE_FILE_MACHINE_R3000: return "MIPS-LE";    // 0x0162  // MIPS little-endian, 0x160 big-endian
+    case IMAGE_FILE_MACHINE_R4000: return "MIPS-LE";    // 0x0166  // MIPS little-endian
+    case IMAGE_FILE_MACHINE_R10000: return "MIPS-LE";   // 0x0168  // MIPS little-endian
+    case IMAGE_FILE_MACHINE_WCEMIPSV2: return "MIPS-LE_WCE"; // 0x0169  // MIPS little-endian WCE v2
+    case IMAGE_FILE_MACHINE_ALPHA: return "Alpha_AXP";  // 0x0184  // Alpha_AXP
+    case IMAGE_FILE_MACHINE_SH3: return "SH3-LE";       // 0x01a2  // SH3 little-endian
+    case IMAGE_FILE_MACHINE_SH3DSP: return "SH3DSP";    // 0x01a3
+    case IMAGE_FILE_MACHINE_SH3E: return "SH3E-LE";     // 0x01a4  // SH3E little-endian
+    case IMAGE_FILE_MACHINE_SH4: return "SH4-LE";       // 0x01a6  // SH4 little-endian
+    case IMAGE_FILE_MACHINE_SH5: return "SH5";          // 0x01a8  // SH5
+    case IMAGE_FILE_MACHINE_ARM: return "ARM-LE";       // 0x01c0  // ARM Little-Endian
+    case IMAGE_FILE_MACHINE_THUMB: return "Thumb";      // 0x01c2
+    case IMAGE_FILE_MACHINE_AM33: return "ARM33";       // 0x01d3
+    case IMAGE_FILE_MACHINE_POWERPC: return "PowerPC-LE"; // 0x01F0  // IBM PowerPC Little-Endian
+    case IMAGE_FILE_MACHINE_POWERPCFP: return "PowerPCFP"; // 0x01f1
+    case IMAGE_FILE_MACHINE_IA64: return "Intel 64";           // 0x0200  // Intel 64
+    case IMAGE_FILE_MACHINE_MIPS16: return "MIPS16";    // 0x0266  // MIPS
+    case IMAGE_FILE_MACHINE_ALPHA64: return "Alpha64";  // 0x0284  // ALPHA64
+    case IMAGE_FILE_MACHINE_MIPSFPU: return "MIPSFPU";  // 0x0366  // MIPS
+    case IMAGE_FILE_MACHINE_MIPSFPU16: return "MIPSFPU16";  // 0x0466  // MIPS
+                                                            // case IMAGE_FILE_MACHINE_AXP64             IMAGE_FILE_MACHINE_ALPHA64
+    case IMAGE_FILE_MACHINE_TRICORE: return "infineon"; // 0x0520  // Infineon
+    case IMAGE_FILE_MACHINE_CEF: return "CEF";          // 0x0CEF
+    case IMAGE_FILE_MACHINE_EBC: return "EFI-BC";       // 0x0EBC  // EFI Byte Code
+    case IMAGE_FILE_MACHINE_AMD64: return "AMD64-K8";   // 0x8664  // AMD64 (K8)
+    case IMAGE_FILE_MACHINE_M32R: return "M32R-LE";     // 0x9041  // M32R little-endian
+    case IMAGE_FILE_MACHINE_CEE: return "CCE";          // 0xC0EE
+    }
+    return "UNLISTED";
+}
+
+#define NUMBER_IMAGE_HEADER_FLAGS \
+    (sizeof(ImageFileHeaderCharacteristics) / sizeof(WORD_FLAG_DESCRIPTIONS))
+
+// 20140719 UPDATE
+// Bitfield values and names for the IMAGE_FILE_HEADER flags
+WORD_FLAG_DESCRIPTIONS ImageFileHeaderCharacteristics[] = {
+    { IMAGE_FILE_RELOCS_STRIPPED,"RELOCS_STRIPPED" }, // 0x0001  // Relocation info stripped from file.
+    { IMAGE_FILE_EXECUTABLE_IMAGE,"EXECUTABLE_IMAGE" }, // 0x0002  // File is executable  (i.e. no unresolved externel references).
+    { IMAGE_FILE_LINE_NUMS_STRIPPED,"LINE_NUMS_STRIPPED" }, // 0x0004  // Line nunbers stripped from file.
+    { IMAGE_FILE_LOCAL_SYMS_STRIPPED,"LOCAL_SYMS_STRIPPED" }, // 0x0008  // Local symbols stripped from file.
+    { IMAGE_FILE_AGGRESIVE_WS_TRIM,"AGGRESIVE_WS_TRIM" }, // 0x0010  // Agressively trim working set
+    { IMAGE_FILE_LARGE_ADDRESS_AWARE,"LARGE_ADDRESS_AWARE" }, // 0x0020  // App can handle >2gb addresses
+    { IMAGE_FILE_BYTES_REVERSED_LO,"BYTES_REVERSED_LO" }, //  0x0080  // Bytes of machine word are reversed.
+    { IMAGE_FILE_32BIT_MACHINE,"32BIT_MACHINE" }, // 0x0100  // 32 bit word machine.
+    { IMAGE_FILE_DEBUG_STRIPPED,"DEBUG_STRIPPED" }, // 0x0200  // Debugging info stripped from file in .DBG file
+    { IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP,"REMOVABLE_RUN_FROM_SWAP" }, // 0x0400  // If Image is on removable media, copy and run from the swap file.
+    { IMAGE_FILE_NET_RUN_FROM_SWAP,"NET_RUN_FROM_SWAP" }, // 0x0800  // If Image is on Net, copy and run from the swap file.
+    { IMAGE_FILE_SYSTEM,"SYSTEM" }, //                    0x1000  // System File.
+    { IMAGE_FILE_DLL,"DLL" }, //                       0x2000  // File is a DLL.
+    { IMAGE_FILE_UP_SYSTEM_ONLY,"UP_SYSTEM_ONLY" }, //            0x4000  // File should only be run on a UP machine
+    { IMAGE_FILE_BYTES_REVERSED_HI,"BYTES_REVERSED_HI" } //       0x8000  // Bytes of machine word are reversed.
+};
+
+
+UINT getImageFlagCount() { return NUMBER_IMAGE_HEADER_FLAGS; }
+
+//typedef struct tagWORD_FLAG_DESCRIPTIONS {
+//    WORD    flag;
+//    PSTR    name;
+//} WORD_FLAG_DESCRIPTIONS, *PWORD_FLAG_DESCRIPTIONS;
+//typedef struct tagDWORD_FLAG_DESCRIPTIONS {
+//    DWORD   flag;
+//    PSTR    name;
+//} DWORD_FLAG_DESCRIPTIONS, *PDWORD_FLAG_DESCRIPTIONS;
+
+PWORD_FLAG_DESCRIPTIONS getImageFlagStruct() { return &ImageFileHeaderCharacteristics[0]; }
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//// **************************************************************************************
+#ifdef   USE_PEDUMP_CODE // FIX20080507
+
 #if defined(IMAGE_SIZEOF_ROM_OPTIONAL_HEADER)
 #define ADD_DUMP_ROM_IMAGE
 #else
@@ -90,19 +218,6 @@ typedef unsigned long long UINT_PTR, *PUINT_PTR;
 
 // forward refs
 PSTR GetMachineTypeName( WORD wMachineType );
-
-
-typedef std::vector<WORD> vWORD;    // added 20140614
-
-typedef vector<PBYTE>   vPTRLIST;
-typedef vector<std::string> vSTR;   // FIX20130225
-typedef vSTR::iterator vSTRi;
-
-vPTRLIST    vPtrList;
-vSTR vDllList;  // FIX20130225
-vSTR vExports;  // FIX20130807
-vSTR vObjects;
-vWORD vMachineTypes;    // FIX20140614
 
 static int skipped_objects = 0;
 void add_to_vector_str( std::string &data, vSTR *pv )
@@ -432,7 +547,7 @@ void show_machine_list()
 #include "DumpPE.h"
 #else 
 #include "pedump.h"
-#include <windows.h>
+//#include <windows.h>
 #include <stdio.h>
 #include <time.h>
 #pragma hdrstop
@@ -841,22 +956,6 @@ LPVOID GetPtrFromRVA( DWORD rva, PIMAGE_NT_HEADERS pNTHeader, char *imageBase )
 
 	delta = (INT)(pSectionHdr->VirtualAddress-pSectionHdr->PointerToRawData);
 	return (PVOID) ( imageBase + rva - delta );
-}
-
-char * pedump_ctime( time_t * ptm )
-{
-   char * ctm = NULL;
-#ifdef WIN32
-   __time32_t * timer = (__time32_t *)ptm;
-   ctm = _ctime32(timer); // NOTE: Returns buffer with "\n" appended
-#else
-   ctm = ctime(ptm); // this will use 64-bit time
-#endif
-   
-   if(ctm == NULL)  // if OUT OF RANGE
-      ctm = "Out of range" MEOR;
-
-   return ctm;
 }
 
 //
@@ -1821,43 +1920,6 @@ int not_EXE_Header( PIMAGE_NT_HEADERS pNTHeader, PTSTR *perr )
 }
 
 #define ADD_DUMP_HEADER
-// 20140614: Increase Machine Type Names - from WinNT.h
-PSTR GetMachineTypeName( WORD wMachineType )
-{
-    switch (wMachineType)
-    {
-    case IMAGE_FILE_MACHINE_UNKNOWN: return "Unknown";  // 0
-    case IMAGE_FILE_MACHINE_I386: return "Intel 386";   // 0x014c  // Intel 386.
-    case IMAGE_FILE_MACHINE_R3000: return "MIPS-LE";    // 0x0162  // MIPS little-endian, 0x160 big-endian
-    case IMAGE_FILE_MACHINE_R4000: return "MIPS-LE";    // 0x0166  // MIPS little-endian
-    case IMAGE_FILE_MACHINE_R10000: return "MIPS-LE";   // 0x0168  // MIPS little-endian
-    case IMAGE_FILE_MACHINE_WCEMIPSV2: return "MIPS-LE_WCE"; // 0x0169  // MIPS little-endian WCE v2
-    case IMAGE_FILE_MACHINE_ALPHA: return "Alpha_AXP";  // 0x0184  // Alpha_AXP
-    case IMAGE_FILE_MACHINE_SH3: return "SH3-LE";       // 0x01a2  // SH3 little-endian
-    case IMAGE_FILE_MACHINE_SH3DSP: return "SH3DSP";    // 0x01a3
-    case IMAGE_FILE_MACHINE_SH3E: return "SH3E-LE";     // 0x01a4  // SH3E little-endian
-    case IMAGE_FILE_MACHINE_SH4: return "SH4-LE";       // 0x01a6  // SH4 little-endian
-    case IMAGE_FILE_MACHINE_SH5: return "SH5";          // 0x01a8  // SH5
-    case IMAGE_FILE_MACHINE_ARM: return "ARM-LE";       // 0x01c0  // ARM Little-Endian
-    case IMAGE_FILE_MACHINE_THUMB: return "Thumb";      // 0x01c2
-    case IMAGE_FILE_MACHINE_AM33: return "ARM33";       // 0x01d3
-    case IMAGE_FILE_MACHINE_POWERPC: return "PowerPC-LE"; // 0x01F0  // IBM PowerPC Little-Endian
-    case IMAGE_FILE_MACHINE_POWERPCFP: return "PowerPCFP"; // 0x01f1
-    case IMAGE_FILE_MACHINE_IA64: return "Intel 64";           // 0x0200  // Intel 64
-    case IMAGE_FILE_MACHINE_MIPS16: return "MIPS16";    // 0x0266  // MIPS
-    case IMAGE_FILE_MACHINE_ALPHA64: return "Alpha64";  // 0x0284  // ALPHA64
-    case IMAGE_FILE_MACHINE_MIPSFPU: return "MIPSFPU";  // 0x0366  // MIPS
-    case IMAGE_FILE_MACHINE_MIPSFPU16: return "MIPSFPU16";  // 0x0466  // MIPS
-    // case IMAGE_FILE_MACHINE_AXP64             IMAGE_FILE_MACHINE_ALPHA64
-    case IMAGE_FILE_MACHINE_TRICORE: return "infineon"; // 0x0520  // Infineon
-    case IMAGE_FILE_MACHINE_CEF: return "CEF";          // 0x0CEF
-    case IMAGE_FILE_MACHINE_EBC: return "EFI-BC";       // 0x0EBC  // EFI Byte Code
-    case IMAGE_FILE_MACHINE_AMD64: return "AMD64-K8";   // 0x8664  // AMD64 (K8)
-    case IMAGE_FILE_MACHINE_M32R: return "M32R-LE";     // 0x9041  // M32R little-endian
-    case IMAGE_FILE_MACHINE_CEE: return "CCE";          // 0xC0EE
-    }
-    return "UNLISTED";
-}
 PSTR GetMachineTypeName_OLD( WORD wMachineType )
 {
     switch( wMachineType )
@@ -1874,40 +1936,6 @@ PSTR GetMachineTypeName_OLD( WORD wMachineType )
     }
 }
 
-//typedef struct tagWORD_FLAG_DESCRIPTIONS {
-//    WORD    flag;
-//    PSTR    name;
-//} WORD_FLAG_DESCRIPTIONS, *PWORD_FLAG_DESCRIPTIONS;
-//typedef struct tagDWORD_FLAG_DESCRIPTIONS {
-//    DWORD   flag;
-//    PSTR    name;
-//} DWORD_FLAG_DESCRIPTIONS, *PDWORD_FLAG_DESCRIPTIONS;
-
-// 20140719 UPDATE
-// Bitfield values and names for the IMAGE_FILE_HEADER flags
-WORD_FLAG_DESCRIPTIONS ImageFileHeaderCharacteristics[] = {
-    { IMAGE_FILE_RELOCS_STRIPPED,"RELOCS_STRIPPED"}, // 0x0001  // Relocation info stripped from file.
-    { IMAGE_FILE_EXECUTABLE_IMAGE,"EXECUTABLE_IMAGE"}, // 0x0002  // File is executable  (i.e. no unresolved externel references).
-    { IMAGE_FILE_LINE_NUMS_STRIPPED,"LINE_NUMS_STRIPPED"}, // 0x0004  // Line nunbers stripped from file.
-    { IMAGE_FILE_LOCAL_SYMS_STRIPPED,"LOCAL_SYMS_STRIPPED"}, // 0x0008  // Local symbols stripped from file.
-    { IMAGE_FILE_AGGRESIVE_WS_TRIM,"AGGRESIVE_WS_TRIM"}, // 0x0010  // Agressively trim working set
-    { IMAGE_FILE_LARGE_ADDRESS_AWARE,"LARGE_ADDRESS_AWARE"}, // 0x0020  // App can handle >2gb addresses
-    { IMAGE_FILE_BYTES_REVERSED_LO,"BYTES_REVERSED_LO"}, //  0x0080  // Bytes of machine word are reversed.
-    { IMAGE_FILE_32BIT_MACHINE,"32BIT_MACHINE"}, // 0x0100  // 32 bit word machine.
-    { IMAGE_FILE_DEBUG_STRIPPED,"DEBUG_STRIPPED"}, // 0x0200  // Debugging info stripped from file in .DBG file
-    { IMAGE_FILE_REMOVABLE_RUN_FROM_SWAP,"REMOVABLE_RUN_FROM_SWAP"}, // 0x0400  // If Image is on removable media, copy and run from the swap file.
-    { IMAGE_FILE_NET_RUN_FROM_SWAP,"NET_RUN_FROM_SWAP"}, // 0x0800  // If Image is on Net, copy and run from the swap file.
-    { IMAGE_FILE_SYSTEM,"SYSTEM"}, //                    0x1000  // System File.
-    { IMAGE_FILE_DLL,"DLL"}, //                       0x2000  // File is a DLL.
-    { IMAGE_FILE_UP_SYSTEM_ONLY,"UP_SYSTEM_ONLY"}, //            0x4000  // File should only be run on a UP machine
-    { IMAGE_FILE_BYTES_REVERSED_HI,"BYTES_REVERSED_HI"} //       0x8000  // Bytes of machine word are reversed.
-};
-
-#define NUMBER_IMAGE_HEADER_FLAGS \
-    (sizeof(ImageFileHeaderCharacteristics) / sizeof(WORD_FLAG_DESCRIPTIONS))
-
-UINT getImageFlagCount() { return NUMBER_IMAGE_HEADER_FLAGS; }
-PWORD_FLAG_DESCRIPTIONS getImageFlagStruct() { return &ImageFileHeaderCharacteristics[0]; }
 //
 // Dump the IMAGE_FILE_HEADER for a PE file or an OBJ
 //
@@ -4409,21 +4437,6 @@ void DumpROMImage( PIMAGE_ROM_HEADERS pROMHeader )
 
 PSTR PszLongnames = 0;
 
-// Routine to convert from big endian to little endian
-DWORD ConvertBigEndian(DWORD bigEndian)
-{
-	DWORD temp = 0;
-
-	// sprtf( "bigEndian: %08X\n", bigEndian );
-
-	temp |= bigEndian >> 24;
-	temp |= ((bigEndian & 0x00FF0000) >> 8);
-	temp |= ((bigEndian & 0x0000FF00) << 8);
-	temp |= ((bigEndian & 0x000000FF) << 24);
-
-	return temp;
-}
-
 void DisplayArchiveMemberHeader(
     PIMAGE_ARCHIVE_MEMBER_HEADER pArchHeader,
     DWORD fileOffset )
@@ -4494,10 +4507,6 @@ error information, call GetLastError.
 Header:  Dbghelp.h Library: Dbghelp.lib 
 
    ===================== */
-
-// #define MX_BIG_BUF 16384
-static char my_big_buf[MX_BIG_BUF];
-char * get_my_big_buf(void) { return my_big_buf; }
 
 vSTR space_split( std::string &str )
 {
@@ -5047,7 +5056,24 @@ char * Get_Current_Opts( void ) {
    }
    return pco;
 }
+#else
+unsigned long dwFileSizeLow = 0;
+unsigned long dwFileSizeHigh = 0;
+unsigned char * pBaseLoad = 0;
+unsigned char * pBaseTop = 0;
+
+int out_of_top_range(unsigned char * ptr)
+{
+    if (ptr > pBaseTop)
+        return 1;
+    if (ptr < pBaseLoad)
+        return 2;
+    return 0;
+}
+
+void kill_ptrlist() { vPtrList.clear(); }
 
 #endif // #ifdef   USE_PEDUMP_CODE - FIX20080507
+
 // eof - DumpPE.c
 

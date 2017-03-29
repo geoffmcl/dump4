@@ -2,11 +2,11 @@
 // DumpLib.c
 // Dump of COFF ARCHIVE (*.lib) file
 #include	"Dump4.h"
+#include <time.h>
+#include <Winsock2.h>
 
 #ifndef USE_PEDUMP_CODE // FIX20080507
 
-#include <time.h>
-#include <Winsock2.h>
 extern void ProcessHex( PBYTE pb, DWORD len );
 
 #define   ADDEXCEPTION

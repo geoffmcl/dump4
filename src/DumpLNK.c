@@ -9,7 +9,8 @@
 // these source downloaded from : http://www.wotsit.org/search.asp?page=24&s=ALLFILES
 //#define CHKMEM(a)   if( a == NULL ) { sprtf("ERROR: MEMORY FAILED!"MEOR); pgm_exit(-1); }
 
-#include <windows.h>
+//#include <windows.h>
+#include <Winsock2.h>
 #include <windowsx.h>
 #include <objbase.h>
 #include <shlobj.h>

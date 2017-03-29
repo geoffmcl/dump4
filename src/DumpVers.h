@@ -65,10 +65,11 @@
 #define  ADD_TAR_FILE
 
 // BLDDATE		"07 May, 2008"	// FIX20080507 - Add DumpPE (PEDUMP) for exe,lib.dll,obj
-#ifdef ADD_PEDUMP_CODE
-// PE code if not ported
-#else
+#ifdef _WIN32
 #define  USE_PEDUMP_CODE
+#else   // _WIN32
+// PE code if not ported
+// #undef USE_PEDUMP_CODE
 #endif
 
 // BLDDATE		"25 March, 2008"	// Add -shp, for shapefile dump

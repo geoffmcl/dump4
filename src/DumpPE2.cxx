@@ -4,7 +4,8 @@
 // AUTHOR:  Matt Pietrek - 1993
 // from : http://msdn.microsoft.com/en-us/library/ms809762.aspx
 //--------------------
-#include <windows.h>
+//#include <windows.h>
+#include <Winsock2.h>
 #include <stdio.h>
 
 #if 0
@@ -145,7 +146,8 @@ int pedump_main(int argc, char *argv[])
 // FILE: COMMON.CPP    
 //==================================    
    
-#include <windows.h>    
+//#include <windows.h>    
+#include <Winsock2.h>
 #include <stdio.h>    
 #include <string.h>    
 #include <stdlib.h>    

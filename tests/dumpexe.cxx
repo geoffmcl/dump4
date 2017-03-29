@@ -10,7 +10,8 @@
 
 #include <stdio.h>
 #include <string.h> // for strdup(), ...
-#include <Windows.h>
+// #include <Windows.h>
+#include <Winsock2.h>
 #include <Dbghelp.h>
 #include <time.h>
 #include <iostream>      

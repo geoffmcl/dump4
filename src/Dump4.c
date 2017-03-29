@@ -1152,10 +1152,15 @@ int ProcessPE(  LPDFSTR lpdf )
    dwFileSizeHigh = 0;
    pBaseLoad = (unsigned char *)lpdf->df_pVoid;
    pBaseTop = pBaseLoad + dwFileSizeLow;
+#ifdef   USE_PEDUMP_CODE
    if(VERB9)
       Set_PEDUMP_A(TRUE);
    ShowCurrPEOpts();
    return DumpMemoryMap( lpdf->df_pVoid, lpdf->fn, lpdf->dwmax );
+#else
+   sprtf("PE Dump NOT supported\n");
+   return 0;
+#endif
 }
 
 void	ProcessDataStr( LPDFSTR lpdf )

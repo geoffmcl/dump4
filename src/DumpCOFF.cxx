@@ -8,7 +8,8 @@
 #include "Dump4.h"
 #else // !DUMP4
 #include "pedump.h"
-#include <windows.h>
+// #include <windows.h>
+#include <Winsock2.h>
 #include <malloc.h>
 #include <stdio.h>
 #endif // DUMP4 y/n

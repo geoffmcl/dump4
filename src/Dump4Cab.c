@@ -20,7 +20,8 @@
 #include <sys/stat.h>
 #else // NOT DUMP4 = STANDALONE DIRCAB
 // ***********************************
-#include <windows.h>
+// #include <windows.h>
+#include <Winsock2.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

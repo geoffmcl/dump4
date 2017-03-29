@@ -3,6 +3,7 @@
 #ifdef WIN32
 //////////////////////////////////////////////////////////////////////////////////////
 #pragma warning(disable: 4995) // 'strcat': name was marked as #pragma deprecated
+#include <Winsock2.h>
 #include <Dshow.h>
 #ifndef FOURCC
 typedef DWORD FOURCC;

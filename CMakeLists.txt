@@ -114,6 +114,11 @@ if(WIN32 AND MSVC)
     #else(MINGW)
         #SET(test_EXE_SRCS ${test_EXE_SRCS} test.rc)
     #endif(MINGW)
+    # to distinguish between debug and release lib
+    set( CMAKE_DEBUG_POSTFIX "d" )
+    # for service __imp__UnDecorateSymbolName@16
+    list(APPEND add_LIBS Ws2_32.lib Dbghelp.lib)
+
 else()
     # unix stuff
     set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-write-strings")
@@ -125,9 +130,6 @@ set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MSVC_LD_FLAGS}" )
 
 #add_definitions( -DHAVE_CONFIG_H )
 add_definitions( -DDUMP4 )
-
-# to distinguish between debug and release lib
-set( CMAKE_DEBUG_POSTFIX "d" )
 
 include_directories ( "${PROJECT_SOURCE_DIR}" src )
 
@@ -145,9 +147,6 @@ check_include_file(stdint.h     HAVE_STDINT_H)
 configure_file ( "${PROJECT_SOURCE_DIR}/config_cmake.h.in" "${PROJECT_BINARY_DIR}/config.h" )
 include_directories ( "${PROJECT_BINARY_DIR}" )  # for config.h, ...
 add_definitions ( -DHAVE_CONFIG_H )
-
-# for service __imp__UnDecorateSymbolName@16
-list(APPEND add_LIBS Dbghelp.lib)
 
 # dump4 EXECUTABLE from [C:\GTools\ConApps\dump4],
 # have 39 C/C++ sources, 39 headers
