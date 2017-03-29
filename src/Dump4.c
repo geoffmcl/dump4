@@ -497,7 +497,7 @@ void	ProcessFile( LPTSTR fn )
 
 	lpb = &gszDiag[0];
 	pCnt = 0;
-#ifdef USE_FIND_FIRST
+#if defined(USE_FIND_FIRST) || defined(_WIN32)
     hFind = FindFirstFile( fn, &fd );
     if( VFH(hFind) ) {
         if( giVerbose ) {
@@ -575,6 +575,7 @@ Try_WILD:
         } else if(VERB) {
             sprintf( lpb, "WARNING: Open file [%s] FAILED!"MEOR, fn );
 			prt( lpb );
+#if defined(USE_FIND_FIRST) || defined(_WIN32)
             hFind = FindFirstFile( fn, &fd );
             if( VH(hFind) ) {
                 prt( "This CAN not happen! Is file LOCKED by another process?"MEOR );
@@ -602,6 +603,7 @@ Try_WILD:
                      p = strrchr(pbuf, '\\');
                  }
             }
+#endif
         }
 
 //typedef struct _WIN32_FIND_DATA { // wfd  
