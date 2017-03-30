@@ -552,7 +552,7 @@ VOID  Add2Array( PCDWA dwa, PIMAGE_RELOCATION pir )
    {
       if( ( dwa->dwCount + 1 ) >= dwa->dwSize )
       {
-         PDWORD _pdw = (PDWORD)dMAOLLOC( (sizeof(DWORD) * (dwa->dwSize+MXBSZ)) );
+         PDWORD _pdw = (PDWORD)dMALLOC( (sizeof(DWORD) * (dwa->dwSize+MXBSZ)) );
          if( !_pdw )
          {
             chkme( "MEMORY FAILED"MEOR );
