@@ -178,7 +178,7 @@ void	DoOutput( DWORD fOff )
 	if( io )	// If we HAVE output
 	{
 		// Append a LF
-		strcat( lpo, ""MEOR );
+		strcat( lpo, "" MEOR );
 		prt( lpo );	// Out it
 	}
 }
@@ -269,13 +269,13 @@ void	DoFile( char * fn, HANDLE hf )
    			if( giVerbose )
    			{
 //               sprintf( lptmp,
-//   						"Total Size is %I64u bytes (mapped to %#x)."MEOR,
+//   						"Total Size is %I64u bytes (mapped to %#x)." MEOR,
 //                     lpdf->qwSize,
 //                     lpdf->df_pVoid );
        			if( giVerbose > 1 )
                {
                   sprintf( lptmp,
-   						"File [%s], %I64u bytes (map at %#x)."MEOR,
+   						"File [%s], %I64u bytes (map at %#x)." MEOR,
                      fn,
                      lpdf->qwSize,
                      lpdf->df_pVoid );
@@ -283,7 +283,7 @@ void	DoFile( char * fn, HANDLE hf )
                else
                {
                   sprintf( lptmp,
-   						"File [%s], %I64u bytes."MEOR,
+   						"File [%s], %I64u bytes." MEOR,
                      fn,
                      lpdf->qwSize );
                }
@@ -323,7 +323,7 @@ void	DoFile( char * fn, HANDLE hf )
 				if( fsiz != (DWORD)-1 )
 				{
 					sprintf( lptmp,
-						"Total Size is %s (0x%04X) bytes. Read %d to buffer"MEOR,
+						"Total Size is %s (0x%04X) bytes. Read %d to buffer" MEOR,
 						GetDWStg2(fsiz), fsiz, rd );
 					prt( lptmp );
 				}
@@ -376,8 +376,8 @@ void	DoFile( char * fn, HANDLE hf )
          {
             if( VERB )
    			{
-   				sprintf( lptmp, "ERROR: Unable to get MAP View of File"MEOR
-                  "\t[%s]!"MEOR, fn );
+   				sprintf( lptmp, "ERROR: Unable to get MAP View of File" MEOR
+                  "\t[%s]!" MEOR, fn );
    				prt( lptmp );
    			}
             CloseHandle( lpdf->df_hMap );
@@ -388,14 +388,14 @@ void	DoFile( char * fn, HANDLE hf )
 #ifndef  USEMAPPING
          if( VERB )
 			{
-				sprintf( lptmp, "ERROR: Unable to MAP File"MEOR
-               "\t[%s]!"MEOR, fn );
+				sprintf( lptmp, "ERROR: Unable to MAP File" MEOR
+               "\t[%s]!" MEOR, fn );
 				prt( lptmp );
 			}
 #else // !USEMAPPING
          if( VERB )
 			{
-				sprintf( lptmp, "WARNING: File [%s] is NULL!"MEOR, fn );
+				sprintf( lptmp, "WARNING: File [%s] is NULL!" MEOR, fn );
 				prt( lptmp );
 			}
 #endif   // #ifndef  USEMAPPING
@@ -405,7 +405,7 @@ void	DoFile( char * fn, HANDLE hf )
 	{
 		if( giVerbose )
 		{
-			sprintf( lptmp, "ERROR: Unable to OPEN file [%s]!"MEOR, fn );
+			sprintf( lptmp, "ERROR: Unable to OPEN file [%s]!" MEOR, fn );
 			prt( lptmp );
 		}
 	}
@@ -421,7 +421,7 @@ void	DoFile( char * fn, HANDLE hf )
 void	DoFile( char * fn, HANDLE hf )
 {
     LPTSTR	   lptmp = &gszTmpOut[0];
-	sprintf( lptmp, "ERROR: This service has to be ported to unix [%s]!"MEOR, fn );
+	sprintf( lptmp, "ERROR: This service has to be ported to unix [%s]!" MEOR, fn );
 	prt( lptmp );
 }
 ////////////////////////////////////////////////////////////////////
@@ -504,14 +504,14 @@ void	ProcessFile( LPTSTR fn )
             ULARGE_INTEGER ul;
             ul.LowPart  = fd.nFileSizeLow;
             ul.HighPart = fd.nFileSizeHigh;
-            sprintf( lpb, "Processing File [%s], %I64d bytes..."MEOR,
+            sprintf( lpb, "Processing File [%s], %I64d bytes..." MEOR,
                 fn,
                 ul );
         }
         FindClose( hFind );
     } else {
         if( giVerbose ) {
-            sprintf( lpb, "Processing File [%s]..."MEOR, fn );
+            sprintf( lpb, "Processing File [%s]..." MEOR, fn );
             prt( lpb );
         }
     }
@@ -544,7 +544,7 @@ void	ProcessFile( LPTSTR fn )
             ProcessCAB( fn );
         }
 #ifdef  ADD_SHAPE_FILE    // needs TG/lib/shapelib - shapelib.lib
-        else if( gfDoSHPFile ) { //   "  -shp    Dump as SHAPEFILE ..."MEOR
+        else if( gfDoSHPFile ) { //   "  -shp    Dump as SHAPEFILE ..." MEOR
             grmCloseFile( &hf );
             if( ProcessSHP( fn ) )
                 return;  // all done
@@ -570,15 +570,15 @@ Try_WILD:
 #endif
         gbGotWild = GotWild(fn);
         if(( gbGotWild ) && ( VERB ) ) {
-            sprintf( lpb, "ADVICE: Using [%s] for searching ..."MEOR, fn );
+            sprintf( lpb, "ADVICE: Using [%s] for searching ..." MEOR, fn );
 			prt( lpb );
         } else if(VERB) {
-            sprintf( lpb, "WARNING: Open file [%s] FAILED!"MEOR, fn );
+            sprintf( lpb, "WARNING: Open file [%s] FAILED!" MEOR, fn );
 			prt( lpb );
 #if defined(USE_FIND_FIRST) || defined(_WIN32)
             hFind = FindFirstFile( fn, &fd );
             if( VH(hFind) ) {
-                prt( "This CAN not happen! Is file LOCKED by another process?"MEOR );
+                prt( "This CAN not happen! Is file LOCKED by another process?" MEOR );
                 FindClose(hFind);
              } else {
                  LPTSTR   pbuf = &g_cBuf[0];
@@ -592,8 +592,8 @@ Try_WILD:
                      if( VH(hFind) )
                      {
                          sprintf( lpb,
-                             "ADVICE: Did find [%s]!"MEOR
-                             "   Appears an error in [%s]?"MEOR,
+                             "ADVICE: Did find [%s]!" MEOR
+                             "   Appears an error in [%s]?" MEOR,
                              pbuf,
                              &fn[ (strlen(pbuf) + 1) ] );
                          prt( lpb );
@@ -621,12 +621,13 @@ Try_WILD:
 //		if( GotWild( fn ) )
 		if( gbGotWild )
 		{
+#ifdef _WIN32
 			lpf = &gszNxtFile[0];
 			lpd = &gszCurDir[0];
 			GetDir( lpd, fn );
 			if( giVerbose > 8 )
 			{
-				strcpy( lpb, "ADVICE: Trying FindFirstFile..."MEOR );
+				strcpy( lpb, "ADVICE: Trying FindFirstFile..." MEOR );
 				prt( lpb );
 			}
 			hFind = FindFirstFile( fn, &fd );
@@ -634,7 +635,7 @@ Try_WILD:
 			{
 				if( giVerbose > 8 )
 				{
-					sprintf( lpb, "ADVICE: Got FIND Handle %X..."MEOR,
+					sprintf( lpb, "ADVICE: Got FIND Handle %X..." MEOR,
 						hFind );
 					prt( lpb );
 				}
@@ -658,7 +659,7 @@ Try_WILD:
 				if(( pCnt == 0 ) &&
 					( VERB      ) )  // giVerbose > 8 ) )
 				{
-					sprintf( lpb, "WARNING: Unable to FIND any file(s)\nlike [%s]!"MEOR,
+					sprintf( lpb, "WARNING: Unable to FIND any file(s)\nlike [%s]!" MEOR,
 						fn );
 					prt( lpb );
 				}
@@ -667,16 +668,21 @@ Try_WILD:
 			{
 				if( giVerbose > 8 )
 				{
-					sprintf( lpb, "WARNING: Unable to OPEN/FIND file(s)\nlike [%s]!"MEOR, fn );
+					sprintf( lpb, "WARNING: Unable to OPEN/FIND file(s)\nlike [%s]!" MEOR, fn );
 					prt( lpb );
 				}
 			}
+#else // !_WIN32
+            sprintf(lpb, "ERROR: Wildcard NOT yet suuported in NOT WIN32! '%s" MEOR, fn);
+            prt(lpb);
+#endif // _WIN32 y/n
+
 		}
 		else
 		{
 			if( giVerbose )
 			{
-				sprintf( lpb, "WARNING: Unable to OPEN file [%s]!"MEOR, fn );
+				sprintf( lpb, "WARNING: Unable to OPEN file [%s]!" MEOR, fn );
 				prt( lpb );
 			}
 		}
@@ -1413,7 +1419,7 @@ int main( int argc, char *argv[] )
 		if( ( lpc ) &&
 			( VERB4 ) )    // = giVerbose >= 9 
 		{
-			strcat( lpc, "]"MEOR );
+			strcat( lpc, "]" MEOR );
 			prt( lpc );
 		}
 
@@ -1422,14 +1428,14 @@ int main( int argc, char *argv[] )
 		{
 			//_getcwd( lpb, 256 );
 			sprintf( lpb,
-				"Current Work Directory =[%s]."MEOR,
+				"Current Work Directory =[%s]." MEOR,
 				&gw_szcwd[0] );
 			prt(lpb);
          *lpb = 0;
 		}
       if( gfDoASCII )
       {
-			sprintf( EndBuf(lpb), "Extract %s only (Min. length %d)."MEOR,
+			sprintf( EndBuf(lpb), "Extract %s only (Min. length %d)." MEOR,
                 (gfDoASCII2 ? "alphanumeric" : "ASCII"),
                 giMinASCII );
 		   sprintf( EndBuf(lpb), "Begin at %u ", gdwBgnOff );
@@ -1441,7 +1447,7 @@ int main( int argc, char *argv[] )
       }
       else if( gfDoBMP )
 		{
-			strcpy( lpb, "Display as a BITMAP only."MEOR );
+			strcpy( lpb, "Display as a BITMAP only." MEOR );
 		}
 		else
 		{
@@ -1453,27 +1459,27 @@ int main( int argc, char *argv[] )
          else if( gfDoVosTab )
          {
             if( gfDoVosOnly )
-               strcpy( lpb, "View as a VOS Table file only -DDO"MEOR );
+               strcpy( lpb, "View as a VOS Table file only -DDO" MEOR );
             else
-               strcpy( lpb, "Try first as a VOS Table file -DD"MEOR );
+               strcpy( lpb, "Try first as a VOS Table file -DD" MEOR );
 
          }
          else if(gfDoCABFile)
          {
-            strcpy( lpb, "List files in MS CABINET file (-CAB)"MEOR );
+            strcpy( lpb, "List files in MS CABINET file (-CAB)" MEOR );
          }
 #ifdef   ADDSYNPROF  // #define  ADDSYNPROF
          else if( gbDoSynEdit )
          {
-            strcpy( lpb, "Process as a SYNEDIT profile file (-prof)"MEOR );
+            strcpy( lpb, "Process as a SYNEDIT profile file (-prof)" MEOR );
          }
 #endif   // #ifdef   ADDSYNPROF  // #define  ADDSYNPROF
          else if( g_bDumpGif )
          {
             if(g_bDumpGif == 1)
-               strcpy( lpb, "Process as a GIF image file (-gif)"MEOR );
+               strcpy( lpb, "Process as a GIF image file (-gif)" MEOR );
             else
-               sprintf( lpb, "Process as a GIF image file (-gif%d)"MEOR, g_bDumpGif );
+               sprintf( lpb, "Process as a GIF image file (-gif%d)" MEOR, g_bDumpGif );
          }
          else
          {
@@ -1533,7 +1539,7 @@ int main( int argc, char *argv[] )
 
 	if( giInCount == 0 )
 	{
-		prt( "ERROR: No input file[s]!"MEOR );
+		prt( "ERROR: No input file[s]!" MEOR );
 		UsageX();
 	}
 
