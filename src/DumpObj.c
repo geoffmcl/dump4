@@ -3,7 +3,9 @@
 // Dump of OBJECT (*.obj) file
 #include	"Dump4.h"
 
-#ifndef USE_PEDUMP_CODE // FIX20080507
+// #ifndef USE_PEDUMP_CODE // FIX20080507
+#if !defined(USE_PEDUMP_CODE) && defined(_WIN32) // FIX20080507
+
 #include <time.h>
 #include <Winsock2.h>
 // #include <Dbghelp.h> // for ImageNtHeader
