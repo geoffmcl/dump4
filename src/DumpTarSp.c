@@ -4,7 +4,7 @@
 // spare file handling ...
 
 #pragma warning(disable:4146) // C4146: unary minus operator applied to unsigned type, result still unsigned
-#include "dump4.h"
+#include	"Dump4.h"   // 20170330 - Fix cse for unix
 #include <sys/types.h>
 #include <sys/stat.h>
 

@@ -1,6 +1,6 @@
 
 // DumpSonic.c
-#include "dump4.h"
+#include	"Dump4.h"   // 20170330 - Fix cse for unix
 #include "DumpSonic.h"
 
 /* -----------------------

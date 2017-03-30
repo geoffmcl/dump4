@@ -2,7 +2,7 @@
 // FIX20081204 - Added -wav to process WAVE file
 // from : http://technology.niagarac.on.ca/courses/ctec1631/WavFileFormat.html
 // from : http://www.sonicspot.com/guide/wavefiles.html
-#include "dump4.h"
+#include	"Dump4.h"   // 20170330 - Fix cse for unix
 extern void ProcessHex( PBYTE pb, DWORD len );
 
 /* =========================================================
