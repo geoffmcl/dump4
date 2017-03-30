@@ -804,7 +804,7 @@ void ProcessHex( PBYTE pb, DWORD len )
    BOOL     bAddO = gfAddOffset;
    DWORD    dwi;
    DWORD    ia, fix;
-   DWORD    foff = (DWORD)pb;
+   DWORD64  foff = (DWORD64)pb;
 
    ia = fix = 0;
    *lph = 0;
