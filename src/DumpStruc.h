@@ -92,6 +92,7 @@ typedef unsigned long long DWORDLONG;
 #define INVALID_HANDLE_VALUE (PVOID)-1
 
 typedef unsigned short WCHAR;    // wc,   16-bit UNICODE character
+typedef unsigned long long DWORD64; // 20170330 addition
 
 typedef union _ULARGE_INTEGER {
     //struct {
