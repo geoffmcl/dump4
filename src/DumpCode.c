@@ -545,13 +545,14 @@ VOID  Add2Array( PCDWA dwa, PIMAGE_RELOCATION pir )
    if( dwa->pdwArray == 0 )
    {
       dwa->dwSize = MXBSZ;
-      dwa->pdwArray = (PDWORD)LocalAlloc( LPTR, (sizeof(DWORD) * dwa->dwSize) );
+      // dwa->pdwArray = (PDWORD)LocalAlloc( LPTR, (sizeof(DWORD) * dwa->dwSize) );
+      dwa->pdwArray = (PDWORD)dMALLOC( (sizeof(DWORD) * dwa->dwSize) );
    }
    if( dwa->pdwArray )
    {
       if( ( dwa->dwCount + 1 ) >= dwa->dwSize )
       {
-         PDWORD _pdw = (PDWORD)LocalAlloc( LPTR, (sizeof(DWORD) * (dwa->dwSize+MXBSZ)) );
+         PDWORD _pdw = (PDWORD)dMAOLLOC( (sizeof(DWORD) * (dwa->dwSize+MXBSZ)) );
          if( !_pdw )
          {
             chkme( "MEMORY FAILED"MEOR );
@@ -563,7 +564,7 @@ VOID  Add2Array( PCDWA dwa, PIMAGE_RELOCATION pir )
          dwa->dwSize += MXBSZ;
       }
 
-      dwa->pdwArray[ dwa->dwCount++ ] = (DWORD)pir;
+      dwa->pdwArray[ dwa->dwCount++ ] = pir;
    }
 }
 
