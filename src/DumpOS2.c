@@ -3,7 +3,9 @@
 
 #include "Dump4.h"
 
-#ifndef USE_PEDUMP_CODE // FIX20080507
+// #ifndef USE_PEDUMP_CODE // FIX20080507
+#if !defined(USE_PEDUMP_CODE) && defined(_WIN32) // FIX20080507
+
 /* ==============================================
 typedef struct _IMAGE_OS2_HEADER {      // OS/2 .EXE header
     WORD   ne_magic;                    // Magic number
