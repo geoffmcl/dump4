@@ -527,7 +527,7 @@ void	ProcessFile( LPTSTR fn )
     } 
     else
     {
-        sprintf(lpb, "Processing File [%s], %lld bytes..." MEOR,
+        sprintf(lpb, "Processing File [%s], %zd bytes..." MEOR,
             fn,
             lpdf->stat_buf.st_size);
         if (giVerbose) {
