@@ -4,11 +4,12 @@
 // AUTHOR:  Matt Pietrek - 1993
 // from : http://msdn.microsoft.com/en-us/library/ms809762.aspx
 //--------------------
-//#include <windows.h>
-#include <Winsock2.h>
 #include <stdio.h>
 
-#if 0
+#if 0   // 0000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+//#include <windows.h>
+#include <Winsock2.h>
 
 #include "objdump.h"
 #include "exedump.h"
@@ -328,6 +329,6 @@ void DumpCVDebugInfoRecord( PDWORD pCVHeader )
    
 
 
-#endif // 0
+#endif // 0000000000000000000000000000000000000000000000000000000000000000000000000
 
 // eof
