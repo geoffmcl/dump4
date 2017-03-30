@@ -528,16 +528,16 @@ typedef  struct tagCDWordArray {
 #define  ADD2ARRAY( dwa, pir ) \
    if( dwa.pdwArray == 0 ) {\
       dwa.dwSize = MXBSZ;\
-      dwa.pdwArray = (PDWORD)LocalAlloc( LPTR, (sizeof(DWORD) * dwa.dwSize) );}\
+      dwa.pdwArray = (PDWORD)mMALLOC( (sizeof(DWORD) * dwa.dwSize) );}\
    if( dwa.pdwArray ) {\
       if( ( dwa.dwCount + 1 ) >= dwa.dwSize ) { \
-         PDWORD _pdw = (PDWORD)LocalAlloc( LPTR, (sizeof(DWORD) * (dwa.dwSize+MXBSZ)) );\
+         PDWORD _pdw = (PDWORD)mMALLOC( (sizeof(DWORD) * (dwa.dwSize+MXBSZ)) );\
          if( !_pdw ) { chkme( "MEMORY FAILED"MEOR ); pgm_exit(-2); }\
          memcpy( _pdw, dwa.pdwArray, (sizeof(DWORD) * dwa.dwCount) );\
          LocalFree( dwa.pdwArray );\
          dwa.pdwArray = _pdw;\
          dwa.dwSize += MXBSZ; }\
-      dwa.pdwArray[ dwa.dwCount++ ] = (DWORD)pir; }
+      dwa.pdwArray[ dwa.dwCount++ ] = pir; }
 
 
 VOID  Add2Array( PCDWA dwa, PIMAGE_RELOCATION pir )
