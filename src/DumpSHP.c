@@ -1,7 +1,8 @@
 // DumpSHP.c
 // Dump a shapefile ...
 
-#include "dump4.h"
+#include	"Dump4.h"   // 20170330 - Fix cse for unix
+
 #ifdef  ADD_SHAPE_FILE    // needs TG/lib/shapelib - shapelib.lib
 #include <shapefil.h>
 #ifndef NDEBUG
