@@ -4,7 +4,7 @@
 #include "Dump4.h"
 
 // #ifndef USE_PEDUMP_CODE // FIX20080507
-#if !defined(USE_PEDUMP_CODE) && !defined(_WIN32) // FIX20080507
+#if !defined(USE_PEDUMP_CODE) && defined(_WIN32) // FIX20080507
 #include "DumpObj.h"
 #include <Dbghelp.h>
 
