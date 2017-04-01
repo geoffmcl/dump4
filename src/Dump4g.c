@@ -2930,6 +2930,7 @@ Exit_Add:
 
 void  AddDT4( LPTSTR lpb )
 {
+#ifdef WIN32
    SYSTEMTIME  st;
    GetLocalTime(&st);
    sprintf( EndBuf(lpb),
@@ -2939,6 +2940,11 @@ void  AddDT4( LPTSTR lpb )
 		(st.wYear % 100),
 		st.wHour,
 		st.wMinute );
+#else
+    time_t t = time(NULL);
+    struct tm tm = localtime(&t);
+    sprintf(EndBuf(lpb), "%02d/%02d/%02d %02d:%02dd", tm.tm_mday, tm.tm_mon + 1, (tm.tm_year + 1900) % 100, tm.tm_hour, tm.tm_min);
+#endif
 }
 
 void  OutBlock( LPTSTR lpb, DWORD dwBgn, DWORD dwLen, DWORD dwSkip, DWORD dwRd,
