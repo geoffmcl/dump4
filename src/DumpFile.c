@@ -338,6 +338,18 @@ void	CloseDiagFile( HANDLE * lpHF )
    *lpHF = 0;
 }
 
+#ifndef WIN32
+int _vscprintf(const char * format, va_list pargs) 
+{
+    int retval;
+    va_list argcopy;
+    va_copy(argcopy, pargs);
+    retval = vsnprintf(NULL, 0, format, argcopy);
+    va_end(argcopy);
+    return retval;
+}
+#endif
+
 #define MX_SPRTF_BUF (1024 * 8)
 int vsprtf( PTSTR ps, va_list arglist )
 {
@@ -352,7 +364,11 @@ int vsprtf( PTSTR ps, va_list arglist )
    if (len > MX_SPRTF_BUF) {
        char * buffer = (char *)malloc( len * sizeof(char) );
        if (buffer) {
-           i = vsprintf_s( buffer, len, ps, arglist );
+#ifdef WIN32
+           i = vsprintf_s(buffer, len, ps, arglist);
+#else
+           i = vsnprintf(buffer, len, ps, arglist);
+#endif
            if (i <= 0) {
                prt("ERROR:DUMP4:1: vsprintf_s FAILED!\n");
            } else {
@@ -366,7 +382,11 @@ int vsprtf( PTSTR ps, va_list arglist )
            prt(lpb);
        }
    } else {
+#ifdef WIN32
        i = vsprintf_s( lpb, MX_SPRTF_BUF, ps, arglist );
+#else
+       i = vsnprintf(buffer, MX_SPRTF_BUF, ps, arglist);
+#endif
        if (i <= 0) {
            prt("ERROR:DUMP4:2: vsprintf_s FAILED!\n");
        } else {
