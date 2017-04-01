@@ -169,7 +169,9 @@
 
 #define  VH(a)       ( a && ( a != INVALID_HANDLE_VALUE ) )
 // now 'older' style of a file handle
-#define  VFHO(a)      ( a && ( a != HFILE_ERROR ) )
+//#define  VFHO(a)      ( a && ( a != HFILE_ERROR ) )
+#define  VFHO(a)  VH(a)
+
 
 #if  (defined(_MSC_VER) && (_MSC_VER > 1300))
 #pragma warning( disable:4996 )
