@@ -728,8 +728,8 @@ DWORD  SetRank( LPMBLST plThis, int iNum, LPTSTR lpThis )
          dwc++;
          lps = &plh->m_cBuf[0];
             //SetRank( plh, i, lps );
-         id = lstrcmp(lps,lpThis);
-//       if( lstrcmp(lps,lpThis) > 0 )
+         id = strcmp(lps,lpThis);
+//       if( strcmp(lps,lpThis) > 0 )
          if( id > 0 )
          {
             dwm++;
@@ -1812,7 +1812,7 @@ int   IsSal( LPTSTR lpn )
             if( dwo == dwk )
             {
                // the BIG compare
-               if( lstrcmp(lps,lpt) == 0 )
+               if( strcmp(lps,lpt) == 0 )
                {
                   iRet++;
                   break;
@@ -1874,7 +1874,7 @@ int   ChkRSal( LPTSTR lpn, LPTSTR * plps, LPTSTR lpt, DWORD dwsal )
                c = lpt[dwo];
                //lpt[dwo] = 0;
                // the BIG compare
-               id = lstrcmp(lps,lpt);
+               id = strcmp(lps,lpt);
                //lpt[dwo] = c;
                if( id == 0 )
                {
@@ -3179,7 +3179,7 @@ void  OutBlock( LPTSTR lpb, DWORD dwBgn, DWORD dwLen, DWORD dwSkip, DWORD dwRd,
                         if( strlen(lpout) == i )
                         {
                            if( ( lpo2 ) &&
-                              ( lstrcmp(lpout,lpo2) == 0 ) )
+                              ( strcmp(lpout,lpo2) == 0 ) )
                            {
                               prt( "<no changes>"MEOR ); // = "\r\n" );
                            }

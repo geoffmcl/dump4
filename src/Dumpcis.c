@@ -1291,7 +1291,7 @@ int   ginstr( LPTSTR lps, LPTSTR lpi )
    {
       if( j == i )
       {
-         if( lstrcmp(lps,lpi) == 0 )
+         if( strcmp(lps,lpi) == 0 )
             iRet++;  // it starts at POSITION 1
       }
       else
@@ -1348,8 +1348,13 @@ int   ginstri( LPTSTR lps, LPTSTR lpi )
    {
       if( j == i )
       {
-         if( lstrcmpi(lps,lpi) == 0 )
+#ifdef WIN32
+         if( strcmpi(lps,lpi) == 0 )
             iRet++;  // it starts at POSITION 1
+#else
+         if (strcasecmp(lps, lpi) == 0)
+             iRet++;  // it starts at POSITION 1
+#endif
       }
       else
       {
