@@ -836,7 +836,10 @@ void ProcessHex( PBYTE pb, DWORD len )
       {
          *lpo = 0;
   			lpa[ia+fix] = 0;
-         if(bAddO) sprintf( lpo, "%04x:%04x ", ((foff & 0xffff0000) >> 16), (foff & 0x0000ffff) );
+         if(bAddO)
+             sprintf( lpo, "%04x:%04x ", 
+                (WORD)((foff & 0xffff0000) >> 16), 
+                 (WORD)(foff & 0x0000ffff) );
          if(bAddH) strcat( lpo, lph );
          if(bAddA) strcat( lpo, lpa );
          if(*lpo) {

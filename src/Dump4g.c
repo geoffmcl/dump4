@@ -454,7 +454,7 @@ BOOL		bAdd2List( LPSTR lps, DWORD dwFlag )
                chkme( "Use mem for this size ..." );
 //               glpOut2 = dMALLOC( (dwSiz + 264) );
                glpOut2 = dMALLOC(dws);
-               gbAlloc = (BOOL)(glpOut2);
+               gbAlloc = (glpOut2 ? TRUE : FALSE);
                if( !glpOut2 )
                {
                   chkme( "Bigger OUT memory FAILED ... this is BAD!!!" );
@@ -1713,6 +1713,7 @@ DWORD Move2Nums( LPTSTR lpIn, DWORD dwIn, LPTSTR lphd )
 
 }
 
+#ifdef _MSC_VER
 LPTSTR   glpSalutes[] = {
    { "MR" },
    { "MRS" },
@@ -1720,6 +1721,16 @@ LPTSTR   glpSalutes[] = {
    { "MISS" },
    { 0 }
 };
+#else
+LPTSTR   glpSalutes[] = 
+    "MR",
+    "MRS",
+    "MS",
+    "MISS",
+    0 
+;
+#endif
+
 #define  MMAXSAL      4
 #define  MMINSAL      2
 
