@@ -120,22 +120,21 @@ void  ShowBlks( LPVBLKS lpv )
          if( dwk2 )
          {
             sprintf(lptmp,
-               MEOR"But %d of these %d can be simple multiples."MEOR,
+               MEOR "But %d of these %d can be simple multiples." MEOR,
                dwk2,
                dwk );
          }
          else
          {
             sprintf(lptmp,
-               MEOR"But some of these %d can be imposters!"MEOR,
+               MEOR "But some of these %d can be imposters!" MEOR,
                dwk );
          }
       }
       else
       {
          sprintf(lptmp,
-            MEOR"This SINGLE block size seems unambiguous."MEOR,
-            dwk );
+            MEOR "This SINGLE block size seems unambiguous." MEOR );
       }
       prt(lptmp);
    }
