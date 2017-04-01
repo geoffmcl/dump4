@@ -4,7 +4,9 @@
 
 #include "Dump4.h"
 #include "DumpUtil.h"
-#include <conio.h>
+#ifdef _WIN32
+#include <conio.h>  // got _getch()
+#endif // _WIN32
 
 VOID AddASMString( LPTSTR lps, DWORD dwo );
 VOID Write2ASMFile(LPTSTR lps, DWORD dwo);
