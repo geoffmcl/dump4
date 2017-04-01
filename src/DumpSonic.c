@@ -37,41 +37,69 @@ typedef struct tagSFILE_ITEM {
     // char for this length
 }SFILE_ITEM, * PSFILE_ITEM;
 
-VOID show_sonic_info( PTSTR pinfo1, PTSTR pinfo2 )
+VOID show_sonic_info(PTSTR pinfo1, PTSTR pinfo2)
 {
+#ifdef WIN32
     WIN32_FIND_DATA	fd;
-	HANDLE	hFind;
+    HANDLE	hFind;
 
-    hFind = FindFirstFile( pinfo1, &fd );
+    hFind = FindFirstFile(pinfo1, &fd);
+#else
+    struct stat buf;
+    int res = stat(pinfo1, &buf);
+#endif
 
     while (strlen(pinfo1) < _s_max_len1)
-        strcat(pinfo1," ");
+        strcat(pinfo1, " ");
     if (*pinfo2) {
         while (strlen(pinfo2) < _s_max_len2)
-            strcat(pinfo2," ");
+            strcat(pinfo2, " ");
     }
 
-    if( VFH(hFind) ) {
-        FindClose( hFind );
-        if ( fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) {
-            strcat(pinfo2," [DIR]                ");
-        } else {
+#ifdef WIN32
+    if (VFH(hFind)) {
+        FindClose(hFind);
+        if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            strcat(pinfo2, " [DIR]                ");
+        }
+        else {
             ULARGE_INTEGER ul;
             PTSTR ptmp = GetNxtBuf();
 
-            ul.LowPart  = fd.nFileSizeLow;
+            ul.LowPart = fd.nFileSizeLow;
             ul.HighPart = fd.nFileSizeHigh;
-            sprintf( ptmp, "%I64d", ul );
-            sprintf( EndBuf(pinfo2), " [FIL] % 15s", My_NiceNumber(ptmp) );
+            sprintf(ptmp, "%I64d", ul);
+            sprintf(EndBuf(pinfo2), " [FIL] % 15s", My_NiceNumber(ptmp));
         }
         // fd.ftCreationTime, fd.ftLastAccessTime, fd.ftLastWriteTime
-        strcat(pinfo2," ");
-        Get_FD_File_Time_Stg( pinfo2, &fd, TRUE );
+        strcat(pinfo2, " ");
+        Get_FD_File_Time_Stg(pinfo2, &fd, TRUE);
 
-    } else {
-        strcat(pinfo2," NOT FOUND!");
     }
-    sprtf("%s %s"MEOR, pinfo1, pinfo2 );
+    else {
+        strcat(pinfo2, " NOT FOUND!");
+    }
+#else
+    if (res)
+    {
+        strcat(pinfo2, " NOT FOUND!");
+    }
+    else
+    {
+        if ((buf.st_mode & S_IFMT) == S_IFDIR)
+        {
+            strcat(pinfo2, " [DIR]                ");
+        }
+        else
+        {
+            PTSTR ptmp = GetNxtBuf();
+            sprintf(ptmp, "%ll", buf.st_size);
+            sprintf(EndBuf(pinfo2), " [FIL] % 15s", My_NiceNumber(ptmp));
+        }
+        strcat(pinfo2, " TODO: Add time");
+    }
+#endif
+    sprtf("%s %s" MEOR, pinfo1, pinfo2 );
 }
 
 BOOL  DumpSONIC( LPDFSTR lpdf )

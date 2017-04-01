@@ -16,6 +16,7 @@
 #include <string.h> // for strcat, ...
 #include <stdarg.h> // for va_start, ...
 #include <strings.h> // strcasecmp, strncasecmp
+#include <unistd.h>
 
 /* from winnt.h */
 #define IMAGE_DOS_SIGNATURE                 0x5A4D      // MZ
