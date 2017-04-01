@@ -1255,16 +1255,25 @@ void	ProcessDataStr( LPDFSTR lpdf )
    {
 #ifdef USE_PEDUMP_CODE // FIX20080507
       if( ProcessPE( lpdf ) ) // FIX20080507 - Use DumpPE (PEDUMP)
+          return;  // all DONE
 #else // !#ifdef USE_PEDUMP_CODE // FIX20080507
+#ifdef WIN32
       if( ProcessLIB( lpdf ) )
+          return;  // all DONE
+#else
+       printf("TODO: ProcessPE(LIB) not yet ported to unix!\n");
+#endif
 #endif // #ifdef USE_PEDUMP_CODE // FIX20080507 y/n
-         return;  // all DONE
    }
 #ifdef  ADDLNK // added Nov 2006
    if( g_bDumpLNK )
    {
+#ifdef WIN32
       if( ProcessLNK( lpdf ) )
          return;  // all DONE
+#else
+       printf("TODO: ProcessLNK not yet ported to unix!\n");
+#endif
    }
 #endif  // ADDLNK
 
@@ -1288,8 +1297,12 @@ void	ProcessDataStr( LPDFSTR lpdf )
     // BOOL w_bDoAVI; // g_bDoAVI - process as an AVI file
    if( g_bDoAVI )
    {
+#ifdef WIN32
       if( DumpAVI( lpdf ) )
          return;  // all done
+#else
+       printf("TODO: DumpAVI not yet ported to unix!\n");
+#endif
    }
 #endif // #ifdef ADD_AVI_FILE
 
@@ -1298,10 +1311,15 @@ void	ProcessDataStr( LPDFSTR lpdf )
    {
 #ifdef USE_PEDUMP_CODE // FIX20080507
       if( ProcessPE( lpdf ) ) // FIX20080507 - Use DumpPE (PEDUMP)
+          return;  // all done
 #else // !#ifdef USE_PEDUMP_CODE // FIX20080507
+#ifdef WIN32
       if( ProcessOBJ( lpdf ) )
+          return;  // all done
+#else
+       printf("TODO: PrcoessPE(OBJ) not yet ported to unix!\n");
+#endif
 #endif // #ifdef USE_PEDUMP_CODE // FIX20080507 y/n
-         return;  // all done
    }
 #endif   // #ifdef   ADDOBJSW
 
@@ -1397,10 +1415,13 @@ int main( int argc, char *argv[] )
    gbIgnoreMNU = TRUE;  // -gi[...] ignore 123ABC
 
 	lpb = &gw_szcwd[0];
+#ifdef WIN32
 	_getcwd( lpb, 256 );
-
    GetModuleFileName( NULL, gszModule, 256 );
-
+#else
+    getcwd(lpb, 256);
+    strcpy(gszModule, argv[0]);
+#endif
 	//lpb = &gcFilBuf[0];
    lpb = &gszDiag[0];
 
@@ -1558,8 +1579,10 @@ int main( int argc, char *argv[] )
 //   DeleteLineMem();
    OutLineMem();
 
+#ifdef WIN32
    if( VFH(g_hOutFile) )
       CloseHandle(g_hOutFile);
+#endif
 
    pgm_exit(retv);
 
