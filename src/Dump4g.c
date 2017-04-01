@@ -2634,7 +2634,7 @@ int   GetXHdrs( LPTSTR lpn, DWORD dwi )
                {
                   // rotate the LAST word to the FRONT then follow with rest
                   // Annie's birthday, thus must shower and off to lunch
-                  // avec la mere (  this is her mother / c'est la mère de Annie )
+                  // avec la mere (  this is her mother / c'est la m\E8re de Annie )
                   DWORD dwj, dwk;
                   LPTSTR   lps = lpn;  // only now interested in our NAME buffer
                   dwk = 0; // extracted from the FILE buffer given ...
@@ -2832,7 +2832,7 @@ int  GetHdrs_OK( LPTSTR lpc, DWORD dwIn )
                {
                   // rotate the LAST word to the FRONT then follow with rest
                   // Annie's birthday, thus must shower and off to lunch
-                  // avec la mere (  this is her mother / c'est la mère de Annie )
+                  // avec la mere (  this is her mother / c'est la m\E8re de Annie )
                   DWORD dwj, dwk;
                   LPTSTR   lps = lpn;  // only now interested in our NAME buffer
                   dwk = 0; // extracted from the FILE buffer given ...
@@ -2942,8 +2942,8 @@ void  AddDT4( LPTSTR lpb )
 		st.wMinute );
 #else
     time_t t = time(NULL);
-    struct tm tm = localtime(&t);
-    sprintf(EndBuf(lpb), "%02d/%02d/%02d %02d:%02dd", tm.tm_mday, tm.tm_mon + 1, (tm.tm_year + 1900) % 100, tm.tm_hour, tm.tm_min);
+    struct tm tm = *localtime(&t);
+    sprintf(EndBuf(lpb), "%02d/%02d/%02d %02d:%02d", tm.tm_mday, tm.tm_mon + 1, (tm.tm_year + 1900) % 100, tm.tm_hour, tm.tm_min);
 #endif
 }
 
@@ -3370,3 +3370,4 @@ int	DoGeoff( LPDFSTR lpdf )
 
 
 // eof - Dump4g.c
+
