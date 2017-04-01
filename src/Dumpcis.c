@@ -3,7 +3,7 @@
 // DumpCis.c
 
 #include	"Dump4.h"
-#include	"Cis.h"
+#include	"CIS.H" // fix CaSe for unix
 
 #ifdef   ADDCISD4    /* add CIS Compuserve files support */
 
