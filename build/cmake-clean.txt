@@ -2,4 +2,6 @@ config.h
 install_manifest.txt
 bldlog-1.txt
 dump4
+dump4d
+TEMPDUMP.TXT
 

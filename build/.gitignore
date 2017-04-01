@@ -16,4 +16,6 @@ Win32/*
 *.dir/*
 ipch/*
 dump4
+dump4d
+TEMPDUMP.TXT
 
