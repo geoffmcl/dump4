@@ -470,21 +470,17 @@ void	DoFile( char * fn, HANDLE hf )
         pBaseTop = pBaseLoad + dwMax;
         if (giVerbose)
         {
+            sprintf(lptmp,
+                "File [%s], %lld bytes.",
+                fn,
+                (long long)sb.st_size);
             if (giVerbose > 1)
             {
-                sprintf(lptmp,
-                    "File [%s], %llu bytes (map at %#x)." MEOR,
-                    fn,
-                    sb.st_size,
+                sprintf(EndBuf(lptmp),
+                    " (map at %p).",
                     lpdf->df_pVoid);
-               }
-            else
-            {
-                sprintf(lptmp,
-                    "File [%s], %llu bytes." MEOR,
-                    fn,
-                    sb.st_size);
             }
+            strcat(lptmp, MEOR);
             prt(lptmp);
         }
 
@@ -500,9 +496,9 @@ void	DoFile( char * fn, HANDLE hf )
             }
             else 
             {
-                sprintf(lptmp, "Completed [%s] = %llu Bytes. ",
+                sprintf(lptmp, "Completed [%s] = %lld Bytes. ",
                     fn, 
-                    sb.st_size);
+                    (long long)sb.st_size);
             }
             if (lpdf->stat_res == 0)
             {
@@ -974,7 +970,12 @@ void ProcessHex( PBYTE pb, DWORD len )
       }
       *lpo = 0;
 		lpa[ia+fix] = 0;
-      if(bAddO) sprintf( lpo, "%04x:%04x ", ((foff & 0xffff0000) >> 16), (foff & 0x0000ffff) );
+      if(bAddO)
+      {
+        sprintf( lpo, "%04x:%04x ", 
+            (DWORD)((foff & 0xffff0000) >> 16), 
+            (DWORD)(foff & 0x0000ffff) );
+      }
       if(bAddH) strcat( lpo, lph );
       if(bAddA) strcat( lpo, lpa );
       if(*lpo) {
