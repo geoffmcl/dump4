@@ -135,6 +135,13 @@ typedef unsigned __int64 uintmax_t;
 #ifndef intmax_t
 typedef __int64 intmax_t;
 #endif
+#ifdef USE_UNSIGNED_64BIT
+typedef uintmax_t off64_t;
+typedef uintmax_t size64_t;
+#else /* !USE_UNSIGNED_64BIT */
+typedef __int64 off64_t;
+typedef __int64 size64_t;
+#endif /* USE_UNSIGNED_64BIT y/n */
 #else // !_WIN32
 #include <inttypes.h>
 #endif // _WIN32 y/n
@@ -149,13 +156,6 @@ struct timespec {
 #endif
 #endif // for OLDER MSVC
 
-#ifdef USE_UNSIGNED_64BIT
-typedef uintmax_t off64_t;
-typedef uintmax_t size64_t;
-#else /* !USE_UNSIGNED_64BIT */
-typedef __int64 off64_t;
-typedef __int64 size64_t;
-#endif /* USE_UNSIGNED_64BIT y/n */
 /* GNU tar Archive Format description.
 
    Copyright (C) 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
