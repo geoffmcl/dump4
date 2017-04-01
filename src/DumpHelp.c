@@ -928,12 +928,17 @@ int ProcessCommand( int argc, char *argv[], LPSTR lpc )
             else if( ( toupper(cp[0]) == 'A' ) &&
 						 ( toupper(cp[1]) == 'B' ) )
             {
+#ifdef WIN32
                if( LoadCabLib() ) {
                   gfDoCABFile = TRUE;
                } else {
                   prt( "ERROR: Unable to load CABINET.DLL!"MEOR );
    					UsageX();
                }
+#else
+                prt("ERROR: No CABINET.DLL in unix!"MEOR);
+                UsageX();
+#endif
             }
 				else
 				{
