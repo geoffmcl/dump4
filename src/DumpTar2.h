@@ -25,7 +25,12 @@
 /* ********************************************
    use 64-bit seek and stat
    ******************************************** */
+#ifdef _WIN32
 #define struct_stat struct __stat64
+#else
+#define struct_stat struct stat
+#endif
+
 #define  FDSEEK   _lseeki64
 #define  FNSTAT   _stat64
 #define  FDSTAT   _fstat64
