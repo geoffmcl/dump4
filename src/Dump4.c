@@ -494,9 +494,9 @@ void	DoFile( char * fn, HANDLE hf )
         {
             if ((gdwEndOff) && (gdwEndOff < sb.st_size))
             {
-                sprintf(lptmp, "Done [%s] Ended after %s byte offset. ",
+                sprintf(lptmp, "Done [%s] Ended after %lld byte offset. ",
                     fn,
-                    GetDWStg2(gdwEndOff));
+                    (long long)gdwEndOff);
             }
             else 
             {
@@ -506,17 +506,19 @@ void	DoFile( char * fn, HANDLE hf )
             }
             if (lpdf->stat_res == 0)
             {
-                char timebuf[32];
-                int err = ctime_s(timebuf, 26, &lpdf->stat_buf.st_mtime);
-                if (err == 0)
+                char timebuf[64];
+                char *ctm = ctime(&lpdf->stat_buf.st_mtime);
+                if (ctm)
                 {
-                    err = (int)strlen(timebuf);
-                    while (err--) {
-                        if (timebuf[err] > ' ')
+                    size_t len;
+                    strcpy(timebuf, ctm);
+                    len = strlen(timebuf);
+                    while (len--) {
+                        if (timebuf[len] > ' ')
                             break;
-                        timebuf[err] = 0;
+                        timebuf[len] = 0;
                     }
-                    if (err) {
+                    if (len) {
                         sprintf(EndBuf(lptmp), " %s", timebuf);
                     }
                 }
