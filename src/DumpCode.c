@@ -5,7 +5,8 @@
 #include	"Dump4.h"
 // #include "DumpObj.h"
 
-#ifndef USE_PEDUMP_CODE // FIX20080507
+//#ifndef USE_PEDUMP_CODE // FIX20080507
+#if !defined(USE_PEDUMP_CODE) && defined(_WIN32) // FIX20080507
 
 extern   BOOL     bIsMS;   // = TRUE;
 extern   INT GetSymName( LPTSTR lpb, PIMAGE_SYMBOL pSym, PBYTE pStgs, BOOL bAll );
