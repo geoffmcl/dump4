@@ -15,4 +15,5 @@ Win32/*
 *.suo
 *.dir/*
 ipch/*
+dump4
 
