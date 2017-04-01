@@ -226,17 +226,23 @@ INT   AppendASCII( LPTSTR lpd, PBYTE pb, INT iLen )
 
 BOOL     bDnAInit = FALSE;
 BOOL     bAppdASM = FALSE;
-HANDLE   hASMFile;
+#if (defined(_WIN32) && defined(USE_NATIVE_FIO))
+HANDLE   hASMFile = 0;
+#else // !_WIN32
+FILE * fpASMFile = 0;
+#endif
+
 TCHAR    szASMDef[] = DEF_ASM_FILE;
 TCHAR    szASMFile[264];
 
 VOID  InitASMFile( VOID )
 {
-   LPTSTR   p1;
+   LPTSTR   p1 = szASMFile;
    if( !bDnAInit )
    {
       bDnAInit = TRUE;
       szASMFile[0] = 0;
+#ifdef _WIN32
       GetModuleFileName(NULL, szASMFile, 256);
       p1 = strrchr( szASMFile, '\\' );
       if(p1)
@@ -262,16 +268,30 @@ VOID  InitASMFile( VOID )
          p1 = szASMFile;
 
       strcpy(p1, szASMDef);
+#if (defined(_WIN32) && defined(USE_NATIVE_FIO))
       hASMFile = 0;
+#else
+      fpASMFile = 0;
+#endif
+#else
+      strcpy(p1, szASMDef);
+      fpASMFile = 0;
+#endif
 
    }
 }
 
 VOID  CloseASMFile(VOID)
 {
-   if( VFH(hASMFile) )
+#if (defined(_WIN32) && defined(USE_NATIVE_FIO))
+    if( VFH(hASMFile) )
       CloseHandle(hASMFile);
    hASMFile = 0;
+#else
+    if (fpASMFile)
+        fclose(fpASMFile);
+    fpASMFile = 0;
+#endif
 }
 
 VOID  CreateASMFile( VOID )
@@ -279,6 +299,7 @@ VOID  CreateASMFile( VOID )
    if( !bDnAInit )
       InitASMFile();
 
+#if (defined(_WIN32) && defined(USE_NATIVE_FIO))
    if( bAppdASM )
    {
       hASMFile = CreateFile( szASMFile, // file name
@@ -317,12 +338,23 @@ VOID  CreateASMFile( VOID )
             FILE_ATTRIBUTE_NORMAL,                 // file attributes
             0 );        // handle to template file
    }
+#else
+   if (bAppdASM)
+   {
+       fpASMFile = fopen(szASMFile, "a");
+   }
+   else
+   {
+       fpASMFile = fopen(szASMFile, "w");
+   }
+
+#endif
 }
 
 VOID WriteASMFile( LPTSTR lps )
 {
    DWORD    dwl, dww;
-
+#if (defined(_WIN32) && defined(USE_NATIVE_FIO))
    if( hASMFile == 0 )
       CreateASMFile();     // one time create
 
@@ -352,6 +384,36 @@ VOID WriteASMFile( LPTSTR lps )
                WriteASMFile( MEOR );
       }
    }
+#else
+   if (fpASMFile == 0)
+       CreateASMFile();     // one time create
+
+   dwl = strlen(lps);
+   if (VFH(fpASMFile))
+   {
+       if (dwl)
+       {
+           dww = fwrite(lps, 1, dwl, fpASMFile);
+           if (dww == dwl)
+           {
+               // success
+               if (lps[(dwl - 1)] >= ' ')
+               {
+                   WriteASMFile(MEOR);
+               }
+           }
+           else
+           {
+               fclose(fpASMFile);
+               fpASMFile = INVALID_HANDLE_VALUE;
+           }
+       }
+       else
+       {
+           WriteASMFile(MEOR);
+       }
+   }
+#endif
 }
 
 INT      strbgn( LPTSTR lpb, LPTSTR lps )
@@ -404,9 +466,9 @@ VOID Write2ASMFile(LPTSTR lps, DWORD dwo)
 {
    DWORD    dwl, dww;
    LPTSTR   lpo = &gszDiag[0];
+#if (defined(_WIN32) && defined(USE_NATIVE_FIO))
    if( hASMFile == 0 )
       CreateASMFile();     // one time create
-
    dwl = strlen( lps );
    if( VFH(hASMFile) )
    {
@@ -437,6 +499,40 @@ VOID Write2ASMFile(LPTSTR lps, DWORD dwo)
          hASMFile = INVALID_HANDLE_VALUE;
       }
    }
+#else
+   if (fpASMFile == 0)
+       CreateASMFile();     // one time create
+   dwl = strlen(lps);
+   if (VFH(fpASMFile))
+   {
+       if ((*lps == '_') || (*lps == '?'))
+           strcpy(lpo, MEOR);
+       else
+           strcpy(lpo, "   ");
+
+       strcat(lpo, &lps[dwo]);  // get the TAIL
+       if (dwl)
+       {
+           if (lps[dwl - 1] >= ' ')
+               strcat(lpo, MEOR);  // add Cr/Lf at end
+       }
+       else
+           strcpy(lpo, MEOR);   // just out a Cr/Lf
+
+       dwl = strlen(lpo);   // get lenght
+       dww = 0; // zero written length
+       dww = fwrite(lpo, 1, dwl, fpASMFile);
+       if (dwl == dww)
+       {
+           // success
+       }
+       else
+       {
+           fclose(fpASMFile);
+           fpASMFile = INVALID_HANDLE_VALUE;
+       }
+   }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
