@@ -11,7 +11,7 @@
 extern void * xmalloc (size_t n);
 extern char * xstrdup (char const *string);
 extern void assign_string (char **string, const char *value);
-typedef __int64 inttype;
+// typedef __int64 inttype;
 extern char * umaxtostr (inttype i, char *buf);
 extern int getpid(void);
 extern union block * find_next_block( void );
