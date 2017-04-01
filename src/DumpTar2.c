@@ -1626,10 +1626,13 @@ tar_checksum (union block *header, bool silent)
 int utc_option = 0;
 
 enum { fraclen = sizeof ".FFFFFFFFF" - 1 };
-static char buffer[max(UINTMAX_STRSIZE_BOUND + 1,
+#ifdef _WIN32
+static char T_buffer[max(UINTMAX_STRSIZE_BOUND + 1,
     INT_STRLEN_BOUND(int) + 16)
     + fraclen];
-
+#else
+static char T_buffer[1024];
+#endif
 char const *
 tartime (struct timespec t, bool full_time)
 {
@@ -1641,8 +1644,8 @@ tartime (struct timespec t, bool full_time)
 
   if ( s >= 0xffffffff )
   {
-     sprintf(buffer, "<invalid time (%#x)>", s );
-     return buffer;
+     sprintf(T_buffer, "<invalid time (%#x)>", s );
+     return T_buffer;
   }
   if (negative && ns != 0)
     {
@@ -1655,16 +1658,16 @@ tartime (struct timespec t, bool full_time)
     {
       if (full_time)
 	{
-	  sprintf (buffer, "%04ld-%02d-%02d %02d:%02d:%02d",
+	  sprintf (T_buffer, "%04ld-%02d-%02d %02d:%02d:%02d",
 		   tm->tm_year + 1900L, tm->tm_mon + 1, tm->tm_mday,
 		   tm->tm_hour, tm->tm_min, tm->tm_sec);
-	  code_ns_fraction (ns, buffer + strlen (buffer));
+	  code_ns_fraction (ns, T_buffer + strlen (T_buffer));
 	}
       else
-	sprintf (buffer, "%04ld-%02d-%02d %02d:%02d",
+	sprintf (T_buffer, "%04ld-%02d-%02d %02d:%02d",
 		 tm->tm_year + 1900L, tm->tm_mon + 1, tm->tm_mday,
 		 tm->tm_hour, tm->tm_min);
-      return buffer;
+      return T_buffer;
     }
 
   /* The time stamp cannot be broken down, most likely because it
@@ -1673,15 +1676,15 @@ tartime (struct timespec t, bool full_time)
      4-year ISO time format.  */
   //p = umaxtostr (negative ? - (uintmax_t) s : s,
   p = umaxtostr (negative ? - (uintmax_t) (inttype)s : (inttype)s,
-		 buffer + sizeof buffer - UINTMAX_STRSIZE_BOUND - fraclen);
+		 T_buffer + sizeof T_buffer - UINTMAX_STRSIZE_BOUND - fraclen);
   if (negative)
     *--p = '-';
-  while ((buffer + sizeof buffer - sizeof "YYYY-MM-DD HH:MM"
+  while ((T_buffer + sizeof T_buffer - sizeof "YYYY-MM-DD HH:MM"
 	  + (full_time ? sizeof ":SS.FFFFFFFFF" - 1 : 0))
 	 < p)
     *--p = ' ';
   if (full_time)
-    code_ns_fraction (ns, buffer + sizeof buffer - 1 - fraclen);
+    code_ns_fraction (ns, T_buffer + sizeof T_buffer - 1 - fraclen);
   return p;
 }
 
