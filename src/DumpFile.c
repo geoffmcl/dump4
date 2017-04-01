@@ -39,13 +39,20 @@ VOID  prt_init( VOID )
 BOOL  outstg( HANDLE h, LPTSTR lpb, DWORD dwl )
 {
    DWORD dwWtn;
-   BOOL  flg = WriteFile( h,	// handle to file to write to 
+   BOOL  flg = FALSE;
+#ifdef WIN32
+   flg = WriteFile( h,	// handle to file to write to 
 						lpb,	// pointer to data to write to file
 						dwl,	// number of bytes to write
 						&dwWtn,	// pointer to number of bytes written
 						NULL );	// pointer to structure needed for overlapped I/O
    if( flg && (dwl != dwWtn) )
       flg = FALSE;
+#else
+   dwWtn = fwrite(lpb, 1, dwl, h);
+   if (dwWtn == dwl)
+       flg = TRUE;
+#endif
    return flg;
 }
 
@@ -63,7 +70,11 @@ void oi( LPTSTR lps )
    {
       if( !outstg(g_hOutFile, lps, dwl) )
       {
+#ifdef WIN32
          CloseHandle(g_hOutFile);
+#else
+          fclose(g_hOutFile);
+#endif
          g_hOutFile = INVALID_HANDLE_VALUE;
       }
    }
@@ -126,6 +137,7 @@ void prt( LPTSTR lps )
    }
 }
 
+#if 0 // 0000000000000000000000000000000000000000000000000000
 void prt_OK_maybe( LPTSTR lps )
 {
 	BOOL	   flg;
@@ -208,7 +220,7 @@ void prt_OK_maybe( LPTSTR lps )
       }
    }
 }
-
+#endif // 0000000000000000000000000000000000000000000000000000
 
 BOOL  grmWriteFile( HANDLE * ph, LPTSTR lpb )
 {
@@ -225,6 +237,7 @@ BOOL  grmWriteFile( HANDLE * ph, LPTSTR lpb )
    if( ( VH(h) ) &&
       ( dwi ) )
    {
+#ifdef WIN32
       if( ( WriteFile(h,lpb,dwi,&dww,NULL) ) &&
          ( dwi == dww ) )
       {
@@ -237,8 +250,18 @@ BOOL  grmWriteFile( HANDLE * ph, LPTSTR lpb )
          *ph = h;
          dww = 0;
       }
+#else
+       dww = fwrite(lpb, 1, dwi, h);
+       if (dww != dwi)
+       {
+           fclose(h);
+           h = (HANDLE)-1;
+           *ph = h;
+           dww = 0;
+       }
+#endif
    }
-   return( (BOOL)dww );
+   return dww ? TRUE : FALSE;
 }
 
 BOOL  grmCloseFile( HANDLE * ph )
@@ -250,8 +273,13 @@ BOOL  grmCloseFile( HANDLE * ph )
 
    if( VH(h) )
    {
+#ifdef WIN32
       if( CloseHandle(h) )
          bRet = TRUE;
+#else
+       fclose(h);
+       bRet = TRUE;
+#endif
    }
 
    h = 0;
@@ -270,8 +298,12 @@ BOOL  OpenOut( LPTSTR lpf, HANDLE * pHand, BOOL bAppend )
       h = grmOpenFile( lpf, pHand, 1 );
       if( VFH(h) )
       {
+#ifdef WIN32
          LONG  lg = 0;
          SetFilePointer(h, 0, &lg, FILE_END );
+#else
+          fseek(h, 0, FILE_END);
+#endif
          bRet = TRUE;
       }
    }
@@ -295,8 +327,14 @@ void	OpenDiagFile( LPTSTR lpf, HANDLE * lpHF, BOOL bApd )
 void	CloseDiagFile( HANDLE * lpHF )
 {
    HANDLE h = *lpHF;
-   if( VFH(h) )
-      CloseHandle(h);
+   if (VFH(h))
+   {
+#ifdef WIN32
+       CloseHandle(h);
+#else
+       fclose(h);
+#endif
+   }
    *lpHF = 0;
 }
 
@@ -407,6 +445,7 @@ BOOL  Chk4Debug( LPTSTR lpd )
    return bret;
 }
 
+#ifdef WIN32
 VOID  GetModulePath( LPTSTR lpb )
 {
    LPTSTR   p;
@@ -422,6 +461,8 @@ VOID  GetModulePath( LPTSTR lpb )
 #endif   // !NDEBUG
 
 }
+#endif
+
 
 void	WriteDiagFile( LPTSTR lpd )
 {
@@ -429,21 +470,30 @@ void	WriteDiagFile( LPTSTR lpd )
 	if( i && ( hDbgFile == 0 ) )
    {
       LPTSTR   pfn = szDbgFile;
+#ifdef WIN32
       GetModulePath(pfn);
       strcat(pfn, szDefDbg);
-		OpenDiagFile( pfn, &hDbgFile, FALSE );   // TRUE );
+#else
+      strcpy(pfn, szDefDbg);
+#endif
+      OpenDiagFile( pfn, &hDbgFile, FALSE );   // TRUE );
    }
 
    if( i && VFH(hDbgFile) )
    {
       if( !outstg( hDbgFile, lpd, i ) )
 	  {
+#ifdef WIN32
          CloseHandle( hDbgFile );
-	     hDbgFile = INVALID_HANDLE_VALUE;
+#else
+         fclose(hDbgFile);
+#endif
+         hDbgFile = INVALID_HANDLE_VALUE;
       }
 	}
 }
 
+#if 0 // 000000000000000000000000000000000000000000000000000000000000000000000000000
 void	WriteDiagFile_OK_but_why( LPTSTR lpd )
 {
 	int		i, j, k;
@@ -518,6 +568,7 @@ void	WriteDiagFile_OK_but_why( LPTSTR lpd )
 		}
 	}
 }
+#endif // 000000000000000000000000000000000000000000000000000000000000
 
 
 // eof - DiagFile.c
