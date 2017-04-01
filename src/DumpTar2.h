@@ -742,11 +742,13 @@ extern struct passwd *getpwuid (uid_t uid);
 /* The checksum field is filled with this while the checksum is computed.  */
 #define CHKBLANKS	"        "	/* 8 blanks, no null */
 
+#ifdef _WIN32
 //#ifndef GOT_MAJOR
 # define major(device)		(((device) >> 8) & 0xff)
 # define minor(device)		((device) & 0xff)
 # define makedev(major, minor)	(((major) << 8) | (minor))
 // #endif
+#endif
 
 #include "DumpTarX.h"
 #include "DumpTarOb.h"
