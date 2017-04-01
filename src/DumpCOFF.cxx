@@ -101,7 +101,7 @@ COFFSymbol::GetSectionNumber(void)
 }
 
 #ifndef WIN32
-char *lstrcpyn( char *in_dst, char *src, unsigned len )
+static char *lstrcpyn( char *in_dst, char *src, unsigned len )
 {
     char *dst = in_dst;
     while(len) {

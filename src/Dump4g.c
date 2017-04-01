@@ -63,6 +63,21 @@ extern   BOOL     grmCloseFile( HANDLE * ph );
 
 DWORD GetWdCnt( LPTSTR lptmp );
 
+#ifndef WIN32
+static char *lstrcpyn(char *in_dst, char *src, unsigned len)
+{
+    char *dst = in_dst;
+    while (len) {
+        *dst = *src;
+        dst++;
+        src++;
+        len--;
+    }
+    *dst = 0;
+    return in_dst;
+}
+#endif
+
 void  chkcpy( LPTSTR lpd, LPTSTR lps )
 {
 //   strcpy( &lpb[dwt], &lpb[dwoff] );
