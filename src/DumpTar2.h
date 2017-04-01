@@ -399,7 +399,9 @@ struct star_ext_header
 };
 
 /* END */
-
+
+///////////////////////////////////////////////////////////////////
+#ifdef _WIN32
 
 /* from linux stat.h
 #if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
@@ -485,6 +487,8 @@ struct star_ext_header
 #define S_IRWXO S_IRWXU
 
 #define  S_IRWXUGO   S_IRWXU
+///////////////////////////////////////////////////////////////////
+#endif // #ifdef _WIN32
 
 /* Information about a sparse file.  */
 struct sp_array
