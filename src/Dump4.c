@@ -1551,8 +1551,9 @@ int main( int argc, char *argv[] )
 	}
 
 // Exit_main:
-
+#ifdef WIN32
    FreeCabLib();
+#endif
 
 //   DeleteLineMem();
    OutLineMem();
