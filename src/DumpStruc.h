@@ -1343,6 +1343,8 @@ typedef IMAGE_RELOCATION UNALIGNED *PIMAGE_RELOCATION;
 
 #define IMAGE_SIZEOF_RELOCATION         10
 
+// Try to provide UNREFERENCED_PARAMETER
+#define UNREFERENCED_PARAMETER
 
 // ======================================
 #endif
