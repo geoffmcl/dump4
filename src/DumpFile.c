@@ -24,7 +24,7 @@ VOID  prt_init( VOID )
 #ifdef WIN32
 		gw_hStdOut = GetStdHandle( STD_OUTPUT_HANDLE );
 #else
-        gw_hStdOut = 1;
+        gw_hStdOut = stdout;
 #endif
       if( !VFH(gw_hStdOut) )
 		{
