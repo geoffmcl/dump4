@@ -144,6 +144,8 @@ typedef __int64 size64_t;
 #endif /* USE_UNSIGNED_64BIT y/n */
 #else // !_WIN32
 #include <inttypes.h>
+typedef size_t off64_t;
+typedef size_t size64_t;
 #endif // _WIN32 y/n
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1900))
