@@ -623,8 +623,16 @@ char * _readrgb2bmp24( LPDFSTR lpdf, char * pbmp )
          static char _s_szfnbmp[264];
          PSTR  pfn = _s_szfnbmp;
          FILE * fpbm;
-
+#ifdef WIN32
          _fullpath( pfn, pbmp, 256 );
+#else
+         pfn = realpath(pbmp, pfn);
+         if (!pfn)
+         {
+             pfn = _s_szfnbmp;
+             strcpy(pfn, pbmp);
+         }
+#endif
          // WRITE a bitmap file
          fpbm = fopen(pfn, "wb");
          if(fpbm)
