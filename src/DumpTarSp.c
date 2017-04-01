@@ -272,22 +272,22 @@ tar_sparse_fixup_header (struct tar_sparse_file *file)
 static bool
 lseek_or_error (struct tar_sparse_file *file, off64_t offset)
 {
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
    if( FDSEEK (file->fd, offset, SEEK_SET) == -1LL )
    {
       //seek_diag_details (file->stat_info->orig_file_name, offset);
       sprtf( "ERROR: Unable to seek to %I64u in %s!\n", offset, file->stat_info->orig_file_name);
       return false;
    }
-#else /* !_MSC_VER */
-  if (file->seekable
-      ? FDSEEK (file->fd, offset, SEEK_SET) < 0
-      : ! dump_zeros (file, offset))
-    {
-      seek_diag_details (file->stat_info->orig_file_name, offset);
-      return false;
-    }
-#endif /* _MSC_VER y/n */
+//#else /* !_MSC_VER */
+//  if (file->seekable
+//      ? FDSEEK (file->fd, offset, SEEK_SET) < 0
+//      : ! dump_zeros (file, offset))
+//    {
+//      seek_diag_details (file->stat_info->orig_file_name, offset);
+//      return false;
+//    }
+//#endif /* _MSC_VER y/n */
   return true;
 }
 
