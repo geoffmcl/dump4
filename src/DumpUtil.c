@@ -27,7 +27,7 @@ static void initTermios(int echo)
 }
 
 /* Restore old terminal i/o settings */
-staic void resetTermios(void)
+static void resetTermios(void)
 {
     tcsetattr(0, TCSANOW, &old);
 }
