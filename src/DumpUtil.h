@@ -42,7 +42,9 @@ extern   LPTSTR   Right( LPTSTR lpl, DWORD dwl );
 extern   LPTSTR   Mid( LPTSTR lpl, DWORD dwb, DWORD dwl );
 
 extern double get_percent2( DWORD max, DWORD amt );
+#ifdef WIN32
 extern BOOL Get_FD_File_Time_Stg( PTSTR pDest, WIN32_FIND_DATA * pfd, BOOL bLocal );
+#endif
 extern PTSTR My_NiceNumberStg( DWORD num );
 extern PTSTR My_NiceNumber( PTSTR lpn );
 

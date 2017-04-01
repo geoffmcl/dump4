@@ -676,6 +676,7 @@ double get_percent2( DWORD max, DWORD amt )
     return d2;
 }
 
+#ifdef WIN32
 BOOL Get_FD_File_Time_Stg( PTSTR pDest, WIN32_FIND_DATA * pfd, BOOL bLocal )
 {
     SYSTEMTIME  st;
@@ -723,6 +724,7 @@ BOOL Get_FD_File_Time_Stg( PTSTR pDest, WIN32_FIND_DATA * pfd, BOOL bLocal )
    }
    return (flg1 | flg2);
 }
+#endif
 
 // return nice number - with comas
 PTSTR My_NiceNumber( PTSTR lpn )
