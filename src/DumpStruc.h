@@ -97,6 +97,10 @@ typedef unsigned long long DWORD64; // 20170330 addition
 #ifndef UCHAR_MAX
 #define UCHAR_MAX     0xff      // maximum unsigned char value
 #endif
+#ifndef CHAR_BIT
+#define CHAR_BIT      8         // number of bits in a char
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////
 #define IMAGE_FILE_RELOCS_STRIPPED           0x0001  // Relocation info stripped from file.
