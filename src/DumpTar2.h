@@ -147,10 +147,12 @@ typedef uintmax_t size64_t;
 typedef __int64 off64_t;
 typedef __int64 size64_t;
 #endif /* USE_UNSIGNED_64BIT y/n */
+typedef __int64 inttype;
 #else // !_WIN32
 #include <inttypes.h>
 typedef size_t off64_t;
 typedef size_t size64_t;
+typedef size_t inttype;
 #endif // _WIN32 y/n
 
 #if (defined(_MSC_VER) && (_MSC_VER < 1900))
@@ -746,9 +748,6 @@ extern struct passwd *getpwuid (uid_t uid);
 # define minor(device)		((device) & 0xff)
 # define makedev(major, minor)	(((major) << 8) | (minor))
 // #endif
-
-typedef __int64 inttype;
-
 
 #include "DumpTarX.h"
 #include "DumpTarOb.h"
