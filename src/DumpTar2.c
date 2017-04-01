@@ -787,7 +787,12 @@ to_base256 (int negative, uintmax_t value, char *where, size64_t size)
 #endif // 0 *********************************
 
 //typedef int inttype;
+#ifdef _WIN32
 typedef __int64 inttype;
+#else
+typedef size_t inttype;
+#endif
+
 char *
 umaxtostr (inttype i, char *buf)
 {
