@@ -676,10 +676,11 @@ enum dump_status
 
 #ifdef WIN32
 #define strtoumax _strtoui64
+#define strtoimax _strtoi64
 #else
 #define strtoumax strtoul
+#define strtoimax strtol
 #endif
-#define strtoimax _strtoi64
 #define __attribute__(a)
 # ifndef obstack_chunk_alloc
 #  define obstack_chunk_alloc malloc
