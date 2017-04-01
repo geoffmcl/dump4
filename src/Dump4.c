@@ -13,6 +13,10 @@
 // Feb 2001 - Add -prof for SYNEDIT profile dump in DumpSynE
 // Sep 2000 - Add CAB directory listing
 #include	"Dump4.h"
+#ifndef WIN32
+#include <sys/mman.h>
+#endif
+
 extern BOOL  ProcessWAV( LPDFSTR lpdf );
 extern BOOL  ProcessDFS( LPDFSTR lpdf );
 extern   LPTSTR   GetDWStg2( DWORD dwi );
@@ -418,6 +422,9 @@ void	DoFile( char * fn, HANDLE hf )
 ////////////////////////////////////////////////////////////////////
 #else // !#ifdef WIN32
 ////////////////////////////////////////////////////////////////////
+#define LODWORD(x) ( (DWORD)( (DWORD64)(x) & 0xffffffff ) )
+#define HIDWORD(x) ( (DWORD)( ( (DWORD64)(x) >> 32 ) & 0xffffffff ) )
+
 void	DoFile( char * fn, HANDLE hf )
 {
     LPDFSTR     lpdf = &gsDoFil;
@@ -428,6 +435,7 @@ void	DoFile( char * fn, HANDLE hf )
     lpdf->lptmp = lptmp;
     if (VFH(hf))
     {
+        DWORD64 dw64;
         struct stat sb;
         int fd = fileno(hf);
         if (fstat(fd, &sb) == -1)
@@ -439,11 +447,14 @@ void	DoFile( char * fn, HANDLE hf )
         lpdf->stat_buf = sb;
         lpdf->stat_res = 0;
         lpdf->hf = (HANDLE)hf;
-        lpdf->qwSize = sb.st_size;
+        //lpdf->qwSize = sb.st_size;
+        dw64 = (DWORD64)sb.st_size;
+        lpdf->qwSize.LowPart = LODWORD(dw64);
+        lpdf->qwSize.HighPart = HIDWORD(dw64);
         lpdf->df_pVoid = mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
         if (lpdf->df_pVoid == MAP_FAILED)
         {
-            sprintf(lptmp, "ERROR: Failed to 'stat' file '%s' (%d)! size %lld" MEOR, fn, fd, sb.st_size);
+            sprintf(lptmp, "ERROR: Failed to 'stat' file '%s' (%d)! size %lld" MEOR, fn, fd, (long long)sb.st_size);
             prt(lptmp);
             return;
         }
@@ -451,6 +462,7 @@ void	DoFile( char * fn, HANDLE hf )
             dwMax = (DWORD)-1;
         else
             dwMax = lpdf->qwSize.LowPart;
+        
         lpdf->dwmax = dwMax;
         lpdf->dwrd = dwMax;
         lpdf->lpb = (PBYTE)lpdf->df_pVoid;
