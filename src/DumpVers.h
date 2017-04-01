@@ -138,7 +138,7 @@
 
 #define	MEOR		      "\r\n"
 
-#define	EndBuf(a)		( a + lstrlen(a) )
+#define	EndBuf(a)		( a + strlen(a) )
 
 #define  IsNChr(a)   ( ( a >= '0' ) && ( a <= '9' ) )
 #define  IsUChr(a)   ( ( a >= 'A' ) && ( a <= 'Z' ) )

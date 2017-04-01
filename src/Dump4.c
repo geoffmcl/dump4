@@ -132,8 +132,8 @@ void	DoOutput( DWORD fOff )
          else
          {
             // this is the ONLY output
-            il = lstrlen( &gszAscii[0] );
-            ia = lstrlen( lpa );
+            il = strlen( &gszAscii[0] );
+            ia = strlen( lpa );
             if( ia )
             {
                for( j = 0; j < il; j++ )
@@ -435,7 +435,7 @@ int	GetDir( LPSTR lpDest, LPSTR lpSrc )
 	if( lpDest && lpSrc )
 	{
 		strcpy( lpDest, lpSrc );
-		i = lstrlen( lpDest );
+		i = strlen( lpDest );
 		if( i )
 		{
 			for( j = (i - 1); j > 0; j-- )
@@ -467,7 +467,7 @@ BOOL	GotWild( LPSTR lpf )
 	flg2 = FALSE;
    i = 0;
 	if( lpf )
-      i = lstrlen( lpf );
+      i = strlen( lpf );
    if(i)
 	{
 		for( j = 0; j < i; j++ )
@@ -1080,7 +1080,7 @@ void	ProcessData_ORG( HANDLE hf, LPTSTR fn, LPTSTR lpb, DWORD len, DWORD fsiz )
 							fix++;
 						}
 
-						sprintf( (lph + lstrlen( lph )),
+						sprintf( (lph + strlen( lph )),
 							"%02X ",
 							(c & 0xff) );
 
@@ -1516,11 +1516,11 @@ int main( int argc, char *argv[] )
             }
             if(lpc)
                strcat( lpb, lpc );
-			   sprintf( (lpb + lstrlen(lpb)), "Begin at %u", gdwBgnOff );
+			   sprintf( (lpb + strlen(lpb)), "Begin at %u", gdwBgnOff );
 
             strcat( lpb, ", " );
 			   if( gdwEndOff != (DWORD)-1 )
-				   sprintf( (lpb + lstrlen( lpb )), "End at %u ", gdwEndOff );
+				   sprintf( (lpb + strlen( lpb )), "End at %u ", gdwEndOff );
 			   else
 				   strcat( lpb, "End at END " );
             if( g_pHexBlock )

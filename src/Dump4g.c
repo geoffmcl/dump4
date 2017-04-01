@@ -81,7 +81,7 @@ int  grtrim( LPTSTR lps )
    int   i, c;
    i = 0;
    if( lps )
-      i = lstrlen(lps);
+      i = strlen(lps);
    if(i)
    {
       i--;
@@ -105,7 +105,7 @@ int  gaddsp( LPTSTR lps )
    int   i, c;
    i = 0;
    if( lps )
-      i = lstrlen(lps);
+      i = strlen(lps);
    if( i )
    {
       i--;
@@ -401,7 +401,7 @@ BOOL		bAdd2List( LPSTR lps, DWORD dwFlag )
    k = 0;
    i = 0;
 	if( lps )
-      i = lstrlen(lps);
+      i = strlen(lps);
    if( i )
 	{
       if( giLnCnt > 1 )
@@ -538,7 +538,7 @@ BOOL		bAdd2List( LPSTR lps, DWORD dwFlag )
                      strcat(lps2,lpt);
                   else
                      strcat(lps2, &lps[ (dwo - 1) ] );  // this current tail
-                  i = lstrlen(lps2);
+                  i = strlen(lps2);
                   if( i )
                   {
                      gaddeol(lps2,&i);
@@ -577,7 +577,7 @@ BOOL		bAdd2List( LPSTR lps, DWORD dwFlag )
                      strcat(lps2,lpt);
                   else
                      strcat(lps2, &lps[ (dwo - 1) ] );  // this current tail
-                  i = lstrlen(lps2);
+                  i = strlen(lps2);
                   if( i )
                   {
                      gaddeol(lps2,&i);
@@ -1058,7 +1058,7 @@ BOOL  ChkNum( LPTSTR lpb, DWORD dwo, DWORD dwend, LPTSTR lphd )
             }
 
             grtrim(lpnm);  // remove any CONTROL ending
-            jj = lstrlen(lpnm);
+            jj = strlen(lpnm);
             if( ( gbAddComp ) &&
                 ( jj        ) )
             {
@@ -1073,12 +1073,12 @@ BOOL  ChkNum( LPTSTR lpb, DWORD dwo, DWORD dwend, LPTSTR lphd )
                // *********************
                // zero terminate buffer 
                lpnm[kk] = 0;
-//               if( lstrlen(lpnm) != jj )
+//               if( strlen(lpnm) != jj )
 //                  chkme( "Good - Using compressed numering ..." );
             }
 
             // === ET LENGTH ===
-            kk = lstrlen(lpnm);
+            kk = strlen(lpnm);
 
          }
 
@@ -1131,7 +1131,7 @@ BOOL  ChkNum( LPTSTR lpb, DWORD dwo, DWORD dwend, LPTSTR lphd )
                   c = *lptmp;
                }
 
-               jj = lstrlen(lptmp); 
+               jj = strlen(lptmp); 
                if(jj)
                {
                   for( kk = 0; kk < jj; kk++ )
@@ -1396,7 +1396,7 @@ DWORD Move2Nums( LPTSTR lpIn, DWORD dwIn, LPTSTR lphd )
       }
    }
 
-   dwj = lstrlen(lpb);
+   dwj = strlen(lpb);
    dwa = GetNums( lpb, dwj, lphd );
 
    lpna = &gsNArr;
@@ -1737,7 +1737,7 @@ int   IsSal( LPTSTR lpn )
    lpt[dwi] = 0;
    dwuc = 0;
    if( lpn )
-      dwl = lstrlen(lpn);
+      dwl = strlen(lpn);
    if(dwl)    // very min of cap "M" = 1
    {
       if( dwl < 16 )
@@ -1889,7 +1889,7 @@ int   ChkRSal( LPTSTR lpn, LPTSTR * plps, LPTSTR lpt, DWORD dwsal )
 
                   // bring the NAME to the front
                   strcpy(lpn,lpnn);
-                  dwl = lstrlen(lpn);
+                  dwl = strlen(lpn);
 
                   // clean tail of name of spacey stuff
                   while( dwl && ( lpn[ (dwl - 1) ] <= ' ' ) )
@@ -1897,14 +1897,14 @@ int   ChkRSal( LPTSTR lpn, LPTSTR * plps, LPTSTR lpt, DWORD dwsal )
                      dwl--;
                   }
 
-                  if( dwl < (DWORD)lstrlen(lpn) )
+                  if( dwl < (DWORD)strlen(lpn) )
                   {
                      lpn[dwl] = 0;
                      strcat(lpn," ");
                   }
 
                   // ensure a SPACE after name(s)
-                  dwl = lstrlen(lpn);
+                  dwl = strlen(lpn);
                   if( dwl )
                   {
                      c = lpn[ (dwl - 1) ];
@@ -2042,7 +2042,7 @@ int   Check4Ms( LPTSTR lpn )
    dwi = dwl = 0;
    lpt[dwi] = 0;
    if( lpn )
-      dwl = lstrlen(lpn);
+      dwl = strlen(lpn);
    if( dwl >= 3 ) // very min of "A Z" = 3
    {
       // get a global flag
@@ -2087,7 +2087,7 @@ DoneSal:
       // another thing the check for now that the salutation has been move
       // to after the name, we hope ....
       // Does it begin with initials
-//      ( dwl = lstrlen(lpn) ) &&
+//      ( dwl = strlen(lpn) ) &&
 //      ( dwl >= 3 ) )    // very min of "A Z" = 3
       gdwTitCnt = GetWdCnt(lpn); 
       if(gdwTitCnt)
@@ -2115,7 +2115,7 @@ int   ChkXchg( LPTSTR lptmp, LPTSTR lps )
    int   i = 0;
    if( ( lptmp ) &&
       ( lps ) )
-      i = lstrlen(lps);
+      i = strlen(lps);
    if( i > 1 )
    {
       DWORD dwo;
@@ -2158,7 +2158,7 @@ DWORD GetWdCnt( LPTSTR lptmp )
    if( lptmp )
    {
       c = *lptmp;
-      i = lstrlen(lptmp);
+      i = strlen(lptmp);
    }
    if( c )
    {
@@ -2313,7 +2313,7 @@ DWORD CheckBlock( LPTSTR lpIn, DWORD dwIn, LPDWORD pdw, DWORD dwLines )
                if( gdwWdCnt >= 3 )
                {
                   DWORD _dl, _ds, _da;
-                  if( ( ( _dl = lstrlen(lpn)) > 0 ) &&
+                  if( ( ( _dl = strlen(lpn)) > 0 ) &&
                      ( _dl < NMMX2C           ) &&
                      ( ( _ds = ginstr(lpn," ") ) > 0 ) &&
                      ( _ds > 1                 ) &&
@@ -2447,7 +2447,7 @@ DWORD CheckBlock( LPTSTR lpIn, DWORD dwIn, LPDWORD pdw, DWORD dwLines )
 
                   if( bDoMaxLen )
                   {
-                     dwe = lstrlen(lpend);
+                     dwe = strlen(lpend);
                      if( dwe > dwMaxLen )
                      {
                         // this is a long line
@@ -2467,7 +2467,7 @@ DWORD CheckBlock( LPTSTR lpIn, DWORD dwIn, LPDWORD pdw, DWORD dwLines )
                      }
                   }
 
-                  dwe = lstrlen(lpend);
+                  dwe = strlen(lpend);
                   if( bNo2Commas )
                   {
                      for( dwt = 0; dwt < dwe; dwt++ )
@@ -2508,7 +2508,7 @@ DWORD CheckBlock( LPTSTR lpIn, DWORD dwIn, LPDWORD pdw, DWORD dwLines )
             {
 //               strcpy( &lpb[dwt], &lpb[dwoff] );
                chkcpy( &lpb[dwt], &lpb[dwoff] );
-               dwRet = lstrlen(lpb);
+               dwRet = strlen(lpb);
 
             }
          }
@@ -2538,7 +2538,7 @@ BOOL  bGotSigChrs( LPTSTR lpout )
    TCHAR    c;
 
    if( ( lpout ) &&
-      ( ( j = lstrlen(lpout) ) > 0 ) )
+      ( ( j = strlen(lpout) ) > 0 ) )
    {
       for( i = 0; i < j; i++ )
       {
@@ -2579,7 +2579,7 @@ LPTSTR   glpSps[] = {
 int   grtrimall( LPTSTR lps )
 {
    int   iRet = 0;
-   int   i = lstrlen(lps);
+   int   i = strlen(lps);
    TCHAR    c;
    while( i > 0 )
    {
@@ -2705,7 +2705,7 @@ int   GetXHdrs( LPTSTR lpn, DWORD dwi )
                         // asterix SEPARATION, plus a SPACE
                         strcat(lpn3,"*"
                            " ");
-                        chkcpyn(&lpn3[lstrlen(lpn3)],lpn,dwk);
+                        chkcpyn(&lpn3[strlen(lpn3)],lpn,dwk);
                         grtrimall(lpn3);
                      }
 
@@ -2713,7 +2713,7 @@ int   GetXHdrs( LPTSTR lpn, DWORD dwi )
                      // asterix SEPARATION, plus a SPACE
                      strcat(lpn2,"*"
                         " ");
-                     chkcpyn(&lpn2[lstrlen(lpn2)],lpn,dwk);
+                     chkcpyn(&lpn2[strlen(lpn2)],lpn,dwk);
                      grtrimall(lpn2);
 
                   }
@@ -2763,7 +2763,7 @@ int  GetHdrs( LPTSTR lpc, DWORD dwIn )
          {
             lstrcpyn(lpn,lpc,dwi); // copy up to, but EXCLUDING the comma
             if(grtrim(lpn))   // close up the buffer
-               dwi = lstrlen(lpn);  // and correct length if changed
+               dwi = strlen(lpn);  // and correct length if changed
             giLnCnt++;
             iRet++;
             // -gX[1] switch
@@ -2800,7 +2800,7 @@ int  GetHdrs_OK( LPTSTR lpc, DWORD dwIn )
          {
             lstrcpyn(lpn,lpc,dwi); // copy up to, but EXCLUDING the comma
             if(grtrim(lpn))   // close up the buffer
-               dwi = lstrlen(lpn);  // and correct length if changed
+               dwi = strlen(lpn);  // and correct length if changed
             giLnCnt++;
             iRet++;
             // now if we want multiple entries per entry then
@@ -2890,10 +2890,10 @@ int  GetHdrs_OK( LPTSTR lpc, DWORD dwIn )
                            chkme( "TO BE DONE: This is a multiple family name ..." );
                         }
                         gaddsp(lpn3);
-                        chkcpyn(&lpn3[lstrlen(lpn3)],lpn,dwk);
+                        chkcpyn(&lpn3[strlen(lpn3)],lpn,dwk);
                      }
                      gaddsp(lpn2);
-                     chkcpyn(&lpn2[lstrlen(lpn2)],lpn,dwk);
+                     chkcpyn(&lpn2[strlen(lpn2)],lpn,dwk);
                   }
                   else
                   {
@@ -3159,7 +3159,7 @@ void  OutBlock( LPTSTR lpb, DWORD dwBgn, DWORD dwLen, DWORD dwSkip, DWORD dwRd,
                   }
                }
                strcat(lpout,MEOR); // = "\r\n");
-               i = lstrlen(lpout);
+               i = strlen(lpout);
                if( VERB )
                   prt(lpout);
 
@@ -3176,7 +3176,7 @@ void  OutBlock( LPTSTR lpb, DWORD dwBgn, DWORD dwLen, DWORD dwSkip, DWORD dwRd,
                   {
                      if( bGotSigChrs(lpout) )
                      {
-                        if( lstrlen(lpout) == i )
+                        if( strlen(lpout) == i )
                         {
                            if( ( lpo2 ) &&
                               ( lstrcmp(lpout,lpo2) == 0 ) )
@@ -3243,7 +3243,7 @@ void  OutBlock( LPTSTR lpb, DWORD dwBgn, DWORD dwLen, DWORD dwSkip, DWORD dwRd,
 //                  LPTSTR   lpn3 = &gcHeadX2[0];
 //                  strcpy(lps2,lpn2);  // get the previously prepared head, and
 //                  strcat(lps2, &lps[ (dwo - 1) ] );  // this current tail
-//                  if( i = lstrlen(lps2) )
+//                  if( i = strlen(lps2) )
 //                        LPTSTR   lpn2 = &gcHeadX1[0];
                         lpn2 = &gcHeadX1[0];
                         strcpy(lpo2,lpn2);  // get the previously prepared head, and

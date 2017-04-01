@@ -158,7 +158,7 @@ char * getLongnamesMember(PVOID p, DWORD len)
     while ( offset < len )
     {
 
-        unsigned cbString = lstrlen( pszName )+1;
+        unsigned cbString = strlen( pszName )+1;
         if ((strlen(cp)+cbString) > MXLINEB)
             return cp;
         sprintf(EndBuf(cp),"  %05u: %s\n", offset, pszName);

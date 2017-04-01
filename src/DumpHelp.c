@@ -331,7 +331,7 @@ int	LastLen( LPSTR lps )
 	int		i, j, k;
 	char	c;
 	k = 0;
-	if( lps && (i = lstrlen( lps )) )
+	if( lps && (i = strlen( lps )) )
 	{
 		for( j = 0; j < i; j++ )
 		{
@@ -358,7 +358,7 @@ BOOL	IsNumber( LPSTR lps )
 	int		i, j;
 	char	c;
 	if( lps &&
-		( ( i = lstrlen( lps ) ) != 0 ) )
+		( ( i = strlen( lps ) ) != 0 ) )
 	{
 		for( j = 0; j < i; j++ )
 		{
@@ -891,13 +891,13 @@ int ProcessCommand( int argc, char *argv[], LPSTR lpc )
             showVersion();
 
    	if( ( lpc                           ) &&
-	   	( (j = lstrlen(lpc)) < MXCMDBUF ) )
+	   	( (j = strlen(lpc)) < MXCMDBUF ) )
 	   {
-			if( (LastLen( lpc ) + lstrlen( cp )) >= MXONELN )
+			if( (LastLen( lpc ) + strlen( cp )) >= MXONELN )
 			{
 				strcat( lpc, "\n\t" );
 			}
-			sprintf( (lpc + lstrlen( lpc )),
+			sprintf( (lpc + strlen( lpc )),
 				"%s ", cp );
 	   }
 		c = *cp;
@@ -1452,7 +1452,7 @@ Err_P:
 		else
 		{
 			fn = &gpFilNames[giInCount];
-			if( len = lstrlen( cp ) )
+			if( len = strlen( cp ) )
 			{
 				buf = malloc( (len + 1) ); 
 				if(buf)

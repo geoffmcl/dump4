@@ -197,13 +197,13 @@ void	AddSec( LPSTR lpb, BYTE c )
 // Short versions
 void	AddHr2( LPSTR lpb, BYTE c )
 {
-	sprintf( (lpb + lstrlen(lpb)),
+	sprintf( (lpb + strlen(lpb)),
 		" %02d:",
 		c );
 }
 void	AddMin2( LPSTR lpb, BYTE c )
 {
-	sprintf( (lpb + lstrlen( lpb )),
+	sprintf( (lpb + strlen( lpb )),
 		"%02d",
 		c );
 }
@@ -232,21 +232,21 @@ void	AddYr( LPSTR lpb, BYTE c )
 // Short Versions
 void	AddDay2( LPSTR lpb, BYTE c )
 {
-	sprintf( (lpb + lstrlen( lpb )),
+	sprintf( (lpb + strlen( lpb )),
 		" %02d/",
 		c );
 }
 
 void	AddMth2( LPSTR lpb, BYTE c )
 {
-	sprintf( (lpb + lstrlen( lpb )),
+	sprintf( (lpb + strlen( lpb )),
 		"%02d/",
 		c );
 }
 
 void	AddYr2( LPSTR lpb, BYTE c )
 {
-	sprintf( (lpb + lstrlen( lpb )),
+	sprintf( (lpb + strlen( lpb )),
 		"%02d",
 		(c + 70) );
 }
@@ -276,8 +276,8 @@ BOOL	IsOut( void )
 	BOOL	flg;
 	int		i, j, k;
 	flg = FALSE;
-	if( ( i = lstrlen( &szSubj[0] ) ) &&
-		( j = lstrlen( &szInSub[0] ) ) )
+	if( ( i = strlen( &szSubj[0] ) ) &&
+		( j = strlen( &szInSub[0] ) ) )
 	{
 		for( k = 0; k < j; k++ )
 		{
@@ -419,7 +419,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							szSubj[bi] = lps[bi];
 						}
 						szSubj[bi] = 0;
-						sprintf( (lpd + lstrlen( lpd )),
+						sprintf( (lpd + strlen( lpd )),
 							"%s",
 							&szSubj[0] );
 						bDir = IsOut();
@@ -445,7 +445,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						{
 							for( bi = 0; bi < bl; bi++ )
 							{
-								sprintf( (lpd + lstrlen( lpd )),
+								sprintf( (lpd + strlen( lpd )),
 									"%c",
 									(lps[bi] & 0xff) );
 							}
@@ -467,7 +467,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							strcat( lpd, " Address:[" );
 							for( bi = 0; bi < bl; bi++ )
 							{
-								sprintf( (lpd + lstrlen( lpd )),
+								sprintf( (lpd + strlen( lpd )),
 									"%c",
 									(lps[bi] & 0xff) );
 							}
@@ -489,7 +489,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcpy( lpd, "Unknown String: [" );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								(lps[bi] & 0xff) );
 						}
@@ -531,7 +531,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcat( lpd, "Subj: [" );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								(lps[bi] & 0xff) );
 						}
@@ -550,7 +550,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcat( lpd, "From: [" );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								(lps[bi] & 0xff) );
 						}
@@ -569,7 +569,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcat( lpd, "Addr: [" );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								(lps[bi] & 0xff) );
 						}
@@ -600,7 +600,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							strcpy( lpd, "Cc: [" );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								(lps[bi] & 0xff) );
 						}
@@ -616,7 +616,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							bl = (BYTE)max;
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								(lps[bi] & 0xff) );
 						}
@@ -706,7 +706,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							AddHex( lpd, pVis->vb_Sensitive );
 							break;
 						}
-						sprintf( (lpd + lstrlen( lpd )),
+						sprintf( (lpd + strlen( lpd )),
 							"Receipt=%s",
 							(LPSTR)(pVis->vb_Receipt ? "Yes" : "No" ) );
 						wrtit( lpd );
@@ -795,7 +795,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						for( bi = 0; bi < bl; bi++ )
 						{
 // Len, "Text"
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								lps[bi] );
 						}
@@ -808,7 +808,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcpy( lpd, "Unknown: " );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								lps[bi] );
 						}
@@ -827,7 +827,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcpy( lpd, "Unknown: " );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								lps[bi] );
 						}
@@ -836,7 +836,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 						strcpy( lpd, "Unknown: " );
 						for( bi = 0; bi < bl; bi++ )
 						{
-							sprintf( (lpd + lstrlen( lpd )),
+							sprintf( (lpd + strlen( lpd )),
 								"%c",
 								lps[bi] );
 						}
@@ -868,10 +868,10 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							}
 							if( c == 0x0a )
 							{
-								//sprintf( (lpd + lstrlen( lpd )),
+								//sprintf( (lpd + strlen( lpd )),
 								//	"%c",
 								//	0x0d );
-								//sprintf( (lpd + lstrlen( lpd )),
+								//sprintf( (lpd + strlen( lpd )),
 								//	"%c",
 								//	c );
 								bc = 0;	// Zero the column.
@@ -882,7 +882,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							{
 								if( lps[bi+1] == '@' )
 								{
-									sprintf( (lpd + lstrlen( lpd )),
+									sprintf( (lpd + strlen( lpd )),
 										"%c",
 										c );
 									bc++;
@@ -890,10 +890,10 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 								}
 								else if( lps[bi+1] == 'b' )
 								{
-									//sprintf( (lpd + lstrlen( lpd )),
+									//sprintf( (lpd + strlen( lpd )),
 									//	"%c",
 									//	0x0d );
-									//sprintf( (lpd + lstrlen( lpd )),
+									//sprintf( (lpd + strlen( lpd )),
 									//	"%c",
 									//	0x0a );
 									bi++;
@@ -903,7 +903,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 								}
 								else
 								{
-									sprintf( (lpd + lstrlen( lpd )),
+									sprintf( (lpd + strlen( lpd )),
 										"%c",
 										c );
 									bc++;	// Another column
@@ -915,7 +915,7 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							}
 							else
 							{
-								sprintf( (lpd + lstrlen( lpd )),
+								sprintf( (lpd + strlen( lpd )),
 									"%c",
 									c );
 								bc++;	// Another column
@@ -928,10 +928,10 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 							{
 								if( c == ' ' )
 								{
-									//sprintf( (lpd + lstrlen( lpd )),
+									//sprintf( (lpd + strlen( lpd )),
 									//	"%c",
 									//	0x0d );
-									//sprintf( (lpd + lstrlen( lpd )),
+									//sprintf( (lpd + strlen( lpd )),
 									//	"%c",
 									//	0x0a );
 									bc = 0;	// Zero the column
@@ -940,10 +940,10 @@ UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 								}
 								else if( bc > MAXCOLS )
 								{
-									//sprintf( (lpd + lstrlen( lpd )),
+									//sprintf( (lpd + strlen( lpd )),
 									//	"%c",
 									//	0x0d );
-									//sprintf( (lpd + lstrlen( lpd )),
+									//sprintf( (lpd + strlen( lpd )),
 									//	"%c",
 									//	0x0a );
 									bc = 0;	// Zero the column
@@ -1037,7 +1037,7 @@ void	DoFile_OK( char * fn, HFILE hf )
 			{
 				if( fsiz != (DWORD)-1 )
 				{
-					sprintf( (lptmp + lstrlen( lptmp )),
+					sprintf( (lptmp + strlen( lptmp )),
 						" Total Size is %u (0x%04X) bytes. ",
 						fsiz, fsiz );
 				}
@@ -1068,7 +1068,7 @@ void	DoFile_OK( char * fn, HFILE hf )
 					fix++;
 				}
 
-				sprintf( (lph + lstrlen( lph )),
+				sprintf( (lph + strlen( lph )),
 					"%02X ",
 					(c & 0xff) );
 
@@ -1115,7 +1115,7 @@ void	DoFile_OK( char * fn, HFILE hf )
 							fix++;
 						}
 
-						sprintf( (lph + lstrlen( lph )),
+						sprintf( (lph + strlen( lph )),
 							"%02X ",
 							(c & 0xff) );
 
@@ -1253,7 +1253,7 @@ DWORD GetLineLen( void )
 {
 
    LPTSTR   lpl = GetLine();
-   DWORD dwi = lstrlen(lpl);
+   DWORD dwi = strlen(lpl);
    return dwi;
 }
 
@@ -1283,9 +1283,9 @@ int   ginstr( LPTSTR lps, LPTSTR lpi )
    char     c, cb;
 
    if( ( lps ) &&
-      ( i = lstrlen(lps) ) &&
+      ( i = strlen(lps) ) &&
       ( lpi ) &&
-      ( j = lstrlen(lpi) ) &&
+      ( j = strlen(lpi) ) &&
       ( cb = *lpi ) &&
       ( j <= i ) )
    {
@@ -1340,9 +1340,9 @@ int   ginstri( LPTSTR lps, LPTSTR lpi )
    char     c, cb;
 
    if( ( lps ) &&
-      ( i = lstrlen(lps) ) &&
+      ( i = strlen(lps) ) &&
       ( lpi ) &&
-      ( j = lstrlen(lpi) ) &&
+      ( j = strlen(lpi) ) &&
       ( cb = toupper(*lpi) ) &&
       ( j <= i ) )
    {
@@ -1398,9 +1398,9 @@ int   ginstriw( LPTSTR lps, LPTSTR lpi )
 //      LPTSTR   lpc;
       char     c, cb;
       if( ( lps ) &&
-         ( i = lstrlen(lps) ) &&
+         ( i = strlen(lps) ) &&
          ( lpi ) &&
-         ( j = lstrlen(lpi) ) &&
+         ( j = strlen(lpi) ) &&
          ( cb = toupper(*lpi) ) &&
          ( j <= i ) )
       {
@@ -1449,7 +1449,7 @@ int  CIS2Int( LPTSTR lpout )
    TCHAR c;
 
    if( ( lpout             ) &&
-      ( i = lstrlen(lpout) ) &&
+      ( i = strlen(lpout) ) &&
       ( i > 3              ) &&
       ( c = *lpout )       )
    {
@@ -1464,7 +1464,7 @@ int  CIS2Int( LPTSTR lpout )
          lpout[i-1] = 0;   // remove end brace
          //lpout[j-1] = '.'; // convert 
          strcpy(lpout, &lpout[1]); // remove first brace
-         i = lstrlen(lpout);
+         i = strlen(lpout);
          c = *lpout;
       }
       if( ( c >= '0' ) &&
@@ -1478,7 +1478,7 @@ int  CIS2Int( LPTSTR lpout )
             lpout[j-1] = '.';
          }
          strcat(lpout,"@Compuserve.com");
-         i = lstrlen(lpout);
+         i = strlen(lpout);
          c = *lpout;
       }
       else
@@ -1488,7 +1488,7 @@ int  CIS2Int( LPTSTR lpout )
             // remove the CIS addition
             strcpy(lpout, &lpout[j]);
             // =======================
-            i = lstrlen(lpout);
+            i = strlen(lpout);
             c = *lpout;
          }
       }
@@ -1497,7 +1497,7 @@ int  CIS2Int( LPTSTR lpout )
       if( ginstr(lpout,"@") == 0 )
       {
          strcat(lpout,"@compuserve.com");
-         i = lstrlen(lpout);
+         i = strlen(lpout);
          c = *lpout;
       }
    }
@@ -1518,7 +1518,7 @@ void  AddLine( LPTSTR lpout, DWORD dwi )
       // second item
       if( gbByCol )
       {
-         while(lstrlen(lpl) < iCol1 )
+         while(strlen(lpl) < iCol1 )
          {
             strcat(lpl," ");
          }
@@ -1528,7 +1528,7 @@ void  AddLine( LPTSTR lpout, DWORD dwi )
    {
       if( gbByCol )
       {
-         while(lstrlen(lpl) < iCol2 )
+         while(strlen(lpl) < iCol2 )
          {
             strcat(lpl," ");
          }
@@ -1555,7 +1555,7 @@ void  EndLine( void )
 {
    LPTSTR   lpl = &g_Out[0];
    int   i;
-   if( i = lstrlen(lpl) )
+   if( i = strlen(lpl) )
    {
       strcat(lpl,"\r\n");
       prt(lpl);

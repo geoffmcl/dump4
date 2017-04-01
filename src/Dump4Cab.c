@@ -1619,7 +1619,7 @@ void Buffer2Stg( LPSTR lps, LPSTR lpb, int decimal,
 
 	k = 0;					// Start at output beginning
 	cad = 0;				// Count AFTER the decimal
-	j = lstrlen( lpb );		// Get LENGTH of buffer digits
+	j = strlen( lpb );		// Get LENGTH of buffer digits
 
 	if( sign )				// if the SIGN flag is ON
 		lps[k++] = '-';		// Fill in the negative
@@ -1789,8 +1789,8 @@ int		GMInStr( LPSTR lpsrc, LPSTR lpfind )
    islen = iflen = 0;
 	if( lpsrc && lpfind )
    {
-      islen = lstrlen( lpsrc );
-      iflen = lstrlen( lpfind );
+      islen = strlen( lpsrc );
+      iflen = strlen( lpfind );
    }
    if( islen && iflen )
 	{
@@ -1853,7 +1853,7 @@ void	RTrimDecimal1( LPSTR lpr )
    i = j = k = 0;
 	if( lpr )
    {
-      i = lstrlen( lpr );
+      i = strlen( lpr );
       k = GMInStr( lpr, "." );
 		j = ( i - k );
    }
@@ -1937,7 +1937,7 @@ void	RTrimDecimal( LPSTR lpr )
 
    i = 0;
 	if( lpr )
-      i = lstrlen( lpr );
+      i = strlen( lpr );
    if(i)
 	{
 		k = GMInStr( lpr, "." );
@@ -1964,7 +1964,7 @@ void	RTrimDecimal( LPSTR lpr )
 		// ==============================
 		// 2nd processing ==============
 		// ==============================
-		i = lstrlen( lpr );
+		i = strlen( lpr );
 		k = GMInStr( lpr, "." );
 		if( ( i ) &&
 			( k ) &&
@@ -1977,11 +1977,11 @@ void	RTrimDecimal( LPSTR lpr )
 			lpl = &szless[0];
 			strcpy( lpl, lpr );
 			RTrimDecimal1( lpl );
-			if( ( lstrlen( lpl ) ) &&
-				( lstrlen( lpl ) < i ) &&
+			if( ( strlen( lpl ) ) &&
+				( strlen( lpl ) < i ) &&
 				( GMInStr( lpl, "." ) ) )
 			{
-				i = lstrlen( lpl );
+				i = strlen( lpl );
 				k = GMInStr( lpl, "." );
 				for( j = (i - 1); j > k; j-- )
 				{
@@ -1995,7 +1995,7 @@ void	RTrimDecimal( LPSTR lpr )
 						break;
 					}
 				}
-				if( (lstrlen(lpl) + 2 ) < lstrlen(lpr) )
+				if( (strlen(lpl) + 2 ) < strlen(lpr) )
 				{
 					strcpy( lpr, lpl );
 				}
@@ -2006,7 +2006,7 @@ void	RTrimDecimal( LPSTR lpr )
 		// ==============================
 		// 3rd processing ==============
 		// ==============================
-		i = lstrlen( lpr );
+		i = strlen( lpr );
       k = GMInStr( lpr, "." );
 		if( ( i ) &&
 			( k ) &&

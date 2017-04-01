@@ -4663,7 +4663,7 @@ void DumpLongnamesMember(PVOID p, DWORD len)
     // out the offset of each string (in decimal), followed by the string.
     while ( offset < len )
     {
-        unsigned cbString = lstrlen( pszName )+1;
+        unsigned cbString = strlen( pszName )+1;
 
         sprtf("  %05u: %s\n", offset, pszName);
         offset += cbString;

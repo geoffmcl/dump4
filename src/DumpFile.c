@@ -453,7 +453,7 @@ void	WriteDiagFile_OK_but_why( LPTSTR lpd )
 
    i = 0;
 	if( lpd )
-      i = lstrlen( lpd );
+      i = strlen( lpd );
    if(i)
 	{
 		if( hDbgFile == 0 )
