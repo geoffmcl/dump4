@@ -954,8 +954,10 @@ extern bool major_to_chars (major_t v, char *p, size_t s);
 #define MINOR_TO_CHARS(val, where) minor_to_chars (val, where, sizeof (where))
 extern bool minor_to_chars (minor_t v, char *p, size_t s);
 
+#ifdef WIN32
 #define  getgid   GetCurrentProcessId
 #define  getuid   GetCurrentProcessId
+#endif
 
 /* Write a "private" header */
 union block *
