@@ -245,7 +245,7 @@ BOOL  DumpTAR_FAILED( LPDFSTR lpdf )
          dwm = 0;
    }
 
-   if(( _strnicmp(pph->magic, TMAGIC, 5) == 0 )||
+   if(( STRNICMP(pph->magic, TMAGIC, 5) == 0 )||
       ( rdhdr == HEADER_SUCCESS ) ){
       // we have a USTAR format
       off = 1;
@@ -738,7 +738,7 @@ int  IsTARFile( LPDFSTR lpdf, LPTSTR lpf, PBYTE pb, DWORD dwmax )
       break;
    }
 
-   if(( _strnicmp(put->ustar, "ustar", 5) == 0  )||
+   if(( STRNICMP(put->ustar, "ustar", 5) == 0  )||
       ( rdhdr == HEADER_SUCCESS ) ) {
       off = 1;
       count = 0;

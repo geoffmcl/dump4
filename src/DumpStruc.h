@@ -8,7 +8,7 @@
 // ======================================
 #define MCDECL _cdecl
 #define STRCMPI strcmpi
-#define STRNICMP strnicmp
+#define STRNICMP _strnicmp
 // ======================================
 #else
 // ======================================

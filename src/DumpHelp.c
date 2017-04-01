@@ -238,10 +238,10 @@ void Get_PEDUMP_Sw( PTSTR ptmp, PTSTR pbgn )
             c2 = toupper(ptmp[1]);
             act = TRUE;
             spe = NULL;
-            if( _strnicmp(ptmp, "imports", 7) == 0 ) {
+            if( STRNICMP(ptmp, "imports", 7) == 0 ) {
                Set_Imports_Only();
                ptmp = &ptmp[7];
-            } else if( _strnicmp(ptmp, "exports", 7) == 0 ) {
+            } else if( STRNICMP(ptmp, "exports", 7) == 0 ) {
                Set_Exports_Only();
                ptmp = &ptmp[7];
             } else {
@@ -381,7 +381,7 @@ void Get_L_Sw( PTSTR cp )
    size_t len;
    strcpy(ptmp, cp);
    len = strlen(ptmp);
-   if( _strnicmp(ptmp, "lib", 3) == 0 ) {
+   if( STRNICMP(ptmp, "lib", 3) == 0 ) {
       g_bDumpLib = TRUE;
 #ifdef USE_PEDUMP_CODE
       ptmp = &ptmp[3];
@@ -418,7 +418,7 @@ INT  Get_O_Sw( PTSTR cp )
    strcpy(ptmp, &cp[-1]);
    len = strlen(ptmp);
 #ifdef   ADDOBJSW
-   if( _strnicmp(ptmp, "obj", 3) == 0 ) {
+   if( STRNICMP(ptmp, "obj", 3) == 0 ) {
       g_bDumpObj = TRUE;
 #ifdef USE_PEDUMP_CODE
       ptmp = &ptmp[3];
@@ -482,7 +482,7 @@ int Get_M_Sw( PTSTR cp )
        return 0;
     }
 #endif   //#ifdef   ADDMK4
-    if( _strnicmp(cp, "m2ts", 4) == 0  ) {
+    if( STRNICMP(cp, "m2ts", 4) == 0  ) {
         g_bDoM2TS = TRUE;
         return 0;
     }
@@ -499,10 +499,10 @@ void Get_S_Sw( PTSTR cp )
    PTSTR pbgn = cp - 1;
    PTSTR ptmp = &gszDiag[0];
    strcpy(ptmp,cp);
-   if( _strnicmp(ptmp, "shp", 3) == 0  ) {
+   if( STRNICMP(ptmp, "shp", 3) == 0  ) {
       gfDoSHPFile = 1;
 #ifdef ADD_SONIC_PROJECT    // 2010-02-16 - add -sonic DVD project file
-   } else if (_strnicmp(ptmp, "sonic", 5) == 0 ) {
+   } else if (STRNICMP(ptmp, "sonic", 5) == 0 ) {
       gfDoSonic = 1;
 #endif // #ifdef ADD_SONIC_PROJECT    // 2010-02-16 - add -sonic DVD project file
    } else {
@@ -518,7 +518,7 @@ void Get_T_Sw( PTSTR cp )
    PTSTR pbgn = cp - 1;
    PTSTR ptmp = &gszDiag[0];
    strcpy(ptmp,cp);
-   if( _strnicmp(ptmp, "tar", 3) == 0  ) {
+   if( STRNICMP(ptmp, "tar", 3) == 0  ) {
       gfDoTARFile = 1;
    } else {
       sprintf(ptmp, "ERROR: Only -T switch is -tar! Got %s!!"MEOR, pbgn );
@@ -785,7 +785,7 @@ void Do_D_Opt( PTSTR cp )
    INT c = toupper(*cp);
    strcpy(ptmp, &cp[-1]);
 #ifdef   ADDOBJSW
-   if( _strnicmp(ptmp, "dll", 3) == 0  ) {
+   if( STRNICMP(ptmp, "dll", 3) == 0  ) {
       g_bDumpObj = TRUE;
 #ifdef USE_PEDUMP_CODE
       ptmp = &ptmp[3];
@@ -836,7 +836,7 @@ void Do_E_Opt(PTSTR cp)
    PTSTR ptmp = &gszDiag[0];
    strcpy(ptmp,cp);
 #ifdef   ADDOBJSW
-   if( _strnicmp(ptmp, "exe", 3) == 0  ) {
+   if( STRNICMP(ptmp, "exe", 3) == 0  ) {
       g_bDumpObj = TRUE;
 #ifdef USE_PEDUMP_CODE
       ptmp = &ptmp[3];
