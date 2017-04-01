@@ -211,7 +211,7 @@ base64_init (void)
 struct quoting_options
 {
   /* Basic quoting style.  */
-  enum quoting_style style;
+  int style;
 
   /* Additional flags.  Bitwise combination of enum quoting_flags.  */
   int flags;
