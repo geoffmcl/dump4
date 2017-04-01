@@ -1796,6 +1796,7 @@ BOOL  WrtFil( HANDLE * ph, PVOID pv, DWORD len )
    if( VFH(h) )
    {
       DWORD    dww = 0;
+#ifdef WIN32
       if( ( WriteFile( h, pv, len, &dww, NULL ) ) &&
           ( dww == len ) )
       {
@@ -1807,6 +1808,19 @@ BOOL  WrtFil( HANDLE * ph, PVOID pv, DWORD len )
          h = INVALID_HANDLE_VALUE;
          *ph = h;
       }
+#else
+      dww = fwrite(pv, 1, len, h);
+      if (dww == len)
+      {
+          bRet = TRUE;
+      }
+      else
+      {
+          fclose(h);
+          h = INVALID_HANDLE_VALUE;
+          *ph = h;
+      }
+#endif
    }
    return bRet;
 }
@@ -1918,13 +1932,18 @@ BOOL  DumpPPM( LPDFSTR lpdf )
    return TRUE;
 
 Got_Err:
-
+#ifdef WIN32
    dww = GetLastError();
+#endif
    if(pln)
       dMFREE(pln);
+#ifdef WIN32
    if(VFH(fh))
       CloseHandle(fh);
-
+#else 
+   if (VFH(fh))
+       fclose(fh);
+#endif
    if( VERB )
    {
       sprintf( lpb2, "FAILED to write file [%s]."MEOR, &g_szBmpNm[0] );
