@@ -31,7 +31,11 @@
 #define struct_stat struct stat
 #endif
 
+#ifdef WIN32
 #define  FDSEEK   _lseeki64
+#else
+#define  FDSEEK   lseek
+#endif
 #define  FNSTAT   _stat64
 #define  FDSTAT   _fstat64
 #define  lstat    FNSTAT
