@@ -17,6 +17,9 @@
 #include <stdarg.h> // for va_start, ...
 #include <strings.h> // strcasecmp, strncasecmp
 #include <unistd.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
 
 /* from winnt.h */
 #define IMAGE_DOS_SIGNATURE                 0x5A4D      // MZ
@@ -1354,6 +1357,11 @@ typedef IMAGE_RELOCATION UNALIGNED *PIMAGE_RELOCATION;
 #define ZeroMemory(a,b) memset(a,0,b)
 
 #define RGB(r,g,b)          ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+
+#define LOWORD(l)           ((WORD)(((DWORD_PTR)(l)) & 0xffff))
+#define HIWORD(l)           ((WORD)((((DWORD_PTR)(l)) >> 16) & 0xffff))
+#define LOBYTE(w)           ((BYTE)(((DWORD_PTR)(w)) & 0xff))
+#define HIBYTE(w)           ((BYTE)((((DWORD_PTR)(w)) >> 8) & 0xff))
 
 // ======================================
 #endif
