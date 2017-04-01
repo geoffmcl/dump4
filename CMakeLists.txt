@@ -59,9 +59,7 @@ endif ()
 add_definitions( -DDUMP4_VERSION="${DUMP4_VERSION}" -DDUMP4_DATE="${DUMP4_DATE}" )
 
 # special C:/MDOS install
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "C:/MDOS" CACHE PATH "dump4 install prefix" FORCE)
-else()
+if (NOT CMAKE_INSTALL_PREFIX AND WIN32)
   set(CMAKE_INSTALL_PREFIX "C:/MDOS" CACHE PATH "dump4 install prefix" FORCE)
 endif()
 
