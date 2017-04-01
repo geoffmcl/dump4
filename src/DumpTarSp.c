@@ -119,12 +119,12 @@ struct mode_change *mode_option = 0;
 struct tar_sparse_file;
 static bool sparse_select_optab (struct tar_sparse_file *file);
 
-enum sparse_scan_state
-  {
-    scan_begin,
-    scan_block,
-    scan_end
-  };
+//enum sparse_scan_state
+//  {
+//    scan_begin,
+//    scan_block,
+//    scan_end
+//  };
 
 #if 0 // 0 ************************************************
 struct tar_sparse_optab

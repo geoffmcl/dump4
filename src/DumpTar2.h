@@ -609,6 +609,14 @@ struct tar_sparse_file
 				       require */
 };
 
+enum sparse_scan_state
+{
+    scan_begin,
+    scan_block,
+    scan_end
+};
+
+
 struct tar_sparse_optab
 {
     bool(*init) (struct tar_sparse_file *);
