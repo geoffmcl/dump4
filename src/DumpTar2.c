@@ -1625,14 +1625,14 @@ tar_checksum (union block *header, bool silent)
 
 int utc_option = 0;
 
+enum { fraclen = sizeof ".FFFFFFFFF" - 1 };
+static char buffer[max(UINTMAX_STRSIZE_BOUND + 1,
+    INT_STRLEN_BOUND(int) + 16)
+    + fraclen];
 
 char const *
 tartime (struct timespec t, bool full_time)
 {
-  enum { fraclen = sizeof ".FFFFFFFFF" - 1 };
-  static char buffer[max (UINTMAX_STRSIZE_BOUND + 1,
-			  INT_STRLEN_BOUND (int) + 16)
-		     + fraclen];
   struct tm *tm;
   time_t s = t.tv_sec;
   int ns = t.tv_nsec;
