@@ -258,11 +258,12 @@ set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
 install (TARGETS ${name} DESTINATION "C:/MDOS")
 message(STATUS "*** CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
 
-# 20170323 - Add a dumpexe test app
-set(name dumpexe)
-set(dir tests)
-add_executable( ${name} ${dir}/${name}.cxx )
-target_link_libraries( ${name} ${add_LIBS} )
-set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
-
+if (MSVC)
+    # 20170323 - Add a dumpexe test app - for MSVC (WIN32) only
+    set(name dumpexe)
+    set(dir tests)
+    add_executable( ${name} ${dir}/${name}.cxx )
+    target_link_libraries( ${name} ${add_LIBS} )
+    set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
+endif ()
 # eof
