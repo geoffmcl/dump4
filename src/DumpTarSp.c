@@ -11,7 +11,9 @@
 #include "DumpTar2.h"
 #include <math.h>
 #include <errno.h>
+#ifdef _WIN32
 #include <io.h>
+#endif
 #include <time.h>
 
 #ifndef ssize_t
