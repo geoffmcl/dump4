@@ -533,7 +533,7 @@ void Do_A_Opt( PTSTR cp )
    PTSTR pbgn = cp - 2;
 #ifdef ADD_AVI_FILE
     // BOOL w_bDoAVI; // g_bDoAVI - process as an AVI file
-    if( stricmp(cp, "vi") == 0  ) {
+    if(STRCMPI(cp, "vi") == 0  ) {  // maybe same as stricmp???
         g_bDoAVI = TRUE;
         return;
     }
