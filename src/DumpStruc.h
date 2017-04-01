@@ -101,6 +101,9 @@ typedef unsigned long long DWORD64; // 20170330 addition
 #define CHAR_BIT      8         // number of bits in a char
 #endif
 
+#ifndef MB_LEN_MAX
+#define MB_LEN_MAX    5             // max. # bytes in multibyte char
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 #define IMAGE_FILE_RELOCS_STRIPPED           0x0001  // Relocation info stripped from file.
