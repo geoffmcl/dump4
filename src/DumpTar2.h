@@ -128,12 +128,17 @@ typedef struct tagUSTAR {
 #ifndef bool
 typedef char bool;
 #endif
+#ifdef _WIN32
 #ifndef uintmax_t
 typedef unsigned __int64 uintmax_t;
 #endif
 #ifndef intmax_t
 typedef __int64 intmax_t;
 #endif
+#else // !_WIN32
+#include <inttypes.h>
+#endif // _WIN32 y/n
+
 #if (defined(_MSC_VER) && (_MSC_VER < 1900))
 #ifndef _TIMESPEC           
 #define _TIMESPEC
