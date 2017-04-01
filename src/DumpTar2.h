@@ -674,7 +674,11 @@ enum dump_status
 #define LG_64 6
 #define LG_256 8
 
+#ifdef WIN32
 #define strtoumax _strtoui64
+#else
+#define strtoumax strtoul
+#endif
 #define strtoimax _strtoi64
 #define __attribute__(a)
 # ifndef obstack_chunk_alloc
