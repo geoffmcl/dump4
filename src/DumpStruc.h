@@ -94,6 +94,10 @@ typedef unsigned long long DWORDLONG;
 typedef unsigned short WCHAR;    // wc,   16-bit UNICODE character
 typedef unsigned long long DWORD64; // 20170330 addition
 
+#ifndef UCHAR_MAX
+#define UCHAR_MAX     0xff      // maximum unsigned char value
+#endif
+
 ///////////////////////////////////////////////////////////////////////////
 #define IMAGE_FILE_RELOCS_STRIPPED           0x0001  // Relocation info stripped from file.
 #define IMAGE_FILE_EXECUTABLE_IMAGE          0x0002  // File is executable  (i.e. no unresolved external references).
