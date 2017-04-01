@@ -385,7 +385,7 @@ int vsprtf( PTSTR ps, va_list arglist )
 #ifdef WIN32
        i = vsprintf_s( lpb, MX_SPRTF_BUF, ps, arglist );
 #else
-       i = vsnprintf(buffer, MX_SPRTF_BUF, ps, arglist);
+       i = vsnprintf( lpb, MX_SPRTF_BUF, ps, arglist);
 #endif
        if (i <= 0) {
            prt("ERROR:DUMP4:2: vsprintf_s FAILED!\n");
