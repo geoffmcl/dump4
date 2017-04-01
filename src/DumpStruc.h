@@ -1346,6 +1346,8 @@ typedef IMAGE_RELOCATION UNALIGNED *PIMAGE_RELOCATION;
 // Try to provide UNREFERENCED_PARAMETER
 #define UNREFERENCED_PARAMETER
 
+#define ZeroMemory(a,b) memset(a,0,b)
+
 // ======================================
 #endif
 
