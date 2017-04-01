@@ -595,21 +595,6 @@ extern bool uid_to_chars (uid_t v, char *p, size_t s);
 // sparse stuff
 // *****************************************************
 
-struct tar_sparse_optab
-{
-  bool (*init) (struct tar_sparse_file *);
-  bool (*done) (struct tar_sparse_file *);
-  bool (*sparse_member_p) (struct tar_sparse_file *);
-  bool (*dump_header) (struct tar_sparse_file *);
-  bool (*fixup_header) (struct tar_sparse_file *);
-  bool (*decode_header) (struct tar_sparse_file *);
-  bool (*scan_block) (struct tar_sparse_file *, enum sparse_scan_state,
-		      void *);
-  bool (*dump_region) (struct tar_sparse_file *, size_t);
-  bool (*extract_region) (struct tar_sparse_file *, size_t);
-};
-
-
 struct tar_sparse_file
 {
   int fd;                           /* File descriptor */
@@ -622,6 +607,20 @@ struct tar_sparse_file
   struct tar_sparse_optab const *optab; /* Operation table */
   void *closure;                    /* Any additional data optab calls might
 				       require */
+};
+
+struct tar_sparse_optab
+{
+    bool(*init) (struct tar_sparse_file *);
+    bool(*done) (struct tar_sparse_file *);
+    bool(*sparse_member_p) (struct tar_sparse_file *);
+    bool(*dump_header) (struct tar_sparse_file *);
+    bool(*fixup_header) (struct tar_sparse_file *);
+    bool(*decode_header) (struct tar_sparse_file *);
+    bool(*scan_block) (struct tar_sparse_file *, enum sparse_scan_state,
+        void *);
+    bool(*dump_region) (struct tar_sparse_file *, size_t);
+    bool(*extract_region) (struct tar_sparse_file *, size_t);
 };
 
 enum dump_status
