@@ -541,7 +541,12 @@ void	ProcessFile( LPTSTR fn )
         pCnt = 1;
         if( gfDoCABFile ) {
             grmCloseFile( &hf );
+#ifdef WIN32
             ProcessCAB( fn );
+#else
+            sprintf(lpb, "WARNING: ProcessCAB file [%s] not ported!" MEOR, fn);
+            prt(lpb);
+#endif
         }
 #ifdef  ADD_SHAPE_FILE    // needs TG/lib/shapelib - shapelib.lib
         else if( gfDoSHPFile ) { //   "  -shp    Dump as SHAPEFILE ..." MEOR
@@ -1234,11 +1239,6 @@ void	ProcessDataStr( LPDFSTR lpdf )
       }
    }
 
-//   if( gfDoCABFile )
-//   {
-//      if( ProcessCAB( fn ) )
-//         return;
-//   }
    if( gbDoSynEdit )
    {
       if( ChkSynEdit(lpdf) )
