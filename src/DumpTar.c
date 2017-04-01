@@ -194,8 +194,14 @@ int collect_octal_size( char * lpb, struct posix_header * pph, size_t * pfsz, in
    lpb[off] = 0;
    i = 1;
    *pfsz = 0;
-   if(off)
-      i = sscanf_s( lpb, "%o", pfsz );
+   if (off)
+   {
+#ifdef WIN32
+       i = sscanf_s(lpb, "%o", pfsz);
+#else
+       i = sscanf(lpb, "%o", pfsz);
+#endif
+   }
    if( i != 1 )
    {
       if( warn )
