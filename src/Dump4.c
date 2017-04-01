@@ -420,9 +420,106 @@ void	DoFile( char * fn, HANDLE hf )
 ////////////////////////////////////////////////////////////////////
 void	DoFile( char * fn, HANDLE hf )
 {
+    LPDFSTR     lpdf = &gsDoFil;
     LPTSTR	   lptmp = &gszTmpOut[0];
-	sprintf( lptmp, "ERROR: This service has to be ported to unix [%s]!" MEOR, fn );
-	prt( lptmp );
+    DWORD      dwMax = 0;
+
+    lpdf->fn = fn;
+    lpdf->lptmp = lptmp;
+    if (VFH(hf))
+    {
+        struct stat sb;
+        int fd = fileno(hf);
+        if (fstat(fd, &sb) == -1)
+        {
+            sprintf(lptmp, "ERROR: Failed to 'stat' file '%s' (%d)!" MEOR, fn, fd);
+            prt(lptmp);
+            return;
+        }
+        lpdf->stat_buf = sb;
+        lpdf->stat_res = 0;
+        lpdf->hf = (HANDLE)hf;
+        lpdf->qwSize = sb.st_size;
+        lpdf->df_pVoid = mmap(0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        if (lpdf->df_pVoid == MAP_FAILED)
+        {
+            sprintf(lptmp, "ERROR: Failed to 'stat' file '%s' (%d)! size %lld" MEOR, fn, fd, sb.st_size);
+            prt(lptmp);
+            return;
+        }
+        if (lpdf->qwSize.HighPart)
+            dwMax = (DWORD)-1;
+        else
+            dwMax = lpdf->qwSize.LowPart;
+        lpdf->dwmax = dwMax;
+        lpdf->dwrd = dwMax;
+        lpdf->lpb = (PBYTE)lpdf->df_pVoid;
+        pBaseLoad = lpdf->lpb;
+        pBaseTop = pBaseLoad + dwMax;
+        if (giVerbose)
+        {
+            if (giVerbose > 1)
+            {
+                sprintf(lptmp,
+                    "File [%s], %llu bytes (map at %#x)." MEOR,
+                    fn,
+                    sb.st_size,
+                    lpdf->df_pVoid);
+               }
+            else
+            {
+                sprintf(lptmp,
+                    "File [%s], %llu bytes." MEOR,
+                    fn,
+                    sb.st_size);
+            }
+            prt(lptmp);
+        }
+
+        ProcessDataStr(lpdf);
+
+        if (VERB)
+        {
+            if ((gdwEndOff) && (gdwEndOff < sb.st_size))
+            {
+                sprintf(lptmp, "Done [%s] Ended after %s byte offset. ",
+                    fn,
+                    GetDWStg2(gdwEndOff));
+            }
+            else 
+            {
+                sprintf(lptmp, "Completed [%s] = %llu Bytes. ",
+                    fn, 
+                    sb.st_size);
+            }
+            if (lpdf->stat_res == 0)
+            {
+                char timebuf[32];
+                int err = ctime_s(timebuf, 26, &lpdf->stat_buf.st_mtime);
+                if (err == 0)
+                {
+                    err = (int)strlen(timebuf);
+                    while (err--) {
+                        if (timebuf[err] > ' ')
+                            break;
+                        timebuf[err] = 0;
+                    }
+                    if (err) {
+                        sprintf(EndBuf(lptmp), " %s", timebuf);
+                    }
+                }
+            }
+            strcat(lptmp, MEOR); // terminate the string
+            prt(lptmp);
+        }
+        munmap(lpdf->df_pVoid, sb.st_size);
+        lpdf->df_pVoid = 0;
+    }
+    else
+    {
+        sprintf(lptmp, "ERROR: Failed to open file '%s'!" MEOR, fn);
+        prt(lptmp);
+    }
 }
 ////////////////////////////////////////////////////////////////////
 #endif // #ifdef WIN32 y/n

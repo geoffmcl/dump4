@@ -136,7 +136,11 @@
 #define	MXCMDBUF		   2048	// Wow, this is big!!!
 #define	MXONELN			68    // just wrap a command
 
+#ifdef WIN32
 #define	MEOR		      "\r\n"
+#else
+#define	MEOR		      "\n"
+#endif
 
 #define	EndBuf(a)		( a + strlen(a) )
 
