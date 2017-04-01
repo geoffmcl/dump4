@@ -16,7 +16,7 @@
 #endif
 #include <time.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
 typedef __int64 ssize_t;
 #endif
 
