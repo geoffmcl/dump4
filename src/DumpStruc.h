@@ -1358,10 +1358,10 @@ typedef IMAGE_RELOCATION UNALIGNED *PIMAGE_RELOCATION;
 
 #define RGB(r,g,b)          ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
 
-#define LOWORD(l)           ((WORD)(((DWORD_PTR)(l)) & 0xffff))
-#define HIWORD(l)           ((WORD)((((DWORD_PTR)(l)) >> 16) & 0xffff))
-#define LOBYTE(w)           ((BYTE)(((DWORD_PTR)(w)) & 0xff))
-#define HIBYTE(w)           ((BYTE)((((DWORD_PTR)(w)) >> 8) & 0xff))
+#define LOWORD(l)           ((WORD)(((DWORD)(l)) & 0xffff))
+#define HIWORD(l)           ((WORD)((((DWORD)(l)) >> 16) & 0xffff))
+#define LOBYTE(w)           ((BYTE)(((DWORD)(w)) & 0xff))
+#define HIBYTE(w)           ((BYTE)((((DWORD)(w)) >> 8) & 0xff))
 
 // ======================================
 #endif
