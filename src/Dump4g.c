@@ -1722,13 +1722,13 @@ LPTSTR   glpSalutes[] = {
    { 0 }
 };
 #else
-LPTSTR   glpSalutes[] = 
+LPTSTR   glpSalutes[] = {
     "MR",
     "MRS",
     "MS",
     "MISS",
     0 
-;
+};
 #endif
 
 #define  MMAXSAL      4
@@ -2593,6 +2593,7 @@ BOOL  bGotSigChrs( LPTSTR lpout )
 //               {
 //                  cp++;
 //               }
+#ifdef _MSC_VER
 LPTSTR   glpSps[] = {
    { " " },
    { "," },
@@ -2601,6 +2602,16 @@ LPTSTR   glpSps[] = {
    { "@" },
    { 0 }
 };
+#else
+LPTSTR   glpSps[] = {
+    " " ,
+    "," ,
+    ":" ,
+    "." ,
+    "@" ,
+    0 
+};
+#endif
 
 int   grtrimall( LPTSTR lps )
 {
