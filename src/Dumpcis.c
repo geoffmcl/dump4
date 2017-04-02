@@ -296,7 +296,7 @@ BOOL	IsOut( void )
 
 #endif	// DIAGFILE
 
-UINT	IsCisFile( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
+UINT	IsCisFile( HANDLE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 				  DWORD fsiz )
 {
 	UINT		ftype = 0;
@@ -304,7 +304,7 @@ UINT	IsCisFile( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 	return ftype;
 }
 
-UINT	IsCisFile2( HFILE hf, LPSTR lpf, LPSTR lpb, DWORD len,
+UINT	IsCisFile2( HANDLE hf, LPSTR lpf, LPSTR lpb, DWORD len,
 				  DWORD fsiz )
 {
 	UINT		ftype;
@@ -996,7 +996,7 @@ void	SetFileType( UINT typ, LPSTR lpb )
 }
 
 // NOT USED ********
-void	DoFile_OK( char * fn, HFILE hf )
+void	DoFile_OK( char * fn, HANDLE hf )
 {
 	int			rd, ir;
 	char	*	lpb;
@@ -1011,8 +1011,7 @@ void	DoFile_OK( char * fn, HFILE hf )
 	
 	lpb = &gcFilBuf[0];
 	lptmp = &gszTmpOut[0];
-	if( hf &&
-		(hf != HFILE_ERROR) )
+	if( VH(hf) )
 	{
 		fsiz = GetFileSize( (HANDLE)hf, NULL );
 		if( ( giVerbose > 1 ) &&
@@ -1578,7 +1577,7 @@ typedef CISADGRP * LPCISADGRP;
 int	chkcis( LPDFSTR lpdf )
 {
    int   iRet = 1;
-   HFILE hf;
+   HANDLE hf = lpdf->hf;
    LPTSTR fn;
    BYTE * lpb;
    DWORD rd;
@@ -1596,7 +1595,7 @@ int	chkcis( LPDFSTR lpdf )
    BOOL     bGrp;
    LPTSTR   lpout = &g_Stg[0];
 
-   if( ( hf = (HFILE)lpdf->hf ) &&
+   if(( VH(hf)  ) &&
       ( fn = lpdf->fn ) &&
       ( lpb = lpdf->lpb ) &&
       ( rd = lpdf->dwrd ) &&

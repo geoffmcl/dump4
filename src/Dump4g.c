@@ -3342,7 +3342,7 @@ void  OutBlock( LPTSTR lpb, DWORD dwBgn, DWORD dwLen, DWORD dwSkip, DWORD dwRd,
 int	DoGeoff( LPDFSTR lpdf )
 {
    int   iRet = 0;
-   HFILE hf;
+   HANDLE hf;
    LPTSTR fn;
    BYTE * lpb;
    DWORD rd;
@@ -3354,7 +3354,7 @@ int	DoGeoff( LPDFSTR lpdf )
 //   LPTSTR   lpout = &g_Stg[0];
 //      ( fsiz = lpdf->qwSize.LowPart ) &&
 
-   if( ( hf = (HFILE)lpdf->hf ) != 0 &&
+   if( ( hf = lpdf->hf ) != 0 &&
       ( fn = lpdf->fn ) != 0 &&
       ( lpb = lpdf->lpb ) != 0 &&
       ( rd = lpdf->dwrd ) != 0 &&

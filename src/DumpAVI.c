@@ -1609,7 +1609,7 @@ BOOL  LooksLikeAVI( LPDFSTR lpdf )
     return bRet;
 }
 
-//void show_BMP_info( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
+// void show_BMP_info( HANDLE hf, LPSTR fn, LPSTR lpb, DWORD len,
 //				  DWORD fsiz )
 void show_BMP_info( BITMAPINFOHEADER * lpbih, UINT * puint )
 {

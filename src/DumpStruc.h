@@ -58,7 +58,7 @@ typedef void *HANDLE;
 typedef void *HPALETTE;
 typedef void *HBITMAP;
 typedef void *HFONT;
-typedef void *HFILE;
+// typedef void *HFILE; // DEPRECIATED
 
 typedef void *PVOID;
 typedef void *LPVOID;

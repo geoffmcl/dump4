@@ -1057,7 +1057,7 @@ void prts( PSTR ps )
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION   : ProcessBMP
 // Return type: void 
-// Arguments  : HFILE hf
+// Arguments  : HANDLE hf
 //            : LPSTR fn
 //            : LPSTR lpb
 //            : DWORD len
@@ -1065,7 +1065,7 @@ void prts( PSTR ps )
 // Description: Check and process a BITMAP file
 // Return value, if successful             
 ///////////////////////////////////////////////////////////////////////////////
-int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
+int	ProcessBMP( HANDLE hf, LPSTR fn, LPSTR lpb, DWORD len,
 				  DWORD fsiz )
 {
 	char		c;

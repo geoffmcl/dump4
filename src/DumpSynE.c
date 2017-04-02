@@ -68,7 +68,7 @@ BOOL	ChkSynEdit( LPDFSTR lpdf )
 {
 	BOOL	   bRet = FALSE;
 	BOOL	   bRet2 = FALSE;
-   HFILE    hf;
+   HANDLE   hf;
    PBYTE    pb, pb1;
    DWORD    ir;
    DWORD    ik, il;
@@ -82,7 +82,7 @@ BOOL	ChkSynEdit( LPDFSTR lpdf )
    DWORD    dwi, dwj;
    PBLK     pblk, pblk1;
 
-   hf  = (HFILE)lpdf->hf;
+   hf  = lpdf->hf;
    pfn = lpdf->fn;
    pb  = lpdf->lpb;
    rd  = lpdf->dwrd;
