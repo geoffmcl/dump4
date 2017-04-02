@@ -197,7 +197,7 @@ int collect_octal_size( char * lpb, struct posix_header * pph, size_t * pfsz, in
    if (off)
    {
 #ifdef WIN32
-       i = sscanf_s(lpb, "%o", pfsz);
+       i = sscanf_s(lpb, "%o", (unsigned int *)pfsz);
 #else
        i = sscanf(lpb, "%o", pfsz);
 #endif
