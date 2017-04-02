@@ -1644,7 +1644,7 @@ tartime (struct timespec t, bool full_time)
 
   if ( s >= 0xffffffff )
   {
-     sprintf(T_buffer, "<invalid time (%#x)>", s );
+     sprintf(T_buffer, "<invalid time (%#x)>", (unsigned int)s );
      return T_buffer;
   }
   if (negative && ns != 0)
