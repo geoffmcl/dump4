@@ -59,9 +59,10 @@ endif ()
 add_definitions( -DDUMP4_VERSION="${DUMP4_VERSION}" -DDUMP4_DATE="${DUMP4_DATE}" )
 
 # special C:/MDOS install
-if (NOT CMAKE_INSTALL_PREFIX AND WIN32)
+if ((NOT CMAKE_INSTALL_PREFIX) AND WIN32)
   set(CMAKE_INSTALL_PREFIX "C:/MDOS" CACHE PATH "dump4 install prefix" FORCE)
-endif()
+  message(STATUS "Set CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}" )
+endif ()
 
 # Allow developer to select is Dynamic or static library built
 set( LIB_TYPE STATIC )  # set default static
@@ -253,8 +254,12 @@ add_executable( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 target_link_libraries( ${name} ${add_LIBS} )
 set_target_properties( ${name} PROPERTIES DEBUG_POSTFIX d )
 # install - CMAKE_INSTALL_PREFIX / DESTDIR
-install (TARGETS ${name} DESTINATION "C:/MDOS")
-message(STATUS "*** CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+if (WIN32)
+    install (TARGETS ${name} DESTINATION "C:/MDOS")
+    message(STATUS "*** CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+else ()
+    install (TARGETS ${name} DESTINATION bin)
+endif ()
 
 if (MSVC)
     # 20170323 - Add a dumpexe test app - for MSVC (WIN32) only
