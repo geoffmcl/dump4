@@ -486,7 +486,7 @@ void  set_RGB_color( DWORD lc, int c )
       rgb24.rgbRed = (BYTE)c;
       break;
    default:
-      sprtf( "ERRANT CODING!"MEOR );
+      sprtf( "ERRANT CODING!" MEOR );
       wait_keyin();
       break;
    }
@@ -501,7 +501,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
    frgb = frbg = fgrb = fgbr = fbrg = fbgr = miss = 0;
    missed = 0;
    if( tmpcnt != rgb24cnt )
-      sprtf( "WARNING: Different counts - %d vs %d ..."MEOR, tmpcnt, rgb24cnt );
+      sprtf( "WARNING: Different counts - %d vs %d ..." MEOR, tmpcnt, rgb24cnt );
 
    for( i = 0; i < tmpcnt; i++ ) {
       r = tmp[i].rgbRed;
@@ -517,7 +517,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
          frgb++;
       } else {
          missed++;
-         sprtf( "%d WARNING: rgb(%3d,%3d,%3d) NOT FOUND!"MEOR, missed, r, g, b );
+         sprtf( "%d WARNING: rgb(%3d,%3d,%3d) NOT FOUND!" MEOR, missed, r, g, b );
          for( j = 0; j < rgb24cnt; j++ ) {
             if(( b == p24[j].rgbRed ) &&
                ( g == p24[j].rgbGreen ) &&
@@ -525,7 +525,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
                break;
          }
          if( j < rgb24cnt ) {
-            sprtf( "But bgr(%3d,%3d,%3d) was FOUND!"MEOR, r, g, b );
+            sprtf( "But bgr(%3d,%3d,%3d) was FOUND!" MEOR, r, g, b );
             fbgr++;
          } else {
             for( j = 0; j < rgb24cnt; j++ ) {
@@ -535,7 +535,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
                   break;
             }
             if( j < rgb24cnt ) {
-               sprtf( "But rbg(%3d,%3d,%3d) was FOUND!"MEOR, r, g, b );
+               sprtf( "But rbg(%3d,%3d,%3d) was FOUND!" MEOR, r, g, b );
                frbg++;
             } else {
                for( j = 0; j < rgb24cnt; j++ ) {
@@ -545,7 +545,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
                      break;
                }
                if( j < rgb24cnt ) {
-                  sprtf( "But grb(%3d,%3d,%3d) was FOUND!"MEOR, r, g, b );
+                  sprtf( "But grb(%3d,%3d,%3d) was FOUND!" MEOR, r, g, b );
                   fgrb++;
                } else {
                   for( j = 0; j < rgb24cnt; j++ ) {
@@ -555,7 +555,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
                         break;
                   }
                   if( j < rgb24cnt ) {
-                     sprtf( "But gbr(%3d,%3d,%3d) was FOUND!"MEOR, r, g, b );
+                     sprtf( "But gbr(%3d,%3d,%3d) was FOUND!" MEOR, r, g, b );
                      fgbr++;
                   } else {
                      for( j = 0; j < rgb24cnt; j++ ) {
@@ -565,7 +565,7 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
                            break;
                      }
                      if( j < rgb24cnt ) {
-                        sprtf( "But brg(%3d,%3d,%3d) was FOUND!"MEOR, r, g, b );
+                        sprtf( "But brg(%3d,%3d,%3d) was FOUND!" MEOR, r, g, b );
                         fbrg++;
                      } else {
                         miss++;
@@ -577,11 +577,11 @@ void  Compare_RGB_Colors( PRGB24 tmp, UINT tmpcnt, PRGB24 p24, UINT rgb24cnt )
       }
    }
    if(missed) {
-      sprtf( "frgb=%d frbg=%d fgrb=%d fgbr=%d fbrg=%d fbgr=%d miss=%d ..."MEOR,
+      sprtf( "frgb=%d frbg=%d fgrb=%d fgbr=%d fbrg=%d fbgr=%d miss=%d ..." MEOR,
          frgb, frbg, fgrb, fgbr, fbrg, fbgr, miss );
-      sprtf( "WARNING: %d NOT FOUND ..."MEOR, missed );
+      sprtf( "WARNING: %d NOT FOUND ..." MEOR, missed );
    } else {
-      sprtf( "Compare of %d COLORS show 100%% EXACTLY the SAME ..."MEOR, tmpcnt );
+      sprtf( "Compare of %d COLORS show 100%% EXACTLY the SAME ..." MEOR, tmpcnt );
    }
 }
 
@@ -625,15 +625,15 @@ void  Show_RGB_Colors( void )
    if( prgb24 ) {
       DWORD cnt;
       BYTE r, g, b;
-      sprtf( "BYTE rbg_%d_colors24[] = {"MEOR, rgb24cnt );
+      sprtf( "BYTE rbg_%d_colors24[] = {" MEOR, rgb24cnt );
       for( cnt = 0; cnt < rgb24cnt; cnt++ ) {
          r = prgb24[cnt].rgbRed;
          g = prgb24[cnt].rgbGreen;
          b = prgb24[cnt].rgbBlue;
-         sprtf( "   %3d, %3d, %3d, // #%2.2X%2.2X%2.2X"MEOR,
+         sprtf( "   %3d, %3d, %3d, // #%2.2X%2.2X%2.2X" MEOR,
             r, g, b, r, g, b );
       }
-      sprtf( "};"MEOR );
+      sprtf( "};" MEOR );
    }
 }
 
@@ -650,7 +650,7 @@ void  Show_RGB_Colors2( void )
       BYTE r, g, b;
       BYTE pr, pg, pb;
       double diff = 0.0;
-      sprtf( "BYTE rbg_%d_colors24[] = {"MEOR, rgb24cnt );
+      sprtf( "BYTE rbg_%d_colors24[] = {" MEOR, rgb24cnt );
       cnt = 0;
       pr = prgb24[cnt].rgbRed;
       pg = prgb24[cnt].rgbGreen;
@@ -660,13 +660,13 @@ void  Show_RGB_Colors2( void )
          g = prgb24[cnt].rgbGreen;
          b = prgb24[cnt].rgbBlue;
          diff = sqrt( sqr(r - pr) + sqr(g - pg) + sqr(b - pb) ); 
-         sprtf( "   %3d, %3d, %3d, // %4d #%2.2X%2.2X%2.2X (d=%2.4f)"MEOR,
+         sprtf( "   %3d, %3d, %3d, // %4d #%2.2X%2.2X%2.2X (d=%2.4f)" MEOR,
             r, g, b, cnt, r, g, b, diff );
          pr = r;
          pg = g;
          pb = b;
       }
-      sprtf( "};"MEOR );
+      sprtf( "};" MEOR );
    }
 }
 
@@ -940,8 +940,8 @@ VOID  ShowColourCnt( BITMAPINFOHEADER * lpbih, LPTSTR lpd )
    percent = (double)ip / 10.0;
 
    sprintf(lpd,
-      "Of 256 colour indexes, %d not used,"MEOR
-      "and max freq = %d. (%0.1f%%) of colour %02X(%d,%d,%d)."MEOR,
+      "Of 256 colour indexes, %d not used," MEOR
+      "and max freq = %d. (%0.1f%%) of colour %02X(%d,%d,%d)." MEOR,
       ia,
       dwmx,
       percent,
@@ -1121,11 +1121,11 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
       imgsiz );   // plus the IMAGE SIZE
 
 //	sprintf( lpd,
-//		"File is %s"MEOR,
+//		"File is %s" MEOR,
 //		fn );
 //	prt(lpd);
 	sprintf(lpd,
-		"Length  =  %d Bytes (File Size)"MEOR,
+		"Length  =  %d Bytes (File Size)" MEOR,
 		fsiz ) ;
 	prts(lpd);
 
@@ -1135,38 +1135,39 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
 		lpbih->biSize +            // sizeof(BITMAPINFOHEADER) OR OTHER SIZES
 		( cc2 * sizeof(RGBQUAD) ) );
 
+    // gcc now offers a warning about -Wmultichar for this compare, now SUPPRESSED
 	if(( lpbmfh->bfType == BMPSIG                       ) &&
 		( (lpbih->biSize  == sizeof(BITMAPINFOHEADER)) || (lpbih->biSize  == sizeof(BITMAPV5HEADER)) ) &&
 		( ValidBitCount(lpbih->biBitCount)               ) &&
 		( lpbmfh->bfOffBits < fsiz                       ) &&
-		(( lpbmfh->bfOffBits == ((DWORD)lps - (DWORD)lpb) )||( lpbih->biCompression == BI_BITFIELDS )) &&
+		(( lpbmfh->bfOffBits == (DWORD)(lps - lpb) )||( lpbih->biCompression == BI_BITFIELDS )) &&
         ( fsiz >= cfsize                                 ) )
 	{
 		// appears ok
 	}
 	else
 	{
-		prt( "ERROR: Not a known BITMAP file."MEOR );
+		prt( "ERROR: Not a known BITMAP file." MEOR );
       if( lpbmfh->bfType != BMPSIG ) {
-   		prt( " BMP ERROR: No 'BM' signature!"MEOR );
+   		prt( " BMP ERROR: No 'BM' signature!" MEOR );
       } else if( !( ( lpbih->biSize == sizeof(BITMAPINFOHEADER) ) ||
                     (lpbih->biSize  == sizeof(BITMAPV5HEADER) ) ) ) {
-          sprintf(lpd," BMP ERROR: Information header size incorrect! Got %u, expected %u or %u"MEOR,
+          sprintf(lpd," BMP ERROR: Information header size incorrect! Got %u, expected %u or %u" MEOR,
               (unsigned int)lpbih->biSize, (unsigned int)sizeof(BITMAPINFOHEADER), (unsigned int)sizeof(BITMAPV5HEADER));
    		prt(lpd);
       } else if( !ValidBitCount(lpbih->biBitCount) ) {
-   		prt( " BMP ERROR: Bit count NOT valid!"MEOR );
+   		prt( " BMP ERROR: Bit count NOT valid!" MEOR );
       } else if( lpbmfh->bfOffBits >= fsiz ) {
-   		prt( " BMP ERROR: Offset to bits too large!"MEOR );
-      } else if ( lpbmfh->bfOffBits != ((DWORD)lps - (DWORD)lpb) ) {
-         sprintf(lpd, " BMP ERROR: Offset to bits %d (%#X), not as computed %d (%#X)!"MEOR,
+   		prt( " BMP ERROR: Offset to bits too large!" MEOR );
+      } else if ( lpbmfh->bfOffBits != (DWORD)(lps - lpb) ) {
+         sprintf(lpd, " BMP ERROR: Offset to bits %d (%#X), not as computed %d (%#X)!" MEOR,
             lpbmfh->bfOffBits, lpbmfh->bfOffBits,
-            ((DWORD)lps - (DWORD)lpb), ((DWORD)lps - (DWORD)lpb));
+            (DWORD)(lps - lpb), (DWORD)(lps - lpb));
          prt(lpd);
       } else if( fsiz < cfsize ) {
-   		prt( " BMP ERROR: File size LESS than calculated!"MEOR );
+   		prt( " BMP ERROR: File size LESS than calculated!" MEOR );
       	sprintf(lpd,
-		      " Calculated Length = %d Bytes. MISSING %d bytes!"MEOR,
+		      " Calculated Length = %d Bytes. MISSING %d bytes!" MEOR,
             cfsize, (cfsize - fsiz) ) ;
          prt(lpd);
       }
@@ -1184,29 +1185,29 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
    }
 
 	sprintf(lpd,
-		"BITMAPFILEHEADER structure -  %d Bytes (%#x)"MEOR,
-		sizeof(BITMAPFILEHEADER),
-		sizeof(BITMAPFILEHEADER) );
+		"BITMAPFILEHEADER structure -  %d Bytes (%#x)" MEOR,
+		(DWORD)sizeof(BITMAPFILEHEADER),
+		(DWORD)sizeof(BITMAPFILEHEADER) );
 	prts(lpd);
 
 	sprintf(lpd,
-		" Type   = BM (4D42)"MEOR );
+		" Type   = BM (4D42)" MEOR );
 	prts(lpd);
 
 	sprintf(lpd,
-		" Size   = %d Bytes (%#x)"MEOR,
+		" Size   = %d Bytes (%#x)" MEOR,
 		lpbmfh->bfSize,
 		lpbmfh->bfSize );
 	prts(lpd);
 
 	sprintf(lpd,
-		" Offset = %d (%#x) to bits"MEOR,
+		" Offset = %d (%#x) to bits" MEOR,
 		lpbmfh->bfOffBits,
       lpbmfh->bfOffBits );
    if( lpbih->biCompression == BI_BITFIELDS ) {
-      sprintf(EndBuf(lpd), " (However BI_BITFIELDS has 3 DWORD masks = Offset %d (%#x))"MEOR,
-         lpbmfh->bfOffBits + (sizeof(DWORD) * 3),
-         lpbmfh->bfOffBits + (sizeof(DWORD) * 3) );
+      sprintf(EndBuf(lpd), " (However BI_BITFIELDS has 3 DWORD masks = Offset %d (%#x))" MEOR,
+         (int)(lpbmfh->bfOffBits + (sizeof(DWORD) * 3)),
+         (int)(lpbmfh->bfOffBits + (sizeof(DWORD) * 3)) );
    }
 	prts(lpd);
 
@@ -1217,29 +1218,29 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
             lpbih->biHeight;     // HEIGHT = rows in the image
    if (lpbih->biSize == sizeof(BITMAPINFOHEADER)) {
         sprintf(lpd,
-		    "BITMAPINFOHEADER - dwSize =  %d Bytes  (%#x)"MEOR,
+		    "BITMAPINFOHEADER - dwSize =  %d Bytes  (%#x)" MEOR,
 		    lpbih->biSize,	// sizeof(BITMAPINFOHEADER) );
             lpbih->biSize );
    } else {
         sprintf(lpd,
-		    "BITMAPV5HEADER - dwSize =  %d Bytes  (%#x)"MEOR,
+		    "BITMAPV5HEADER - dwSize =  %d Bytes  (%#x)" MEOR,
 		    lpbih->biSize,	// sizeof(BITMAPINFOHEADER) );
             lpbih->biSize );
    }
 	prts(lpd);
 
 	sprintf(lpd,
-		" Width    = %d Pixels"MEOR,
-		lpbih->biWidth );
+		" Width    = %d Pixels" MEOR,
+		(int)lpbih->biWidth );
 	prts(lpd);
 
 	sprintf(lpd,
-		" Height   = %d Pixels"MEOR,
-		lpbih->biHeight );
+		" Height   = %d Pixels" MEOR,
+		(int)lpbih->biHeight );
 	prts(lpd);
 
 	sprintf(lpd,
-		" Planes   = %d (Should be 1!)"MEOR,
+		" Planes   = %d (Should be 1!)" MEOR,
 		lpbih->biPlanes );
 	prts(lpd);
 
@@ -1288,20 +1289,20 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
          imgsiz ); // ( uk * iRow ) );
    }
    sprintf(EndBuf(lpd), " (%dx%d=%d)",
-      imgrow, // bytes per row, rounded be ALLIGNMENT
-      lpbih->biHeight, // HEIGHT = rows in the image
-      imgsiz );
+      (int)imgrow, // bytes per row, rounded be ALLIGNMENT
+      (int)lpbih->biHeight, // HEIGHT = rows in the image
+      (int)imgsiz );
    strcat(lpd,MEOR);
 	prts(lpd);
 
 	sprintf(lpd,
-		" X.PPMet. = %d"MEOR,
-		lpbih->biXPelsPerMeter );
+		" X.PPMet. = %d" MEOR,
+		(int)lpbih->biXPelsPerMeter );
 	prts(lpd);
 
 	sprintf(lpd,
-		" Y.PPMet. = %d"MEOR,
-		lpbih->biYPelsPerMeter );
+		" Y.PPMet. = %d" MEOR,
+		(int)lpbih->biYPelsPerMeter );
 	prts(lpd);
 	
 	sprintf(lpd,
@@ -1316,7 +1317,7 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
 	prts(lpd);
 
 	sprintf(lpd,
-		" ClrImp.  = %d"MEOR,
+		" ClrImp.  = %d" MEOR,
 		lpbih->biClrImportant );
 	prts(lpd);
 
@@ -1333,12 +1334,12 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
 
 		lps = (lpb + sizeof(BITMAPFILEHEADER) + lpbih->biSize); //sizeof(BITMAPINFOHEADER)
 		sprintf(lpd,
-			"COLOUR %s - Count of RGBQUADs = %d (%d Bytes)"MEOR,
+			"COLOUR %s - Count of RGBQUADs = %d (%d Bytes)" MEOR,
          ( (lpbih->biCompression == BI_BITFIELDS) ? "MASK" : "TABLE" ),
 			cc2,
-			( cc2 * sizeof(RGBQUAD) ) );
+			(int)( cc2 * sizeof(RGBQUAD) ) );
 		prts(lpd);
-		prt( "Ind.  Colour     Ind.  Colour     Ind.  Colour     Ind.  Colour"MEOR );
+		prt( "Ind.  Colour     Ind.  Colour     Ind.  Colour     Ind.  Colour" MEOR );
 		lpq = (RGBQUAD *)lps;
 
 		*lpd = 0;
@@ -1388,7 +1389,7 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
 
       uk = SortRGBQ( (LPTSTR)&gsBmpColour[0], FALSE, cc2 );
 		sprintf(lpd,
-			"COLOUR TABLE - Count of Colours  = %d."MEOR,
+			"COLOUR TABLE - Count of Colours  = %d." MEOR,
 			uk );
 		prt(lpd);
 
@@ -1412,22 +1413,23 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
    if( iC == imgrow )
    {
 	   sprintf(lpd,
-		   "IMAGE (%dx%d) - Count of BYTES = %d x %d = %d Bytes"MEOR,
-		   lpbih->biWidth,
-		   lpbih->biHeight,
-		   imgrow,
-		   lpbih->biHeight,
-		   ( lpbih->biHeight * imgrow ) );
+		   "IMAGE (%dx%d) - Count of BYTES = %d x %d = %d Bytes" MEOR,
+		   (int)lpbih->biWidth,
+		   (int)lpbih->biHeight,
+		   (int)imgrow,
+		   (int)lpbih->biHeight,
+		   (int)( lpbih->biHeight * imgrow ) );
    }
    else
    {
 	   sprintf(lpd,
-		   "IMAGE (%dx%d) - Count of BYTES = %d(v=%d) x %d = %d Bytes"MEOR,
-		   lpbih->biWidth,
-		   lpbih->biHeight,
-		   imgrow, iC,
-		   lpbih->biHeight,
-		   ( lpbih->biHeight * imgrow ) );
+		   "IMAGE (%dx%d) - Count of BYTES = %d(v=%d) x %d = %d Bytes" MEOR,
+		   (int)lpbih->biWidth,
+		   (int)lpbih->biHeight,
+		   (int)imgrow, 
+		   (int)iC,
+		   (int)lpbih->biHeight,
+		   (int)( lpbih->biHeight * imgrow ) );
    }
 	prts(lpd);
 		 
@@ -1565,7 +1567,7 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
 				   iRow );
 			   iC = iCol;	// *RESTART* valid BYTE counter (from ValidPerRow(lpbih);)
             //if(ucnt) {
-            //   sprtf( "WARNING: Have a count (%d)???"MEOR, ucnt );
+            //   sprtf( "WARNING: Have a count (%d)???" MEOR, ucnt );
             //   wait_keyin();
             //}
             ucnt = 0;
@@ -1597,7 +1599,7 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
    if( ia ) { // if any remainder
 	   strcat(lpd,MEOR);
 	   prt(lpd);
-      prt("WARNING: Appears did NOT finish this ROW!"MEOR );
+      prt("WARNING: Appears did NOT finish this ROW!" MEOR );
    }
    if(( giBmpVerb == 2 ) &&
       ( pbi->biBitCount == 24 ) &&
@@ -1628,10 +1630,10 @@ int	ProcessBMP( HFILE hf, LPSTR fn, LPSTR lpb, DWORD len,
                   i = 1;
 
                if( rc_in_range( irow, icol ) ) {
-                  sprtf( "In range %d,%d rbg(%3d,%3d,%3d) "MEOR, irow, icol, r, g, b );
+                  sprtf( "In range %d,%d rbg(%3d,%3d,%3d) " MEOR, irow, icol, r, g, b );
                   add_RGB_color( r, g, b );
                } else {
-                  sprtf( "NOT IN RANGE %d,%d rbg(%3d,%3d,%3d) "MEOR, irow, icol, r, g, b );
+                  sprtf( "NOT IN RANGE %d,%d rbg(%3d,%3d,%3d) " MEOR, irow, icol, r, g, b );
                }
             }
          }
@@ -1926,7 +1928,7 @@ BOOL  DumpPPM( LPDFSTR lpdf )
 
    if( VERB )
    {
-      sprintf( lpb2, "BMP file [%s] written."MEOR, &g_szBmpNm[0] );
+      sprintf( lpb2, "BMP file [%s] written." MEOR, &g_szBmpNm[0] );
       prt(lpb2);
    }
    return TRUE;
@@ -1946,7 +1948,7 @@ Got_Err:
 #endif
    if( VERB )
    {
-      sprintf( lpb2, "FAILED to write file [%s]."MEOR, &g_szBmpNm[0] );
+      sprintf( lpb2, "FAILED to write file [%s]." MEOR, &g_szBmpNm[0] );
       prt(lpb2);
    }
    return FALSE;
