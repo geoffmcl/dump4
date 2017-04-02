@@ -747,6 +747,7 @@ bool GetDLLFileExports(char *szFileName, unsigned int *nNoOfExports, char **&psz
     PIMAGE_DOS_HEADER pImg_DOS_Header;
     PIMAGE_NT_HEADERS pImg_NT_Header;
     PIMAGE_EXPORT_DIRECTORY pImg_Export_Dir;
+    DWORD Rva;
 
     hFile = CreateFile(szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if (hFile == INVALID_HANDLE_VALUE) {
@@ -797,7 +798,7 @@ bool GetDLLFileExports(char *szFileName, unsigned int *nNoOfExports, char **&psz
     PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(pImg_NT_Header);
     bool Is32 = true;
 
-    pImg_Export_Dir = (PIMAGE_EXPORT_DIRECTORY)pImg_NT_Header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    offset = pImg_NT_Header->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
     if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
         Is32 = true;
         section = IMAGE_FIRST_SECTION(header32);
@@ -830,7 +831,7 @@ bool GetDLLFileExports(char *szFileName, unsigned int *nNoOfExports, char **&psz
         }
     }
 
-
+    pImg_Export_Dir = (PIMAGE_EXPORT_DIRECTORY)ImageRvaToVa(pImg_NT_Header, pImg_DOS_Header, offset, 0);
     if (!pImg_Export_Dir)
     {
         UnmapViewOfFile(lpFileBase);
@@ -839,12 +840,9 @@ bool GetDLLFileExports(char *szFileName, unsigned int *nNoOfExports, char **&psz
         return false;
     }
 
-    pImg_Export_Dir = (PIMAGE_EXPORT_DIRECTORY)ImageRvaToVa(pImg_NT_Header, pImg_DOS_Header, (DWORD)pImg_Export_Dir, 0);
-
     DWORD cnt = pImg_Export_Dir->NumberOfNames;
-    DWORD **ppdwNames = (DWORD **)pImg_Export_Dir->AddressOfNames;
-
-    ppdwNames = (PDWORD*)ImageRvaToVa(pImg_NT_Header, pImg_DOS_Header, (DWORD)ppdwNames, 0);
+    Rva = pImg_Export_Dir->AddressOfNames;
+    PDWORD ppdwNames = (PDWORD)ImageRvaToVa(pImg_NT_Header, pImg_DOS_Header, Rva, 0);
     if (!ppdwNames || !cnt)
     {
         printf("no address of 'name' found!\n");
@@ -860,7 +858,7 @@ bool GetDLLFileExports(char *szFileName, unsigned int *nNoOfExports, char **&psz
 
     for (unsigned i = 0; i < *nNoOfExports; i++)
     {
-        char *szFunc = (PSTR)ImageRvaToVa(pImg_NT_Header, pImg_DOS_Header, (DWORD)*ppdwNames, 0);
+        char *szFunc = (PSTR)ImageRvaToVa(pImg_NT_Header, pImg_DOS_Header, *ppdwNames, 0);
         if (szFunc && strlen(szFunc)) {
             pszFunctions[i] = new char[strlen(szFunc) + 1];
             strcpy(pszFunctions[i], szFunc);
@@ -1176,7 +1174,7 @@ int main(int argc, char **argv)
     IMAGE_DATA_DIRECTORY *dataDirectory = &optionalHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
     IMAGE_EXPORT_DIRECTORY *Exp;
     DWORD Rva = dataDirectory->VirtualAddress;
-    Exp = (IMAGE_EXPORT_DIRECTORY *)((DWORD)dosHeader + dataDirectory->VirtualAddress);
+    Exp = (IMAGE_EXPORT_DIRECTORY *)(dosHeader + Rva);
 
     if (header32->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) { // PE32
         Rva = header32->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
