@@ -93,8 +93,8 @@ VOID show_sonic_info(PTSTR pinfo1, PTSTR pinfo2)
         else
         {
             PTSTR ptmp = GetNxtBuf();
-            sprintf(ptmp, "%ll", buf.st_size);
-            sprintf(EndBuf(pinfo2), " [FIL] % 15s", My_NiceNumber(ptmp));
+            sprintf(ptmp, "%llu", (unsigned long long)buf.st_size);
+            sprintf(EndBuf(pinfo2), " [FIL] %15s", My_NiceNumber(ptmp));
         }
         strcat(pinfo2, " TODO: Add time");
     }

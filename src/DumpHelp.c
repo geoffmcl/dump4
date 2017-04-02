@@ -1485,10 +1485,10 @@ Err_P:
 //#include	<gwscanf.h>
 DWORD	GetNumber( char * cp )
 {
-	DWORD	dw;
+	unsigned long dw;
 	dw = 0;
    sscanf( cp, "%lu", &dw );
-	return dw;
+	return (DWORD)dw;
 }
 
 // eof - DumpHelp.c

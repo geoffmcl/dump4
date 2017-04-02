@@ -120,7 +120,7 @@ if(WIN32 AND MSVC)
 
 else()
     # unix stuff
-    set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-write-strings -Wno-multichar")
+    set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-write-strings -Wno-multichar -Wno-trigraphs")
 endif()
 
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} ${MSVC_FLAGS} -D_REENTRANT" )

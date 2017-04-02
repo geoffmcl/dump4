@@ -432,8 +432,7 @@ BOOL	ChkSynEdit( LPDFSTR lpdf )
       }
       else
       {
-         sprintf(lpo, "WARNING: Loaded File does NOT appear to be a SYNEDIT profile!"MEOR,
-            pfn );
+         sprintf(lpo, "WARNING: Loaded File does NOT appear to be a SYNEDIT profile!" MEOR);
       }
       prt(lpo);
    }

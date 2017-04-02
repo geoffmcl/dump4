@@ -481,7 +481,8 @@ BOOL  DumpTAR_FAILED( LPDFSTR lpdf )
       boff = count * BLOCKSIZE;
       remains = (lpdf->dwmax - (boff + BLOCKSIZE));
       strcpy(lpb, (remains == 0 ? "perfect" : "remainder " ));
-      if(remains) sprintf(EndBuf(lpb)," %d", remains );
+      if(remains) 
+        sprintf(EndBuf(lpb)," %d", (int)remains );
       if(remains > 0)
       {
          off = 0;
@@ -842,7 +843,8 @@ int  IsTARFile( LPDFSTR lpdf, LPTSTR lpf, PBYTE pb, DWORD dwmax )
       if(VERB5) {
          remains = (lpdf->dwmax - (boff + BLOCKSIZE));
          strcpy(lpb, (remains == 0 ? "perfect" : "remainder " ));
-         if(remains) sprintf(EndBuf(lpb)," %d", remains );
+         if(remains)
+            sprintf(EndBuf(lpb)," %d", (int)remains );
          sprtf( "Tested to offset %d of %d ... %s"MEOR,
             (boff + BLOCKSIZE), lpdf->dwmax, lpb );
          if( remains && VERB9 )

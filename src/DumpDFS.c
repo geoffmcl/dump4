@@ -922,8 +922,9 @@ BOOL  ProcessDFS( LPDFSTR lpdf )
             sprintf(EndBuf(ptmp), "at lat %3.7f, lon %3.7f ...", 
                lld.ll_Lat, lld.ll_Long );
             if( VERB9 ) {
+                DWORD64 off = ((char *)pr - (char *)pdfsh);
                sprintf(EndBuf(ptmp), " Offset %#08X",
-                  ((DWORD)pr - (DWORD)pdfsh) );
+                  (DWORD)off );
             }
             sprtf("%s"MEOR, ptmp);
          } else {
