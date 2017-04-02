@@ -9,6 +9,7 @@
 // ProcessDataStr( LPDFSTR lpdf ) where the various COMMAND switches are
 // checked. If NONE then just a HEX DUMP as normal.
 
+// Apr 2017 - Ported most to unix (Ubuntu)
 // Apr 2001 - Add -lib for processing an ARCHIVE (library *lib) file
 // Feb 2001 - Add -prof for SYNEDIT profile dump in DumpSynE
 // Sep 2000 - Add CAB directory listing
@@ -209,10 +210,11 @@ void	DoOutput( DWORD fOff )
 ////////////////////////////////////////////////////////////////////
 void	DoFile( char * fn, HANDLE hf )
 {
-	//int			rd;
-   LPDFSTR     lpdf = &gsDoFil;
-   DWORD       dwMax;
-//	int			ir;
+    //int			rd;
+    LPDFSTR     lpdf = &gsDoFil;
+    DWORD       dwMax;
+    DWORD64     dw64;
+   //	int			ir;
 	//char	*	lpb;
 //	char		c, d;
 //	DWORD		foff;
@@ -237,8 +239,9 @@ void	DoFile( char * fn, HANDLE hf )
 	{
 
       lpdf->hf = (HANDLE)hf;
-		fsiz = GetFileSize( (HANDLE)hf, NULL );
+        fsiz = GetFileSize( (HANDLE)hf, NULL );
 		lpdf->qwSize.LowPart = GetFileSize( (HANDLE)hf, &lpdf->qwSize.HighPart );
+        dw64 = lpdf->qwSize.QuadPart;
       if( lpdf->qwSize.HighPart )
          dwMax = (DWORD)-1;
       else
@@ -279,9 +282,9 @@ void	DoFile( char * fn, HANDLE hf )
        			if( giVerbose > 1 )
                {
                   sprintf( lptmp,
-   						"File [%s], %I64u bytes (map at %#x)." MEOR,
+   						"File [%s], %I64u bytes (map at %p)." MEOR,
                      fn,
-                     lpdf->qwSize,
+                     dw64,
                      lpdf->df_pVoid );
                }
                else
@@ -289,7 +292,7 @@ void	DoFile( char * fn, HANDLE hf )
                   sprintf( lptmp,
    						"File [%s], %I64u bytes." MEOR,
                      fn,
-                     lpdf->qwSize );
+                     dw64 );
                }
 					prt( lptmp );
    			}
@@ -601,6 +604,7 @@ void	ProcessFile( LPTSTR fn )
 	WIN32_FIND_DATA	fd;
 	HANDLE			hFind;
     LPDFSTR     lpdf = &gsDoFil;
+    DWORD64     dw64;
 
 	lpb = &gszDiag[0];
 	pCnt = 0;
@@ -611,9 +615,10 @@ void	ProcessFile( LPTSTR fn )
             ULARGE_INTEGER ul;
             ul.LowPart  = fd.nFileSizeLow;
             ul.HighPart = fd.nFileSizeHigh;
+            dw64 = ul.QuadPart;
             sprintf( lpb, "Processing File [%s], %I64d bytes..." MEOR,
                 fn,
-                ul );
+                dw64 );
         }
         FindClose( hFind );
     } else {
@@ -747,7 +752,7 @@ Try_WILD:
 			{
 				if( giVerbose > 8 )
 				{
-					sprintf( lpb, "ADVICE: Got FIND Handle %X..." MEOR,
+					sprintf( lpb, "ADVICE: Got FIND Handle %p..." MEOR,
 						hFind );
 					prt( lpb );
 				}
