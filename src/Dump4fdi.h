@@ -597,18 +597,17 @@ typedef void (FAR DIAMONDAPI *PFNFREE)(void HUGE *pv); /* pfnf */
  *      in your "handle" structure.
  */
 //** File I/O functions for FDI
-typedef int  (FAR DIAMONDAPI *PFNOPEN) (char FAR *pszFile, int oflag, int pmode);
-typedef UINT (FAR DIAMONDAPI *PFNREAD) (int hf, void FAR *pv, UINT cb);
-typedef UINT (FAR DIAMONDAPI *PFNWRITE)(int hf, void FAR *pv, UINT cb);
-typedef int  (FAR DIAMONDAPI *PFNCLOSE)(int hf);
-typedef long (FAR DIAMONDAPI *PFNSEEK) (int hf, long dist, int seektype);
+typedef HANDLE  (FAR DIAMONDAPI *PFNOPEN) (char FAR *pszFile, int oflag, int pmode);
+typedef UINT (FAR DIAMONDAPI *PFNREAD) (HANDLE hf, void FAR *pv, UINT cb);
+typedef UINT (FAR DIAMONDAPI *PFNWRITE)(HANDLE hf, void FAR *pv, UINT cb);
+typedef int  (FAR DIAMONDAPI *PFNCLOSE)(HANDLE hf);
+typedef long (FAR DIAMONDAPI *PFNSEEK) (HANDLE hf, long dist, int seektype);
 
-#define FNOPEN(fn) int FAR DIAMONDAPI fn(char FAR *pszFile, int oflag, int pmode)
-#define FNREAD(fn) UINT FAR DIAMONDAPI fn(int hf, void FAR *pv, UINT cb)
-#define FNWRITE(fn) UINT FAR DIAMONDAPI fn(int hf, void FAR *pv, UINT cb)
-#define FNCLOSE(fn) int FAR DIAMONDAPI fn(int hf)
-#define FNSEEK(fn) long FAR DIAMONDAPI fn(int hf, long dist, int seektype)
-
+#define FNOPEN(fn) HANDLE FAR DIAMONDAPI fn(char FAR *pszFile, int oflag, int pmode)
+#define FNREAD(fn) UINT FAR DIAMONDAPI fn(HANDLE hf, void FAR *pv, UINT cb)
+#define FNWRITE(fn) UINT FAR DIAMONDAPI fn(HANDLE hf, void FAR *pv, UINT cb)
+#define FNCLOSE(fn) int FAR DIAMONDAPI fn(HANDLE hf)
+#define FNSEEK(fn) long FAR DIAMONDAPI fn(HANDLE hf, long dist, int seektype)
 
 
 /***    PFNFDIDECRYPT - FDI Decryption callback
@@ -711,6 +710,23 @@ typedef int (FAR DIAMONDAPI *PFNFDIDECRYPT)(PFDIDECRYPT pfdid); /* pfnfdid */
  *  See the FDINOTIFICATIONTYPE definition for information on usage and
  *  meaning of these fields.
  */
+typedef struct _FDINOTIFICATION {
+    LONG     cb;
+    char FAR *psz1;
+    char FAR *psz2;
+    char FAR *psz3;
+    void FAR *pv;
+    INT_PTR  hf;
+    USHORT   date;
+    USHORT   time;
+    USHORT   attribs;
+    USHORT   setID;
+    USHORT   iCabinet;
+    USHORT   iFolder;
+    FDIERROR fdie;
+} FDINOTIFICATION, *PFDINOTIFICATION;
+
+#if 0 // 00000000000000000000000000000000000000000000000000
 typedef struct {
 // long fields
     long      cb;
@@ -720,7 +736,7 @@ typedef struct {
     void FAR *pv;                       // Value for client
 
 // int fields
-    int       hf;
+    int    hf;
 
 // short fields
     USHORT    date;
@@ -733,6 +749,7 @@ typedef struct {
 
     FDIERROR  fdie;
 } FDINOTIFICATION, FAR *PFDINOTIFICATION;  /* fdin, pfdin */
+#endif // 000000000000000000000000000000000000000000000000000
 
 
 /***    FDINOTIFICATIONTYPE - FDICopy notification types
@@ -1011,7 +1028,7 @@ HFDI FAR DIAMONDAPI FDICreate(PFNALLOC pfnalloc,
  *          perf (passed on FDICreate call!) filled in with error.
  */
 BOOL FAR DIAMONDAPI FDIIsCabinet(HFDI            hfdi,
-                                 int             hf,
+                                 HANDLE             hf,
                                  PFDICABINETINFO pfdici);
 
 

@@ -18,6 +18,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+// #include <fdi.h>
 #else // NOT DUMP4 = STANDALONE DIRCAB
 // ***********************************
 // #include <windows.h>
@@ -58,7 +59,7 @@ BOOL  CheckPrev( void );
 
 typedef int  (DIAMONDAPI * CPROC) ();
 typedef BOOL (DIAMONDAPI * FDICOPY) (HFDI, char *, char *, int, PFNFDINOTIFY, PFNFDIDECRYPT, void *);
-typedef BOOL (DIAMONDAPI * FDIISCAB) (HFDI, int, PFDICABINETINFO );
+typedef BOOL (DIAMONDAPI * FDIISCAB) (HFDI, HANDLE, PFDICABINETINFO );
 typedef BOOL (DIAMONDAPI * FDIDEST) (HFDI);
 typedef HFDI (DIAMONDAPI * FDICREAT) (PFNALLOC,PFNFREE,PFNOPEN,PFNREAD,PFNWRITE,PFNCLOSE,PFNSEEK,int,PERF);
 
@@ -447,7 +448,7 @@ FNFREE(mem_free)
 
 FNOPEN(file_open)
 {
-   int   iRet;
+   HANDLE   iRet;
    DWORD dwa, dwc;
    if( oflag & _O_CREAT )
    {
@@ -460,7 +461,7 @@ FNOPEN(file_open)
       dwc = OPEN_EXISTING;
    }
 	//return _open(pszFile, oflag, pmode);
-	iRet = (int) CreateFile(
+	iRet = CreateFile(
       pszFile,    // file name
       dwa,        // access mode
       FILE_SHARE_READ, // share mode
@@ -596,37 +597,39 @@ FNFDINOTIFY(notification_function)
  *      Exit-Failure:
  *          Returns -1 => Abort FDICopy() call
  */
-         strcpy(gcNextCab, pfdin->psz1);    // = name of next cabinet
-         strcpy(gcNextDisk,pfdin->psz2);   // = name of next disk
-			gdwInfoCnt++;
-			if( gbShowInfo )
-			{
-				sprintf(lpo,
-					"fdintCABINET_INFO\n"
-					"  next cabinet     = %s\n"
-					"  next disk        = %s\n"
-					"  cabinet path     = %s\n"
-					"  cabinet set ID   = %d\n"
-					"  cabinet # in set = %d (zero based)\n"
-					"\n",
-					pfdin->psz1,
-					pfdin->psz2,
-					pfdin->psz3,
-					pfdin->setID,
-					pfdin->iCabinet );
-            prt(lpo);
-			}
-         else if( VERBMAX )
-         {
-				sprintf(lpo,
-					"INFO: next cab=%s disk=%s path=%s ID=%#x Set#=%d.\n",
-					pfdin->psz1,
-					pfdin->psz2,
-					pfdin->psz3,
-					pfdin->setID,
-					pfdin->iCabinet );
-            prt(lpo);
-         }
+            if (pfdin->hf) {
+                strcpy(gcNextCab, pfdin->psz1);    // = name of next cabinet
+                strcpy(gcNextDisk, pfdin->psz2);   // = name of next disk
+                gdwInfoCnt++;
+                if (gbShowInfo)
+                {
+                    sprintf(lpo,
+                        "fdintCABINET_INFO\n"
+                        "  next cabinet     = %s\n"
+                        "  next disk        = %s\n"
+                        "  cabinet path     = %s\n"
+                        "  cabinet set ID   = %d\n"
+                        "  cabinet # in set = %d (zero based)\n"
+                        "\n",
+                        pfdin->psz1,
+                        pfdin->psz2,
+                        pfdin->psz3,
+                        pfdin->setID,
+                        pfdin->iCabinet);
+                    prt(lpo);
+                }
+                else if (VERBMAX)
+                {
+                    sprintf(lpo,
+                        "INFO: next cab=%s disk=%s path=%s ID=%#x Set#=%d.\n",
+                        pfdin->psz1,
+                        pfdin->psz2,
+                        pfdin->psz3,
+                        pfdin->setID,
+                        pfdin->iCabinet);
+                    prt(lpo);
+                }
+            }
 			return 0;
 
 		case fdintPARTIAL_FILE: // first file(s) in cabinet is continuation
@@ -674,7 +677,7 @@ FNFDINOTIFY(notification_function)
 		case fdintCOPY_FILE:	// file to be copied
 		{
 			int		response = 'N';
-			int		handle;
+			HANDLE	handle;
 //			char	destination[256];
 
 			gdwComplete++;
@@ -726,10 +729,11 @@ FNFDINOTIFY(notification_function)
 						destination,
 						_O_BINARY | _O_CREAT | _O_WRONLY | _O_SEQUENTIAL,
 						_S_IREAD | _S_IWRITE );
-               if( ( handle ) && ( handle != -1 ) )
+               if( ( handle ) && ( handle != (HANDLE)-1 ) )
                {
                   // success
-                  return handle;
+                   file_close(handle);
+                  return TRUE;
                }
                else
                {
@@ -1135,7 +1139,7 @@ FNFDINOTIFY(note_function2)
 BOOL  CheckPrev( void )
 {
 	HFDI			hfdi;
-	int			hf;
+	HANDLE			hf;
    int         iPCnt, iNCnt;
    LPTSTR      lpo = &gcOutBuf[0];
    if( VERB5 )
@@ -1156,7 +1160,7 @@ Next_Cycle:
          if(hfdi == 0 )
             return FALSE;
       	hf = file_open( gcPrevFull, (_O_BINARY | _O_RDONLY | _O_SEQUENTIAL), 0 );
-      	if( ( hf == -1 ) || ( hf == 0 ) )
+      	if( ( hf == (HANDLE)-1 ) || ( hf == 0 ) )
          {
       		pfdidest(hfdi);
 		      sprintf(lpo,"ERROR: Unable to open [%s]!\n", gcPrevFull);
@@ -1262,7 +1266,7 @@ Next_Cycle2:
          if(hfdi == 0 )
             return FALSE;
       	hf = file_open( gcPrevFull, (_O_BINARY | _O_RDONLY | _O_SEQUENTIAL), 0 );
-      	if( ( hf == -1 ) || ( hf == 0 ) )
+      	if( ( hf == (HANDLE)-1 ) || ( hf == 0 ) )
          {
       		pfdidest(hfdi);
 		      sprintf(lpo,"ERROR: Unable to open [%s]!\n", gcPrevFull);
@@ -1363,7 +1367,7 @@ BOOL test_fdi(char *cabinet_fullpath)
 	HFDI			hfdi;
 	ERF				erf;
 	FDICABINETINFO	fdici;
-	int				hf;
+	HANDLE			hf;
 	char			*p;
    LPTSTR      lpo = &gcOutBuf[0];
 //	char			cabinet_name[256];
@@ -1397,8 +1401,7 @@ BOOL test_fdi(char *cabinet_fullpath)
    else if( VERBMAX )
    {
 		sprintf(lpo,
-         "FDICreate() returned handle: 0x%x (%d)\n",
-         hfdi, hfdi );
+         "FDICreate() returned handle: %p\n", hfdi);
       prt(lpo);
    }
 
@@ -1411,7 +1414,7 @@ BOOL test_fdi(char *cabinet_fullpath)
 		_O_BINARY | _O_RDONLY | _O_SEQUENTIAL,
 		0 );
 
-	if( ( hf == -1 ) || ( hf == 0 ) )
+	if( ( hf == (HANDLE)-1 ) || ( hf == 0 ) )
    {
 		//(void) FDIDestroy(hfdi);
 		pfdidest(hfdi);
@@ -1424,8 +1427,8 @@ BOOL test_fdi(char *cabinet_fullpath)
       LARGE_INTEGER li;
       li.LowPart = GetFileSize((HANDLE) hf,  // handle to file
          (PULONG)&li.HighPart );   // high-order word of file size
-		sprintf(lpo,"Openned with handle=%#x (%d) Size=%s bytes.\n",
-         hf, hf,
+		sprintf(lpo,"Openned with handle=%p Size=%s bytes.\n",
+         hf,
          GetI64Stg2(li) );
       prt(lpo);
    }
@@ -1434,7 +1437,7 @@ BOOL test_fdi(char *cabinet_fullpath)
 //			hfdi,
 //			hf,
 //			&fdici))
-	if( FALSE == pfdiiscab(	hfdi, hf, &fdici) )
+	if( !pfdiiscab(	hfdi, hf, &fdici) )
 	{
 		/* ************************ *
 		 * No, it's not a cabinet!  *
@@ -2184,7 +2187,7 @@ LPTSTR   GetI64Stg2( LARGE_INTEGER li )
    int      i,j,k;
    sprintf(buf,
       "%I64d",
-      li );
+      li.QuadPart );
    if( _s_ii )
    {
       lps = &_s_buf[(32+8)];
