@@ -14,6 +14,7 @@
 #else
 // unix/linux/mac
 #include <ctype.h> // for toupper, tolower, isspace, ...
+#include <sys/sysmacros.h> // for major, minor, ...
 #endif
 #include <time.h>
 #include <stdio.h>
