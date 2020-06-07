@@ -11,6 +11,9 @@
 //#include <windows.h>
 #include <Winsock2.h>
 #include <direct.h>
+#else
+// unix/linux/mac
+#include <ctype.h> // for toupper, tolower, isspace, ...
 #endif
 #include <time.h>
 #include <stdio.h>
