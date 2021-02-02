@@ -1760,7 +1760,7 @@ void show_BMP_info( BITMAPINFOHEADER * lpbih, UINT * puint )
 		sprintf(lpd,
 			"COLOUR %s - Count of RGBQUADs = %d (%d Bytes)"MEOR,
          ( (lpbih->biCompression == BI_BITFIELDS) ? "MASK" : "TABLE" ),
-			cc, ( cc * sizeof(RGBQUAD) ) );
+			cc, (int)( cc * sizeof(RGBQUAD) ) );
 		prts(lpd);
         if (VERB3)
             prt( "Ind.  Colour     Ind.  Colour     Ind.  Colour     Ind.  Colour"MEOR );

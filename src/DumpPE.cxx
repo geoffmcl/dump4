@@ -5,7 +5,7 @@
     from : http://msdn.microsoft.com/library/windows/hardware/gg463119.aspx
     DWN: 14/06/2014  17:43 217,765 pecoff_v83.docx
     14 Archive (Library) File Format
-    The first 8 bytes of an archive consist of the file signature.
+    The first 8ï¿½bytes of an archive consist of the file signature.
     The rest of the archive consists of a series of archive members, as follows:
     The first and second members are linker members. Each of these members has its own format as described in section 8.3, Import Name Type.
     the general structure of an archive.
@@ -33,11 +33,11 @@
                     value on Windows platforms because Microsoft tools emit all blanks.
     34  6   Group ID An ASCII decimal representation of the group ID. This field does not contain a meaningful 
                     value on Windows platforms because Microsoft tools emit all blanks.
-    40  8   Mode  An ASCII octal representation of the member’s file mode. This is the ST_MODE value from the 
+    40  8   Mode  An ASCII octal representation of the memberï¿½s file mode. This is the ST_MODE value from the 
                     C run-time function _wstat.
     48  10  Size  An ASCII decimal representation of the total size of the archive member, not including the 
                     size of the header.
-    58  2   End of Header The two bytes in the C string “‘\n” (0x60 0x0A).
+    58  2   End of Header The two bytes in the C string ï¿½ï¿½\nï¿½ (0x60 0x0A).
     ====================================================================================
     See also: https://msdn.microsoft.com/en-us/library/windows/hardware/gg463119.aspx
     DWN: 14/06/2014  16:43           217,765 pecoff_v83.docx
@@ -2708,6 +2708,7 @@ void DumpResourceDirectory( PIMAGE_RESOURCE_DIRECTORY resDir, DWORD64 resBase,
     resDirEntry = (PIMAGE_RESOURCE_DIRECTORY_ENTRY)(resDir+1);
 
 	// If it's a stringtable, save off info for future use
+    // Maybe use PtrToUInt for Windows
 	if ( level == 1 && (resourceType == (WORD)RT_STRING))
 	{
 		pStrResEntries = resDirEntry;

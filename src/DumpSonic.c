@@ -68,7 +68,7 @@ VOID show_sonic_info(PTSTR pinfo1, PTSTR pinfo2)
 
             ul.LowPart = fd.nFileSizeLow;
             ul.HighPart = fd.nFileSizeHigh;
-            sprintf(ptmp, "%I64d", ul);
+            sprintf(ptmp, "%I64d", ul.QuadPart);
             sprintf(EndBuf(pinfo2), " [FIL] % 15s", My_NiceNumber(ptmp));
         }
         // fd.ftCreationTime, fd.ftLastAccessTime, fd.ftLastWriteTime
